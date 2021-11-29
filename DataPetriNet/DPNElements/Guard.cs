@@ -11,14 +11,21 @@ namespace DataPetriNet.DPNElements
     public class Guard
     {
         public List<IConstraintExpression> ConstraintExpressions { get; set; }
+        private VariablesStore localVariables;
+        public Guard()
+        {
+            ConstraintExpressions = new List<IConstraintExpression>();
+            localVariables = new VariablesStore();
+        }
 
-        public bool Verify(VariablesStore variables)
+        public bool Verify(VariablesStore globalVariables)
         {
             var constraintStateDuringEvaluation = new List<IConstraintExpression>(ConstraintExpressions);
             var expressionResult = true; // Check correctness of true assign
 
             do
             {
+                localVariables = new VariablesStore();
                 // Block of ANDs which is currently evaluated
                 List<IConstraintExpression> currentBlock;
 
@@ -39,6 +46,7 @@ namespace DataPetriNet.DPNElements
                     constraintStateDuringEvaluation.RemoveRange(0, constraintStateDuringEvaluation.Count);
                 }
 
+                // Evaluate read expressions
                 var variablesSelector = new VariablesSelector();
                 foreach(var expression in currentBlock)
                 {
@@ -48,16 +56,50 @@ namespace DataPetriNet.DPNElements
                             var booleanExpression = expression as ConstraintExpression<bool>;
                             if (booleanExpression.ConstraintVariable.VariableType == VariableType.Read)
                             {
-                                expressionResult &= booleanExpression.Evaluate(variables.ReadBool(booleanExpression.ConstraintVariable.Name));
+                                expressionResult &= booleanExpression.Evaluate(globalVariables.ReadBool(booleanExpression.ConstraintVariable.Name));
                             }
                             else
                             {
                                 variablesSelector.AddValueIntervalToVariable(booleanExpression.ConstraintVariable.Name, booleanExpression.GetValueInterval());
                             }
                             break;
+                        case DomainType.String:
+                            var stringExpression = expression as ConstraintExpression<string>;
+                            if (stringExpression.ConstraintVariable.VariableType == VariableType.Read)
+                            {
+                                expressionResult &= stringExpression.Evaluate(globalVariables.ReadString(stringExpression.ConstraintVariable.Name));
+                            }
+                            else
+                            {
+                                variablesSelector.AddValueIntervalToVariable(stringExpression.ConstraintVariable.Name, stringExpression.GetValueInterval());
+                            }
+                            break;
+                        case DomainType.Integer:
+                            var integerExpression = expression as ConstraintExpression<long>;
+                            if (integerExpression.ConstraintVariable.VariableType == VariableType.Read)
+                            {
+                                expressionResult &= integerExpression.Evaluate(globalVariables.ReadInteger(integerExpression.ConstraintVariable.Name));
+                            }
+                            else
+                            {
+                                variablesSelector.AddValueIntervalToVariable(integerExpression.ConstraintVariable.Name, integerExpression.GetValueInterval());
+                            }
+                            break;
+                        case DomainType.Real:
+                            var realExpression = expression as ConstraintExpression<double>;
+                            if (realExpression.ConstraintVariable.VariableType == VariableType.Read)
+                            {
+                                expressionResult &= realExpression.Evaluate(globalVariables.ReadReal(realExpression.ConstraintVariable.Name));
+                            }
+                            else
+                            {
+                                variablesSelector.AddValueIntervalToVariable(realExpression.ConstraintVariable.Name, realExpression.GetValueInterval());
+                            }
+                            break;
                     }
                 }
 
+                // Evaluate write expressions
                 if (expressionResult)
                 {
                     foreach(var variable in currentBlock
@@ -67,7 +109,20 @@ namespace DataPetriNet.DPNElements
                         switch (variable.Domain)
                         {
                             case DomainType.Boolean:
-                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out bool _);
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out bool boolValue);
+                                localVariables.WriteBool(variable.Name, boolValue);
+                                break;
+                            case DomainType.String:
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out string stringValue);
+                                localVariables.WriteString(variable.Name, stringValue);
+                                break;
+                            case DomainType.Integer:
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out long integerValue);
+                                localVariables.WriteInteger(variable.Name, integerValue);
+                                break;
+                            case DomainType.Real:
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out double realValue);
+                                localVariables.WriteReal(variable.Name, realValue);
                                 break;
                         }
                         
@@ -75,8 +130,34 @@ namespace DataPetriNet.DPNElements
                 }
 
             } while (constraintStateDuringEvaluation.Count > 0 && !expressionResult);
+
+            return expressionResult;
         }
 
-        
+        public void UpdateVariables(VariablesStore globalVariables)
+        {
+            var variablesToUpdate = ConstraintExpressions
+                .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+                .Select(x => x.ConstraintVariable);
+
+            foreach(var variable in variablesToUpdate)
+            {
+                switch (variable.Domain)
+                {
+                    case DomainType.Boolean:
+                        globalVariables.WriteBool(variable.Name, localVariables.ReadBool(variable.Name));
+                        break;
+                    case DomainType.String:
+                        globalVariables.WriteString(variable.Name, localVariables.ReadString(variable.Name));
+                        break;
+                    case DomainType.Integer:
+                        globalVariables.WriteInteger(variable.Name, localVariables.ReadInteger(variable.Name));
+                        break;
+                    case DomainType.Real:
+                        globalVariables.WriteReal(variable.Name, localVariables.ReadReal(variable.Name));
+                        break;
+                }
+            }
+        }
     }
 }
