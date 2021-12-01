@@ -8,8 +8,8 @@ namespace DataPetriNet.Enums
 {
     public enum BinaryPredicate
     {
-        Equality = 1,
-        Inequality = -1,
+        Equal = 1,
+        Unequal = -1,
 
         GreaterThan = 2,
         LessThan = -2,

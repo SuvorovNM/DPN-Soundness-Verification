@@ -75,9 +75,21 @@ namespace DataPetriNet.DPNElements
                 return true;
             }
 
+            var minimalValue = long.MinValue;
+            var maximalValue = long.MaxValue;
+
             // Consider equality (greater or equal) and multiple conditions like a >= 5 and a > 5
-            var minimalValue = integerVariablesDict[name].Where(x => x.Start.HasValue).Max(x => x.Start.Value);
-            var maximalValue = integerVariablesDict[name].Where(x => x.End.HasValue).Min(x => x.End.Value);
+            var minValues = integerVariablesDict[name].Where(x => x.Start.HasValue);
+            if (minValues.Any())
+            {
+                minimalValue = minValues.Max(x => x.Start.Value);
+            }
+
+            var maxValues = integerVariablesDict[name].Where(x => x.End.HasValue);
+            if (maxValues.Any())
+            {
+                maximalValue = maxValues.Min(x => x.End.Value);
+            }
 
             if (minimalValue > maximalValue)
             {
@@ -162,8 +174,20 @@ namespace DataPetriNet.DPNElements
                 return true;
             }
 
-            var minimalValue = realVariablesDict[name].Where(x => x.Start.HasValue).Max(x => x.Start.Value);
-            var maximalValue = realVariablesDict[name].Where(x => x.End.HasValue).Min(x => x.End.Value);
+            var minimalValue = double.MinValue;
+            var maximalValue = double.MaxValue;
+
+            var minValues = realVariablesDict[name].Where(x => x.Start.HasValue);
+            if (minValues.Any())
+            {
+                minimalValue = minValues.Max(x => x.Start.Value);
+            }
+
+            var maxValues = realVariablesDict[name].Where(x => x.End.HasValue);
+            if (maxValues.Any())
+            {
+                maximalValue = maxValues.Min(x => x.End.Value);
+            }
 
             if (minimalValue > maximalValue)
             {

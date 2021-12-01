@@ -22,8 +22,8 @@ namespace DataPetriNet.DPNElements
         {
             return Predicate switch
             {
-                BinaryPredicate.Equality => variableValue.Equals(Constant),
-                BinaryPredicate.Inequality => !variableValue.Equals(Constant),
+                BinaryPredicate.Equal => variableValue.Equals(Constant),
+                BinaryPredicate.Unequal => !variableValue.Equals(Constant),
                 BinaryPredicate.GreaterThan => variableValue.CompareTo(Constant) > 0,
                 BinaryPredicate.GreaterThenOrEqual => variableValue.CompareTo(Constant) >= 0,
                 BinaryPredicate.LessThan => variableValue.CompareTo(Constant) < 0,
@@ -37,8 +37,8 @@ namespace DataPetriNet.DPNElements
         {
             return Predicate switch
             {
-                BinaryPredicate.Equality => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant), End = new IntervalPoint<T>(Constant) },
-                BinaryPredicate.Inequality => new ValueInterval<T> { ForbiddenValue = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.Equal => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant), End = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.Unequal => new ValueInterval<T> { ForbiddenValue = new IntervalPoint<T>(Constant) },
                 BinaryPredicate.GreaterThan => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant), ForbiddenValue = new IntervalPoint<T>(Constant) },
                 BinaryPredicate.GreaterThenOrEqual => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant) },
                 BinaryPredicate.LessThan => new ValueInterval<T> { End = new IntervalPoint<T>(Constant), ForbiddenValue = new IntervalPoint<T>(Constant) },

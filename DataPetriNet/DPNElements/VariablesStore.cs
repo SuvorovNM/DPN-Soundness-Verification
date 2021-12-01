@@ -79,5 +79,13 @@ namespace DataPetriNet
         {
             stringVariablesDict[name] = value;
         }
+
+        public void Clear()
+        {
+            integerVariablesDict.Clear();
+            booleanVariablesDict.Clear();
+            realVariablesDict.Clear();
+            stringVariablesDict.Clear();
+        }
     }
 }

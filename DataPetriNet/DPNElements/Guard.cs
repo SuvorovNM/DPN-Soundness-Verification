@@ -11,6 +11,7 @@ namespace DataPetriNet.DPNElements
     public class Guard
     {
         public List<IConstraintExpression> ConstraintExpressions { get; set; }
+        public bool IsSatisfied { get; private set; }
         private VariablesStore localVariables;
         public Guard()
         {
@@ -25,7 +26,7 @@ namespace DataPetriNet.DPNElements
 
             do
             {
-                localVariables = new VariablesStore();
+                localVariables.Clear();
                 // Block of ANDs which is currently evaluated
                 List<IConstraintExpression> currentBlock;
 
@@ -104,7 +105,8 @@ namespace DataPetriNet.DPNElements
                 {
                     foreach(var variable in currentBlock
                         .Where(x=>x.ConstraintVariable.VariableType == VariableType.Written)
-                        .Select(x => x.ConstraintVariable))
+                        .Select(x => x.ConstraintVariable)
+                        .Distinct())
                     {
                         switch (variable.Domain)
                         {
@@ -131,33 +133,50 @@ namespace DataPetriNet.DPNElements
 
             } while (constraintStateDuringEvaluation.Count > 0 && !expressionResult);
 
+            IsSatisfied = expressionResult;
             return expressionResult;
         }
 
         public void UpdateVariables(VariablesStore globalVariables)
         {
-            var variablesToUpdate = ConstraintExpressions
-                .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
-                .Select(x => x.ConstraintVariable);
-
-            foreach(var variable in variablesToUpdate)
+            if (IsSatisfied)
             {
-                switch (variable.Domain)
+                var variablesToUpdate = ConstraintExpressions
+                    .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+                    .Select(x => x.ConstraintVariable)
+                    .Distinct();
+
+                foreach (var variable in variablesToUpdate)
                 {
-                    case DomainType.Boolean:
-                        globalVariables.WriteBool(variable.Name, localVariables.ReadBool(variable.Name));
-                        break;
-                    case DomainType.String:
-                        globalVariables.WriteString(variable.Name, localVariables.ReadString(variable.Name));
-                        break;
-                    case DomainType.Integer:
-                        globalVariables.WriteInteger(variable.Name, localVariables.ReadInteger(variable.Name));
-                        break;
-                    case DomainType.Real:
-                        globalVariables.WriteReal(variable.Name, localVariables.ReadReal(variable.Name));
-                        break;
+                    switch (variable.Domain)
+                    {
+                        case DomainType.Boolean:
+                            globalVariables.WriteBool(variable.Name, localVariables.ReadBool(variable.Name));
+                            break;
+                        case DomainType.String:
+                            globalVariables.WriteString(variable.Name, localVariables.ReadString(variable.Name));
+                            break;
+                        case DomainType.Integer:
+                            globalVariables.WriteInteger(variable.Name, localVariables.ReadInteger(variable.Name));
+                            break;
+                        case DomainType.Real:
+                            globalVariables.WriteReal(variable.Name, localVariables.ReadReal(variable.Name));
+                            break;
+                    }
                 }
+
+                ResetState();
             }
+            else
+            {
+                throw new InvalidOperationException("The transition cannot fire - guard is not satisfied!");
+            }
+        }
+
+        private void ResetState()
+        {
+            IsSatisfied = false;
+            localVariables.Clear();
         }
     }
 }
