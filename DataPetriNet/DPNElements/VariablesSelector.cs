@@ -317,7 +317,7 @@ namespace DataPetriNet.DPNElements
             }
             else
             {
-                value = new DefinableValue<bool>();
+                value = new DefinableValue<bool> {Value = randomGenerator.Next(0,2) == 0 };
                 return true;
             }
             if (IsIncorrect(name, boolValue))
@@ -353,9 +353,14 @@ namespace DataPetriNet.DPNElements
                 return true;
             }
 
-            if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue))
+            if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined))
             {
                 value = new DefinableValue<string> { Value = GetNotForbiddenString(name) };
+                return true;
+            }
+            if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue && !x.ForbiddenValue.Value.IsDefined))
+            {
+                value = new DefinableValue<string> { Value = StringRandom() };
                 return true;
             }
 

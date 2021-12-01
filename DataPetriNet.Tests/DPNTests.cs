@@ -102,21 +102,9 @@ namespace DataPetriNet.Tests
                         {
                             new ConstraintExpression<bool>
                             {
-                                Constant = new DefinableValue<bool> { Value = true },
+                                Constant = new DefinableValue<bool>(),
                                 LogicalConnective = LogicalConnective.Empty,
-                                Predicate = BinaryPredicate.Equal,
-                                ConstraintVariable = new ConstraintVariable
-                                {
-                                    Domain = DomainType.Boolean,
-                                    Name = "ok",
-                                    VariableType = VariableType.Written
-                                }
-                            },
-                            new ConstraintExpression<bool>
-                            {
-                                Constant = new DefinableValue<bool> { Value = false },
-                                LogicalConnective = LogicalConnective.Or,
-                                Predicate = BinaryPredicate.Equal,
+                                Predicate = BinaryPredicate.Unequal,
                                 ConstraintVariable = new ConstraintVariable
                                 {
                                     Domain = DomainType.Boolean,
