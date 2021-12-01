@@ -1,4 +1,5 @@
-﻿using DataPetriNet.DPNElements.Internals;
+﻿using DataPetriNet.Abstractions;
+using DataPetriNet.DPNElements.Internals;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -65,13 +66,26 @@ namespace DataPetriNet.DPNElements
             stringVariablesDict[name].Add(valueInterval);
         }
 
-        public bool TrySelectValue(string name, out long value)
+        public bool TrySelectValue(string name, out DefinableValue<long> value)
         {
             // If no value interval is assigned, return random value
             // TODO: Examine, if this case is possible
             if (!integerVariablesDict.ContainsKey(name))
             {
-                value = (long)(randomGenerator.NextDouble() * long.MaxValue);
+                value = new DefinableValue<long>();
+                return true;
+            }
+
+            var inconsistentDefinition = integerVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
+                integerVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
+            if (inconsistentDefinition)
+            {
+                value = new DefinableValue<long>();
+                return false;
+            }
+            if (integerVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
+            {
+                value = new DefinableValue<long>();
                 return true;
             }
 
@@ -79,26 +93,26 @@ namespace DataPetriNet.DPNElements
             var maximalValue = long.MaxValue;
 
             // Consider equality (greater or equal) and multiple conditions like a >= 5 and a > 5
-            var minValues = integerVariablesDict[name].Where(x => x.Start.HasValue);
+            var minValues = integerVariablesDict[name].Where(x => x.Start.HasValue && x.Start.Value.IsDefined);
             if (minValues.Any())
             {
-                minimalValue = minValues.Max(x => x.Start.Value);
+                minimalValue = minValues.Max(x => x.Start.Value.Value);
             }
 
-            var maxValues = integerVariablesDict[name].Where(x => x.End.HasValue);
+            var maxValues = integerVariablesDict[name].Where(x => x.End.HasValue && x.Start.Value.IsDefined);
             if (maxValues.Any())
             {
-                maximalValue = maxValues.Min(x => x.End.Value);
+                maximalValue = maxValues.Min(x => x.End.Value.Value);
             }
 
             if (minimalValue > maximalValue)
             {
-                value = 0;
+                value = new DefinableValue<long>();
                 return false;
             }
-            if (!integerVariablesDict[name].Any(x => x.ForbiddenValue.HasValue))
+            if (!integerVariablesDict[name].Any(x => x.ForbiddenValue.HasValue || x.ForbiddenValue.Value.IsDefined))
             {
-                value = LongRandom(minimalValue, maximalValue + 1);
+                value = new DefinableValue<long> { Value = LongRandom(minimalValue, maximalValue + 1) };
                 return true;
             }
 
@@ -106,25 +120,26 @@ namespace DataPetriNet.DPNElements
             var intervals = GenerateIntevals(minimalValue, maximalValue, forbiddenValues);
             if (intervals.Count == 0)
             {
-                value = 0;
+                value = new DefinableValue<long>();
                 return false;
             }
             else
             {
                 var intervalNumber = randomGenerator.Next(0, intervals.Count);
-                value = LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end);
+                value = new DefinableValue<long> { Value = LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end) };
                 return true;
             }
         }
 
         private List<T> GetForbiddenNumbers<T>(List<ValueInterval<T>> valuesList, T minimalValue, T maximalValue)
-            where T : IComparable<T>
+            where T : IComparable<T>, IEquatable<T>
         {
             return valuesList
-                .Where(x => x.ForbiddenValue.HasValue
-                && x.ForbiddenValue.Value.CompareTo(minimalValue) >= 0
-                && x.ForbiddenValue.Value.CompareTo(maximalValue) <= 0)
-                .Select(x => x.ForbiddenValue.Value)
+                .Where(x => x.ForbiddenValue.HasValue &&
+                x.ForbiddenValue.Value.IsDefined &&
+                x.ForbiddenValue.Value.Value.CompareTo(minimalValue) >= 0 &&
+                x.ForbiddenValue.Value.Value.CompareTo(maximalValue) <= 0)
+                .Select(x => x.ForbiddenValue.Value.Value)
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
@@ -164,53 +179,67 @@ namespace DataPetriNet.DPNElements
             return Math.Abs(longRand % (max - min)) + min;
         }
 
-        public bool TrySelectValue(string name, out double value)
+        public bool TrySelectValue(string name, out DefinableValue<double> value)
         {
             // If no value interval is assigned, return random value
             // TODO: Examine, if this case is possible
             if (!realVariablesDict.ContainsKey(name))
             {
-                value = randomGenerator.NextDouble() * long.MaxValue;
+                value = new DefinableValue<double>();
+                return true;
+            }
+
+            var inconsistentDefinition = realVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
+                realVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
+            if (inconsistentDefinition)
+            {
+                value = new DefinableValue<double>();
+                return false;
+            }
+            if (realVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
+            {
+                value = new DefinableValue<double>();
                 return true;
             }
 
             var minimalValue = double.MinValue;
             var maximalValue = double.MaxValue;
 
-            var minValues = realVariablesDict[name].Where(x => x.Start.HasValue);
+            var minValues = realVariablesDict[name].Where(x => x.Start.HasValue && x.Start.Value.IsDefined);
             if (minValues.Any())
             {
-                minimalValue = minValues.Max(x => x.Start.Value);
+                minimalValue = minValues.Max(x => x.Start.Value.Value);
             }
 
-            var maxValues = realVariablesDict[name].Where(x => x.End.HasValue);
+            var maxValues = realVariablesDict[name].Where(x => x.End.HasValue && x.Start.Value.IsDefined);
             if (maxValues.Any())
             {
-                maximalValue = maxValues.Min(x => x.End.Value);
+                maximalValue = maxValues.Min(x => x.End.Value.Value);
             }
 
             if (minimalValue > maximalValue)
             {
-                value = 0;
+                value = new DefinableValue<double>();
                 return false;
             }
-            if (!realVariablesDict[name].Any(x => x.ForbiddenValue.HasValue))
+            if (!realVariablesDict[name].Any(x => x.ForbiddenValue.HasValue || x.ForbiddenValue.Value.IsDefined))
             {
-                value = randomGenerator.NextDouble() * (maximalValue - minimalValue) + minimalValue;
+                value = new DefinableValue<double> { Value = randomGenerator.NextDouble() * (maximalValue - minimalValue) + minimalValue };
                 return true;
             }
 
             var forbiddenValues = GetForbiddenNumbers(realVariablesDict[name], minimalValue, maximalValue);
             var intervals = GenerateIntervals(minimalValue, maximalValue, forbiddenValues);
+
             if (intervals.Count == 0)
             {
-                value = 0;
+                value = new DefinableValue<double>();
                 return false;
             }
             else
             {
                 var intervalNumber = randomGenerator.Next(0, intervals.Count);
-                value = DoubleRandom(intervals[intervalNumber].start, intervals[intervalNumber].end);
+                value = new DefinableValue<double> { Value = DoubleRandom(intervals[intervalNumber].start, intervals[intervalNumber].end) };
                 return true;
             }
         }
@@ -245,70 +274,103 @@ namespace DataPetriNet.DPNElements
             return randomGenerator.NextDouble() * (max - min) + min;
         }
 
-        public bool TrySelectValue(string name, out bool value)
+        public bool TrySelectValue(string name, out DefinableValue<bool> value)
         {
             // If no value interval is assigned, return random value
             // TODO: Examine, if this case is possible
             if (!booleanVariablesDict.ContainsKey(name))
             {
-                value = randomGenerator.Next(0, 2) == 0;
+                value = new DefinableValue<bool>();
+                return true;
+            }
+
+            var inconsistentDefinition = booleanVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
+                booleanVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
+            if (inconsistentDefinition)
+            {
+                value = new DefinableValue<bool>();
+                return false;
+            }
+            if (booleanVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
+            {
+                value = new DefinableValue<bool>();
                 return true;
             }
 
             // Bool value can only be equal or unequal - checking that only 1 value has been chosen 
             var boolValue = default(bool);
             if (booleanVariablesDict[name]
-                .Any(x => x.Start.HasValue))
+                .Any(x => x.Start.HasValue && x.Start.Value.IsDefined))
             {
                 boolValue = booleanVariablesDict[name]
-                .Where(x => x.Start.HasValue)
-                .Select(x => x.Start.Value)
+                .Where(x => x.Start.HasValue && x.Start.Value.IsDefined)
+                .Select(x => x.Start.Value.Value)
+                .FirstOrDefault();
+            }
+            else if (booleanVariablesDict[name]
+                .Any(x => x.ForbiddenValue.HasValue && x.Start.Value.IsDefined))
+            {
+                boolValue = !booleanVariablesDict[name]
+                .Where(x => x.ForbiddenValue.HasValue && x.Start.Value.IsDefined)
+                .Select(x => x.ForbiddenValue.Value.Value)
                 .FirstOrDefault();
             }
             else
             {
-                boolValue = !booleanVariablesDict[name]
-                .Where(x => x.ForbiddenValue.HasValue)
-                .Select(x => x.ForbiddenValue.Value)
-                .FirstOrDefault();
+                value = new DefinableValue<bool>();
+                return true;
             }
-            if (ValidateEquality(name, boolValue))
+            if (IsIncorrect(name, boolValue))
             {
-                value = false;
+                value = new DefinableValue<bool>();
                 return false;
             }
 
-            value = boolValue;
+            value = new DefinableValue<bool> { Value = boolValue };
             return true;
         }
 
-        public bool TrySelectValue(string name, out string value)
+        public bool TrySelectValue(string name, out DefinableValue<string> value)
         {
             // If no value interval is assigned, return random value
             // TODO: Examine, if this case is possible
             if (!stringVariablesDict.ContainsKey(name))
             {
-                value = StringRandom();
+                value = new DefinableValue<string>();
                 return true;
             }
+
+            var inconsistentDefinition = stringVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
+                stringVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
+            if (inconsistentDefinition)
+            {
+                value = new DefinableValue<string>();
+                return false;
+            }
+            if (stringVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
+            {
+                value = new DefinableValue<string>();
+                return true;
+            }
+
             if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue))
             {
-                value = GetNotForbiddenString(name);
+                value = new DefinableValue<string> { Value = GetNotForbiddenString(name) };
                 return true;
             }
 
             var firstSelectedStringValue = stringVariablesDict[name]
-            .Where(x => x.Start.HasValue)
-            .Select(x => x.Start.Value)
-            .FirstOrDefault();
+                .Where(x => x.Start.HasValue && x.Start.Value.IsDefined)
+                .Select(x => x.Start.Value.Value)
+                .FirstOrDefault();
 
-            if (ValidateEquality(name, firstSelectedStringValue))
+            if (IsIncorrect(name, firstSelectedStringValue))
             {
-                value = default(string);
+                value = new DefinableValue<string>();
                 return false;
             }
 
-            value = firstSelectedStringValue;
+            value = new DefinableValue<string> { Value = firstSelectedStringValue };
             return true;
         }
 
@@ -319,7 +381,9 @@ namespace DataPetriNet.DPNElements
 
         private string GetNotForbiddenString(string name)
         {
-            var forbiddenStrings = stringVariablesDict[name].Select(x => x.ForbiddenValue.Value);
+            var forbiddenStrings = stringVariablesDict[name]
+                .Where(x=>x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined)
+                .Select(x => x.ForbiddenValue.Value.Value);
             var selectedString = default(string);
             do
             {
@@ -328,19 +392,19 @@ namespace DataPetriNet.DPNElements
             return selectedString;
         }
 
-        private bool ValidateEquality(string name, string stringValue)
+        private bool IsIncorrect(string name, string stringValue)
         {
-            return stringVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value != stringValue)
-                            || stringVariablesDict[name].Any(x => x.End.HasValue && x.End.Value != stringValue)
-                            || stringVariablesDict[name].Any(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value == stringValue);
+            return stringVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined && x.Start.Value.Value != stringValue)
+                            || stringVariablesDict[name].Any(x => x.End.HasValue && x.End.Value.IsDefined && x.End.Value.Value != stringValue)
+                            || stringVariablesDict[name].Any(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined && x.ForbiddenValue.Value.Value == stringValue);
         }
 
 
-        private bool ValidateEquality(string name, bool boolValue)
+        private bool IsIncorrect(string name, bool boolValue)
         {
-            return booleanVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value != boolValue)
-                            || booleanVariablesDict[name].Any(x => x.End.HasValue && x.End.Value != boolValue)
-                            || booleanVariablesDict[name].Any(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value == boolValue);
+            return booleanVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined && x.Start.Value.Value != boolValue)
+                            || booleanVariablesDict[name].Any(x => x.End.HasValue && x.End.Value.IsDefined && x.End.Value.Value != boolValue)
+                            || booleanVariablesDict[name].Any(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined && x.ForbiddenValue.Value.Value == boolValue);
         }
     }
 }

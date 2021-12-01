@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataPetriNet.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,19 +9,19 @@ namespace DataPetriNet
 {
     public class VariablesStore
     {
-        private readonly Dictionary<string, long> integerVariablesDict;
-        private readonly Dictionary<string, double> realVariablesDict;
-        private readonly Dictionary<string, bool> booleanVariablesDict;
-        private readonly Dictionary<string, string> stringVariablesDict;
+        private readonly Dictionary<string, DefinableValue<long>> integerVariablesDict;
+        private readonly Dictionary<string, DefinableValue<double>> realVariablesDict;
+        private readonly Dictionary<string, DefinableValue<bool>> booleanVariablesDict;
+        private readonly Dictionary<string, DefinableValue<string>> stringVariablesDict;
         public VariablesStore()
         {
-            integerVariablesDict = new Dictionary<string, long>();
-            realVariablesDict = new Dictionary<string, double>();
-            booleanVariablesDict = new Dictionary<string, bool>();
-            stringVariablesDict = new Dictionary<string, string>();
+            integerVariablesDict = new Dictionary<string, DefinableValue<long>>();
+            realVariablesDict = new Dictionary<string, DefinableValue<double>>();
+            booleanVariablesDict = new Dictionary<string, DefinableValue<bool>>();
+            stringVariablesDict = new Dictionary<string, DefinableValue<string>>();
         }
 
-        public long ReadInteger(string name)
+        public DefinableValue<long> ReadInteger(string name)
         {
             if (integerVariablesDict.TryGetValue(name, out var value))
             {
@@ -30,12 +31,12 @@ namespace DataPetriNet
             throw new KeyNotFoundException("No such integer variable with name = " + name);
         }
 
-        public void WriteInteger(string name, long value)
+        public void WriteInteger(string name, DefinableValue<long> value)
         {
             integerVariablesDict[name] = value;
         }
 
-        public double ReadReal(string name)
+        public DefinableValue<double> ReadReal(string name)
         {
             if (realVariablesDict.TryGetValue(name, out var value))
             {
@@ -45,12 +46,12 @@ namespace DataPetriNet
             throw new KeyNotFoundException("No such real variable with name = " + name);
         }
 
-        public void WriteReal(string name, double value)
+        public void WriteReal(string name, DefinableValue<double> value)
         {
             realVariablesDict[name] = value;
         }
 
-        public bool ReadBool(string name)
+        public DefinableValue<bool> ReadBool(string name)
         {
             if (booleanVariablesDict.TryGetValue(name, out var value))
             {
@@ -60,12 +61,12 @@ namespace DataPetriNet
             throw new KeyNotFoundException("No such boolean variable with name = " + name);
         }
 
-        public void WriteBool(string name, bool value)
+        public void WriteBool(string name, DefinableValue<bool> value)
         {
             booleanVariablesDict[name] = value;
         }
 
-        public string ReadString(string name)
+        public DefinableValue<string> ReadString(string name)
         {
             if (stringVariablesDict.TryGetValue(name, out var value))
             {
@@ -75,7 +76,7 @@ namespace DataPetriNet
             throw new KeyNotFoundException("No such string variable with name = " + name);
         }
 
-        public void WriteString(string name, string value)
+        public void WriteString(string name, DefinableValue<string> value)
         {
             stringVariablesDict[name] = value;
         }

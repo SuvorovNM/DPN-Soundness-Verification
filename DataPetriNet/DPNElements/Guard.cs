@@ -111,19 +111,19 @@ namespace DataPetriNet.DPNElements
                         switch (variable.Domain)
                         {
                             case DomainType.Boolean:
-                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out bool boolValue);
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out DefinableValue<bool> boolValue);
                                 localVariables.WriteBool(variable.Name, boolValue);
                                 break;
                             case DomainType.String:
-                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out string stringValue);
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out DefinableValue<string> stringValue);
                                 localVariables.WriteString(variable.Name, stringValue);
                                 break;
                             case DomainType.Integer:
-                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out long integerValue);
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out DefinableValue<long> integerValue);
                                 localVariables.WriteInteger(variable.Name, integerValue);
                                 break;
                             case DomainType.Real:
-                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out double realValue);
+                                expressionResult &= variablesSelector.TrySelectValue(variable.Name, out DefinableValue<double> realValue);
                                 localVariables.WriteReal(variable.Name, realValue);
                                 break;
                         }
