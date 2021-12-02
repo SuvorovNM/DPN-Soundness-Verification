@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 namespace DataPetriNet.DPNElements
 {
     public class ConstraintExpression<T> : IConstraintExpression
-        // TODO: consider write-read vars + AND/OR
         where T : IEquatable<T>, IComparable<T>
     {
         public LogicalConnective LogicalConnective { get; set; }
@@ -37,12 +36,12 @@ namespace DataPetriNet.DPNElements
         {
             return Predicate switch
             {
-                BinaryPredicate.Equal => new ValueInterval<T> { Start = new IntervalPoint<DefinableValue<T>>(Constant), End = new IntervalPoint<DefinableValue<T>>(Constant) },
-                BinaryPredicate.Unequal => new ValueInterval<T> { ForbiddenValue = new IntervalPoint<DefinableValue<T>>(Constant) },
-                BinaryPredicate.GreaterThan => new ValueInterval<T> { Start = new IntervalPoint<DefinableValue<T>>(Constant), ForbiddenValue = new IntervalPoint<DefinableValue<T>>(Constant) },
-                BinaryPredicate.GreaterThenOrEqual => new ValueInterval<T> { Start = new IntervalPoint<DefinableValue<T>>(Constant) },
-                BinaryPredicate.LessThan => new ValueInterval<T> { End = new IntervalPoint<DefinableValue<T>>(Constant), ForbiddenValue = new IntervalPoint<DefinableValue<T>>(Constant) },
-                BinaryPredicate.LessThanOrEqual => new ValueInterval<T> { End = new IntervalPoint<DefinableValue<T>>(Constant) },
+                BinaryPredicate.Equal => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant), End = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.Unequal => new ValueInterval<T> { ForbiddenValue = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.GreaterThan => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant), ForbiddenValue = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.GreaterThenOrEqual => new ValueInterval<T> { Start = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.LessThan => new ValueInterval<T> { End = new IntervalPoint<T>(Constant), ForbiddenValue = new IntervalPoint<T>(Constant) },
+                BinaryPredicate.LessThanOrEqual => new ValueInterval<T> { End = new IntervalPoint<T>(Constant) },
 
                 _ => throw new NotImplementedException("Operation is not supported")
             };

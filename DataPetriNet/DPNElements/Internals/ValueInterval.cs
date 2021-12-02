@@ -10,8 +10,8 @@ namespace DataPetriNet.DPNElements.Internals
     public class ValueInterval<T>
         where T : IComparable<T>, IEquatable<T>
     {
-        public IntervalPoint<DefinableValue<T>> Start { get; set; }
-        public IntervalPoint<DefinableValue<T>> End { get; set; }
-        public IntervalPoint<DefinableValue<T>> ForbiddenValue { get; set; }
+        public IntervalPoint<T> Start { get; set; }
+        public IntervalPoint<T> End { get; set; }
+        public IntervalPoint<T> ForbiddenValue { get; set; }
     }
 }
