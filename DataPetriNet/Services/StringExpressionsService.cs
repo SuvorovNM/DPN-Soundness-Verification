@@ -41,15 +41,12 @@ namespace DataPetriNet.Services
 
         public bool SelectValue(string name, VariablesStore values)
         {
-            if (!stringVariablesDict.ContainsKey(name))
-            {
-                throw new InvalidOperationException("Variable with chosen name does not exist in expression!");
-            }
+            DefinableValue<string> selectedValue = default;
 
-            var valueCanBeSelected = TryInferValue(name, out var inferedValue);
+            var valueCanBeSelected = stringVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
             if (valueCanBeSelected)
             {
-                values.WriteString(name, inferedValue);
+                values.WriteString(name, selectedValue);
             }
 
             return valueCanBeSelected;
