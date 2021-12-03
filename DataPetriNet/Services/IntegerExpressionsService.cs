@@ -21,11 +21,6 @@ namespace DataPetriNet.Services
             randomGenerator = new Random();
         }
 
-        public void Clear()
-        {
-            integerVariablesDict.Clear();
-        }
-
         public bool ExecuteExpression(VariablesStore globalVariables, IConstraintExpression expression)
         {
             var integerExpression = expression as ConstraintExpression<long>;
@@ -46,75 +41,91 @@ namespace DataPetriNet.Services
             return true;
         }
 
-
         public bool SelectValue(string name, VariablesStore values)
         {
-            if (!integerVariablesDict.ContainsKey(name))
+            DefinableValue<long> selectedValue = default;
+
+            var valueCanBeSelected = integerVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
+            if (valueCanBeSelected)
             {
-                values.WriteInteger(name, new DefinableValue<long>());
-                return true;
+                values.WriteInteger(name, selectedValue);
             }
 
-            var inconsistentDefinition = integerVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
-                integerVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
-            if (inconsistentDefinition)
-            {
-                return false;
-            }
-            if (integerVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
-            {
-                values.WriteInteger(name, new DefinableValue<long>());
-                return true;
-            }
+            return valueCanBeSelected;
+        }
 
+        private bool TryInferValue(string name, out DefinableValue<long> value)
+        {
             var minimalValue = long.MinValue;
             var maximalValue = long.MaxValue;
 
-            // Consider equality (greater or equal) and multiple conditions like a >= 5 and a > 5
+            // all distinct values of parameter IsDefined:
+            // if 2 simultaneously then no value can be selected
+            // if 1 then borders should be updated if IsDefined = true, or null value can be assigned if it is not forbidden
+            // if 0-1 then calculate intervals and choose randomly a value if any intervals exist
+            var distinctIsDefinedValues = integerVariablesDict[name]
+                .Where(x => x.Start.HasValue)
+                .Select(x => x.Start.Value.IsDefined)
+                .Distinct()
+                .ToList();
+
+            if (distinctIsDefinedValues.Count == 1)
+            {
+                if (distinctIsDefinedValues[0] == false)
+                {
+                    var isNullAllowed = !integerVariablesDict[name]
+                        .Any(x => x.ForbiddenValue.HasValue && !x.ForbiddenValue.Value.IsDefined);
+
+                    value = new DefinableValue<long>();
+                    return isNullAllowed;
+                }
+
+                UpdateBorders(name, ref minimalValue, ref maximalValue);
+            }
+            if (distinctIsDefinedValues.Count <= 1)
+            {
+                var forbiddenValues = GetForbiddenNumbers(integerVariablesDict[name], minimalValue, maximalValue);
+                var intervals = GenerateIntevals(minimalValue, maximalValue, forbiddenValues);
+
+                if (intervals.Count == 0)
+                {
+                    value = new DefinableValue<long>();
+                }
+                else
+                {
+                    var intervalNumber = randomGenerator.Next(0, intervals.Count);
+                    value = new DefinableValue<long> { Value = LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end) };
+                }
+
+                return intervals.Count > 0;
+            }
+
+            value = new DefinableValue<long>();
+            return false;
+        }
+
+        private void UpdateBorders(string name, ref long minimalValue, ref long maximalValue)
+        {
             var minValues = integerVariablesDict[name].Where(x => x.Start.HasValue && x.Start.Value.IsDefined);
             if (minValues.Any())
             {
                 minimalValue = minValues.Max(x => x.Start.Value.Value);
             }
 
-            var maxValues = integerVariablesDict[name].Where(x => x.End.HasValue && x.Start.Value.IsDefined);
+            var maxValues = integerVariablesDict[name].Where(x => x.End.HasValue && x.End.Value.IsDefined);
             if (maxValues.Any())
             {
                 maximalValue = maxValues.Min(x => x.End.Value.Value);
             }
-
-            if (minimalValue > maximalValue)
-            {
-                return false;
-            }
-            if (!integerVariablesDict[name].Any(x => x.ForbiddenValue.HasValue || x.ForbiddenValue.Value.IsDefined))
-            {
-                values.WriteInteger(name, new DefinableValue<long> { Value = LongRandom(minimalValue, maximalValue + 1) });
-                return true;
-            }
-
-            var forbiddenValues = GetForbiddenNumbers(integerVariablesDict[name], minimalValue, maximalValue);
-            var intervals = GenerateIntevals(minimalValue, maximalValue, forbiddenValues);
-            if (intervals.Count == 0)
-            {
-                return false;
-            }
-            else
-            {
-                var intervalNumber = randomGenerator.Next(0, intervals.Count);
-                values.WriteInteger(name, new DefinableValue<long> { Value = LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end) });
-                return true;
-            }
         }
 
-        private List<T> GetForbiddenNumbers<T>(List<ValueInterval<T>> valuesList, T minimalValue, T maximalValue)
-            where T : IComparable<T>, IEquatable<T>
+        private static List<long> GetForbiddenNumbers(List<ValueInterval<long>> valuesList, long minimalValue, long maximalValue)
         {
             return valuesList
                 .Where(x => x.ForbiddenValue.HasValue &&
-                x.ForbiddenValue.Value.IsDefined &&
-                x.ForbiddenValue.Value.Value.CompareTo(minimalValue) >= 0 &&
-                x.ForbiddenValue.Value.Value.CompareTo(maximalValue) <= 0)
+                            x.ForbiddenValue.Value.IsDefined &&
+                            x.ForbiddenValue.Value.Value >= minimalValue &&
+                            x.ForbiddenValue.Value.Value <= maximalValue)
                 .Select(x => x.ForbiddenValue.Value.Value)
                 .Distinct()
                 .OrderBy(x => x)
@@ -124,22 +135,34 @@ namespace DataPetriNet.Services
         private static List<(long start, long end)> GenerateIntevals(long minimalValue, long maximalValue, List<long> forbiddenValues)
         {
             var intervals = new List<(long start, long end)>(forbiddenValues.Count + 1);
-            for (int i = 0; i < forbiddenValues.Count; i++)
+            if (maximalValue < minimalValue)
             {
-                if (i == 0)
+                return intervals;
+            }
+
+            if (!forbiddenValues.Any())
+            {
+                intervals.Add((minimalValue, maximalValue));
+            }
+            else
+            {
+                for (int i = 0; i < forbiddenValues.Count; i++)
                 {
-                    if (minimalValue != forbiddenValues[i])
-                        intervals.Add((minimalValue, forbiddenValues[i] - 1));
-                }
-                else if (i == forbiddenValues.Count)
-                {
-                    if (forbiddenValues[i] != maximalValue)
-                        intervals.Add((forbiddenValues[i] + 1, maximalValue));
-                }
-                else
-                {
-                    if (forbiddenValues[i - 1] + 1 != forbiddenValues[i])
-                        intervals.Add((forbiddenValues[i - 1] + 1, forbiddenValues[i] - 1));
+                    if (i == 0)
+                    {
+                        if (minimalValue != forbiddenValues[i])
+                            intervals.Add((minimalValue, forbiddenValues[i] - 1));
+                    }
+                    else if (i == forbiddenValues.Count)
+                    {
+                        if (forbiddenValues[i] != maximalValue)
+                            intervals.Add((forbiddenValues[i] + 1, maximalValue));
+                    }
+                    else
+                    {
+                        if (forbiddenValues[i - 1] + 1 != forbiddenValues[i])
+                            intervals.Add((forbiddenValues[i - 1] + 1, forbiddenValues[i] - 1));
+                    }
                 }
             }
 
@@ -153,6 +176,11 @@ namespace DataPetriNet.Services
             long longRand = BitConverter.ToInt64(buf, 0);
 
             return Math.Abs(longRand % (max - min)) + min;
+        }
+
+        public void Clear()
+        {
+            integerVariablesDict.Clear();
         }
     }
 }
