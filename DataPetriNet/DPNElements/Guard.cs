@@ -45,14 +45,14 @@ namespace DataPetriNet.DPNElements
                 currentBlock = new List<IConstraintExpression>(constraintStateDuringEvaluation.GetRange(0, delimiter));
                 constraintStateDuringEvaluation.RemoveRange(0, delimiter);
 
-                // Evaluate read expressions
+                // Evaluate all expressions
                 foreach (var expression in currentBlock)
                 {
                     expressionResult &= expressionServices[expression.ConstraintVariable.Domain]
                                 .ExecuteExpression(globalVariables, expression);                    
                 }
 
-                // Evaluate write expressions
+                // Select values for written variables
                 if (expressionResult)
                 {
                     foreach (var variable in currentBlock

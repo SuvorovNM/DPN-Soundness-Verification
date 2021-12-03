@@ -85,7 +85,7 @@ namespace DataPetriNet.Services
             if (distinctIsDefinedValues.Count <= 1)
             {
                 var forbiddenValues = GetForbiddenNumbers(integerVariablesDict[name], minimalValue, maximalValue);
-                var intervals = GenerateIntevals(minimalValue, maximalValue, forbiddenValues);
+                var intervals = GenerateIntervals(minimalValue, maximalValue, forbiddenValues);
 
                 if (intervals.Count == 0)
                 {
@@ -132,7 +132,7 @@ namespace DataPetriNet.Services
                 .ToList();
         }
 
-        private static List<(long start, long end)> GenerateIntevals(long minimalValue, long maximalValue, List<long> forbiddenValues)
+        private static List<(long start, long end)> GenerateIntervals(long minimalValue, long maximalValue, List<long> forbiddenValues)
         {
             var intervals = new List<(long start, long end)>(forbiddenValues.Count + 1);
             if (maximalValue < minimalValue)
