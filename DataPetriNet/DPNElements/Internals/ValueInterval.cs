@@ -7,7 +7,11 @@ using System.Threading.Tasks;
 
 namespace DataPetriNet.DPNElements.Internals
 {
-    public class ValueInterval<T>
+    public interface IValueInteval
+    {
+
+    }
+    public class ValueInterval<T> : IValueInteval
         where T : IComparable<T>, IEquatable<T>
     {
         public IntervalPoint<T> Start { get; set; }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataPetriNet
 {
-    public class VariablesStore
+    public class VariablesStore // TODO: Попробовать переопределить через dictionary как в Guard
     {
         private readonly Dictionary<string, DefinableValue<long>> integerVariablesDict;
         private readonly Dictionary<string, DefinableValue<double>> realVariablesDict;

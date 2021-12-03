@@ -212,5 +212,6 @@ namespace DataPetriNet.Tests
                 canMakeNextStep = dpn.MakeStep();
             } while (canMakeNextStep);
         }
+
     }
 }
