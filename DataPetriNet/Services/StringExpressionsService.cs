@@ -13,12 +13,10 @@ namespace DataPetriNet.Services
     public class StringExpressionsService : IExpressionsService
     {
         private readonly Dictionary<string, List<ValueInterval<string>>> stringVariablesDict;
-        private readonly Random randomGenerator;
 
         public StringExpressionsService()
         {
             stringVariablesDict = new Dictionary<string, List<ValueInterval<string>>>();
-            randomGenerator = new Random();
         }
 
         public bool ExecuteExpression(VariablesStore globalVariables, IConstraintExpression expression)
@@ -45,50 +43,49 @@ namespace DataPetriNet.Services
         {
             if (!stringVariablesDict.ContainsKey(name))
             {
-                values.WriteString(name, new DefinableValue<string>());
-                return true;
+                throw new InvalidOperationException("Variable with chosen name does not exist in expression!");
             }
 
-            var inconsistentDefinition = stringVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined) &&
-                stringVariablesDict[name].Any(x => x.Start.HasValue && !x.Start.Value.IsDefined);
-            if (inconsistentDefinition)
+            var valueCanBeSelected = TryInferValue(name, out var inferedValue);
+            if (valueCanBeSelected)
             {
-                return false;
-            }
-            if (stringVariablesDict[name].All(x => x.Start.HasValue && !x.Start.Value.IsDefined))
-            {
-                values.WriteString(name, new DefinableValue<string>());
-                return true;
+                values.WriteString(name, inferedValue);
             }
 
-            if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined))
-            {
-                values.WriteString(name, new DefinableValue<string> { Value = GetNotForbiddenString(name) });
-                return true;
-            }
-            if (stringVariablesDict[name].All(x => x.ForbiddenValue.HasValue && !x.ForbiddenValue.Value.IsDefined))
-            {
-                values.WriteString(name, new DefinableValue<string> { Value = StringRandom() });
-                return true;
-            }
-
-            var firstSelectedStringValue = stringVariablesDict[name]
-                .Where(x => x.Start.HasValue && x.Start.Value.IsDefined)
-                .Select(x => x.Start.Value.Value)
-                .FirstOrDefault();
-
-            if (IsIncorrect(name, firstSelectedStringValue))
-            {
-                return false;
-            }
-
-            values.WriteString(name, new DefinableValue<string> { Value = firstSelectedStringValue });
-            return true;
+            return valueCanBeSelected;
         }
 
-        private string StringRandom()
+        private bool TryInferValue(string name, out DefinableValue<string> value)
         {
-            return Guid.NewGuid().ToString();
+            // Selected values by "=" sign
+            var chosenEqualValues = stringVariablesDict[name]
+                .Where(x => x.Start.HasValue)
+                .Select(x => x.Start.Value)
+                .Distinct()
+                .ToList();
+
+            if (chosenEqualValues.Count == 1)
+            {
+                // Values selected by "!=" sign must not intersect selected by "=" sign
+                var noForbiddenEqualToChosenEqualValue = !stringVariablesDict[name]
+                    .Where(x => x.ForbiddenValue.HasValue)
+                    .Any(x => x.ForbiddenValue.Value == chosenEqualValues[0]);
+
+                value = noForbiddenEqualToChosenEqualValue
+                    ? chosenEqualValues[0]
+                    : new DefinableValue<string>();
+
+                return noForbiddenEqualToChosenEqualValue;
+            }
+            if (chosenEqualValues.Count == 0)
+            {
+                // Suppose that unforbidden string exists
+                value = new DefinableValue<string> { Value = GetNotForbiddenString(name) };
+                return true;
+            }
+
+            value = new DefinableValue<string>();
+            return false;
         }
 
         private string GetNotForbiddenString(string name)
@@ -99,16 +96,9 @@ namespace DataPetriNet.Services
             var selectedString = default(string);
             do
             {
-                selectedString = StringRandom();
+                selectedString = Guid.NewGuid().ToString();
             } while (forbiddenStrings.Contains(selectedString));
             return selectedString;
-        }
-
-        private bool IsIncorrect(string name, string stringValue)
-        {
-            return stringVariablesDict[name].Any(x => x.Start.HasValue && x.Start.Value.IsDefined && x.Start.Value.Value != stringValue)
-                            || stringVariablesDict[name].Any(x => x.End.HasValue && x.End.Value.IsDefined && x.End.Value.Value != stringValue)
-                            || stringVariablesDict[name].Any(x => x.ForbiddenValue.HasValue && x.ForbiddenValue.Value.IsDefined && x.ForbiddenValue.Value.Value == stringValue);
         }
 
         public void Clear()
