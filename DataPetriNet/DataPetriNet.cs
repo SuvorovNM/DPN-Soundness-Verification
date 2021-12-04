@@ -7,17 +7,14 @@ namespace DataPetriNet
     {
         public List<Place> Places { get; set; }
         public List<Transition> Transitions { get; set; }
-        public Dictionary<Transition, List<Place>> PreSetDictionary { get; set; } // TODO: Maybe put in Transitions?
-        public Dictionary<Transition, List<Place>> PostSetDictionary { get; set; }
-
         public VariablesStore Variables { get; set; }
 
         public bool MakeStep()
         {
             var canMakeStep = false;
-            foreach (var transition in PreSetDictionary.Keys)
+            foreach (var transition in Transitions)
             {
-                canMakeStep = transition.TryFire(Variables, PreSetDictionary[transition], PostSetDictionary[transition]);
+                canMakeStep = transition.TryFire(Variables);
                 if (canMakeStep)
                 {
                     return canMakeStep;

@@ -91,7 +91,9 @@ namespace DataPetriNet.Tests
                                 }
                             }
                         }
-                    }
+                    },
+                    PreSetPlaces = new List<Place>{placesList[0]},
+                    PostSetPlaces = new List<Place>{placesList[1]}
                 },
                 new Transition
                 {
@@ -113,7 +115,9 @@ namespace DataPetriNet.Tests
                                 }
                             }
                         }
-                    }
+                    },
+                    PreSetPlaces = new List<Place>{placesList[1]},
+                    PostSetPlaces = new List<Place>{placesList[2]}
                 },
                 new Transition
                 {
@@ -135,7 +139,9 @@ namespace DataPetriNet.Tests
                                 }
                             }
                         }
-                    }
+                    },
+                    PreSetPlaces = new List<Place>{placesList[2]},
+                    PostSetPlaces = new List<Place>{placesList[3]}
                 },
                 new Transition
                 {
@@ -181,7 +187,9 @@ namespace DataPetriNet.Tests
                                 }
                             }
                         }
-                    }
+                    },
+                    PreSetPlaces = new List<Place>{placesList[2]},
+                    PostSetPlaces = new List<Place>{placesList[3]}
                 }
             };
 
@@ -189,21 +197,7 @@ namespace DataPetriNet.Tests
             {
                 Places = placesList,
                 Transitions = transitionList,
-                Variables = variables,
-                PreSetDictionary = new Dictionary<Transition, List<Place>>
-                {
-                    [transitionList[0]] = new List<Place> { placesList[0] },
-                    [transitionList[1]] = new List<Place> { placesList[1] },
-                    [transitionList[2]] = new List<Place> { placesList[2] },
-                    [transitionList[3]] = new List<Place> { placesList[2] }
-                },
-                PostSetDictionary = new Dictionary<Transition, List<Place>>
-                {
-                    [transitionList[0]] = new List<Place> { placesList[1] },
-                    [transitionList[1]] = new List<Place> { placesList[2] },
-                    [transitionList[2]] = new List<Place> { placesList[3] },
-                    [transitionList[3]] = new List<Place> { placesList[3] }
-                }
+                Variables = variables
             };
 
             bool canMakeNextStep;
