@@ -17,7 +17,7 @@ namespace DataPetriNet.DPNElements
         {
             ConstraintExpressions = new List<IConstraintExpression>();
             localVariables = new VariablesStore();
-
+            
             expressionServices = new Dictionary<DomainType, IExpressionsService>
             {
                 [DomainType.Boolean] = new BoolExpressionsService(),
@@ -39,6 +39,8 @@ namespace DataPetriNet.DPNElements
                 // Block of ANDs which is currently evaluated
                 List<IConstraintExpression> currentBlock;
                 var delimiter = GetDelimiter(constraintStateDuringEvaluation);
+
+                // TODO: If need randomness we can get first GetDelimiter randomly and the second one will be the nearest OR/EoL 
 
                 currentBlock = new List<IConstraintExpression>(constraintStateDuringEvaluation.GetRange(0, delimiter));
                 constraintStateDuringEvaluation.RemoveRange(0, delimiter);

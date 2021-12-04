@@ -1,4 +1,5 @@
-﻿using DataPetriNet.DPNElements;
+﻿using DataPetriNet.ConstraintGraph;
+using DataPetriNet.DPNElements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,14 @@ namespace DataPetriNet
             }
 
             return canMakeStep;
+        }
+
+        public ConstraintState GenerateConstraintState()
+        {
+            var state = new ConstraintState();
+            Places.ForEach(x => state.PlaceTokens.Add(x, 0));
+
+            return state;
         }
     }
 }
