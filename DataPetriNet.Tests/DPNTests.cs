@@ -54,8 +54,8 @@ namespace DataPetriNet.Tests
             };
 
             var variables = new VariablesStore();
-            variables.WriteInteger("amount", new DefinableValue<long> { Value = 0 });
-            variables.WriteBool("ok", new DefinableValue<bool> { Value = false });
+            variables[DomainType.Integer].Write("amount", new DefinableValue<long>(0));
+            variables[DomainType.Boolean].Write("ok", new DefinableValue<bool>(false));
 
             var transitionList = new List<Transition>
             {
@@ -68,7 +68,7 @@ namespace DataPetriNet.Tests
                         {
                             new ConstraintExpression<long>
                             {
-                                Constant = new DefinableValue<long> { Value = 0 },
+                                Constant = new DefinableValue<long>(0),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThenOrEqual,
                                 ConstraintVariable = new ConstraintVariable
@@ -80,7 +80,7 @@ namespace DataPetriNet.Tests
                             },
                             new ConstraintExpression<long>
                             {
-                                Constant = new DefinableValue<long> { Value =5000 },
+                                Constant = new DefinableValue<long>(5000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.LessThan,
                                 ConstraintVariable = new ConstraintVariable
@@ -124,7 +124,7 @@ namespace DataPetriNet.Tests
                         {
                             new ConstraintExpression<bool>
                             {
-                                Constant = new DefinableValue<bool> { Value = false },
+                                Constant = new DefinableValue<bool>(false),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal,
                                 ConstraintVariable = new ConstraintVariable
@@ -146,7 +146,7 @@ namespace DataPetriNet.Tests
                         {
                             new ConstraintExpression<bool>
                             {
-                                Constant = new DefinableValue<bool> { Value = true },
+                                Constant = new DefinableValue<bool>(true),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal,
                                 ConstraintVariable = new ConstraintVariable
@@ -158,7 +158,7 @@ namespace DataPetriNet.Tests
                             },
                             new ConstraintExpression<bool>
                             {
-                                Constant = new DefinableValue<bool> { Value = true },
+                                Constant = new DefinableValue<bool>(true),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.Equal,
                                 ConstraintVariable = new ConstraintVariable
@@ -170,7 +170,7 @@ namespace DataPetriNet.Tests
                             },
                             new ConstraintExpression<long>
                             {
-                                Constant = new DefinableValue<long> { Value =5000 },
+                                Constant = new DefinableValue<long>(5000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.LessThan,
                                 ConstraintVariable = new ConstraintVariable

@@ -2,13 +2,14 @@
 using DataPetriNet.DPNElements;
 using DataPetriNet.DPNElements.Internals;
 using DataPetriNet.Enums;
+using DataPetriNet.Services.SourceServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNet.Services
+namespace DataPetriNet.Services.ExpressionServices
 {
     class IntegerExpressionsService : IExpressionsService
     {
@@ -21,12 +22,12 @@ namespace DataPetriNet.Services
             randomGenerator = new Random();
         }
 
-        public bool ExecuteExpression(VariablesStore globalVariables, IConstraintExpression expression)
+        public bool ExecuteExpression(ISourceService globalVariables, IConstraintExpression expression)
         {
             var integerExpression = expression as ConstraintExpression<long>;
             if (integerExpression.ConstraintVariable.VariableType == VariableType.Read)
             {
-                return integerExpression.Evaluate(globalVariables.ReadInteger(integerExpression.ConstraintVariable.Name));
+                return integerExpression.Evaluate(globalVariables.Read(integerExpression.ConstraintVariable.Name) as DefinableValue<long>);
             }
             else
             {
@@ -41,14 +42,14 @@ namespace DataPetriNet.Services
             return true;
         }
 
-        public bool SelectValue(string name, VariablesStore values)
+        public bool SelectValue(string name, ISourceService values)
         {
             DefinableValue<long> selectedValue = default;
 
             var valueCanBeSelected = integerVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
             if (valueCanBeSelected)
             {
-                values.WriteInteger(name, selectedValue);
+                values.Write(name, selectedValue);
             }
 
             return valueCanBeSelected;
@@ -94,7 +95,7 @@ namespace DataPetriNet.Services
                 else
                 {
                     var intervalNumber = randomGenerator.Next(0, intervals.Count);
-                    value = new DefinableValue<long> { Value = LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end) };
+                    value = new DefinableValue<long>(LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end));
                 }
 
                 return intervals.Count > 0;

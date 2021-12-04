@@ -6,9 +6,22 @@ using System.Threading.Tasks;
 
 namespace DataPetriNet.Abstractions
 {
-    public struct DefinableValue<T>
+    public interface IDefinableValue
+    {
+        bool IsDefined { get; }
+    }
+    public class DefinableValue<T> : IDefinableValue
         where T : IEquatable<T>, IComparable<T>
     {
+        public DefinableValue()
+        {
+
+        }
+        public DefinableValue(T value)
+        {
+            Value = value;
+        }
+
         public T Value
         {
             get

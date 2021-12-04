@@ -2,13 +2,14 @@
 using DataPetriNet.DPNElements;
 using DataPetriNet.DPNElements.Internals;
 using DataPetriNet.Enums;
+using DataPetriNet.Services.SourceServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNet.Services
+namespace DataPetriNet.Services.ExpressionServices
 {
     public class StringExpressionsService : IExpressionsService
     {
@@ -19,12 +20,12 @@ namespace DataPetriNet.Services
             stringVariablesDict = new Dictionary<string, List<ValueInterval<string>>>();
         }
 
-        public bool ExecuteExpression(VariablesStore globalVariables, IConstraintExpression expression)
+        public bool ExecuteExpression(ISourceService globalVariables, IConstraintExpression expression)
         {
             var stringExpression = expression as ConstraintExpression<string>;
             if (stringExpression.ConstraintVariable.VariableType == VariableType.Read)
             {
-                return stringExpression.Evaluate(globalVariables.ReadString(stringExpression.ConstraintVariable.Name));
+                return stringExpression.Evaluate(globalVariables.Read(stringExpression.ConstraintVariable.Name) as DefinableValue<string>);
             }
             else
             {
@@ -39,14 +40,14 @@ namespace DataPetriNet.Services
             return true;
         }
 
-        public bool SelectValue(string name, VariablesStore values)
+        public bool SelectValue(string name, ISourceService values)
         {
             DefinableValue<string> selectedValue = default;
 
             var valueCanBeSelected = stringVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
             if (valueCanBeSelected)
             {
-                values.WriteString(name, selectedValue);
+                values.Write(name, selectedValue);
             }
 
             return valueCanBeSelected;
@@ -77,7 +78,7 @@ namespace DataPetriNet.Services
             if (chosenEqualValues.Count == 0)
             {
                 // Suppose that unforbidden string exists
-                value = new DefinableValue<string> { Value = GetNotForbiddenString(name) };
+                value = new DefinableValue<string>(GetNotForbiddenString(name));
                 return true;
             }
 

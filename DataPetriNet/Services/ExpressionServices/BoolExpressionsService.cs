@@ -2,13 +2,14 @@
 using DataPetriNet.DPNElements;
 using DataPetriNet.DPNElements.Internals;
 using DataPetriNet.Enums;
+using DataPetriNet.Services.SourceServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNet.Services
+namespace DataPetriNet.Services.ExpressionServices
 {
     public class BoolExpressionsService : IExpressionsService
     {
@@ -22,12 +23,12 @@ namespace DataPetriNet.Services
             randomGenerator = new Random();
         }
 
-        public bool ExecuteExpression(VariablesStore globalVariables, IConstraintExpression expression)
+        public bool ExecuteExpression(ISourceService globalVariables, IConstraintExpression expression)
         {
             var booleanExpression = expression as ConstraintExpression<bool>;
             if (booleanExpression.ConstraintVariable.VariableType == VariableType.Read)
             {
-                return booleanExpression.Evaluate(globalVariables.ReadBool(booleanExpression.ConstraintVariable.Name));
+                return booleanExpression.Evaluate(globalVariables.Read(booleanExpression.ConstraintVariable.Name) as DefinableValue<bool>);
             }
             else
             {
@@ -42,14 +43,14 @@ namespace DataPetriNet.Services
             return true;
         }
 
-        public bool SelectValue(string name, VariablesStore values)
+        public bool SelectValue(string name, ISourceService values)
         {
             DefinableValue<bool> selectedValue = default;
 
             var valueCanBeSelected = booleanVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
             if (valueCanBeSelected)
             {
-                values.WriteBool(name, selectedValue);
+                values.Write(name, selectedValue);
             }
 
             return valueCanBeSelected;
@@ -96,8 +97,8 @@ namespace DataPetriNet.Services
 
                     // At current stage do not generate nulls
                     value = valueExistInForbiddenList
-                        ? new DefinableValue<bool> { Value = !chosenUnequalValues.First(x => x.IsDefined).Value }
-                        : new DefinableValue<bool> { Value = randomGenerator.Next(0, 2) == 0 };
+                        ? new DefinableValue<bool>(!chosenUnequalValues.First(x => x.IsDefined).Value)
+                        : new DefinableValue<bool>(randomGenerator.Next(0, 2) == 0);
                 }
                 else
                 {

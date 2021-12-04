@@ -1,6 +1,7 @@
 ﻿using DataPetriNet.Abstractions;
 using DataPetriNet.Enums;
 using DataPetriNet.Services;
+using DataPetriNet.Services.ExpressionServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace DataPetriNet.DPNElements
                 foreach (var expression in currentBlock)
                 {
                     expressionResult &= expressionServices[expression.ConstraintVariable.Domain]
-                                .ExecuteExpression(globalVariables, expression);                    
+                                .ExecuteExpression(globalVariables[expression.ConstraintVariable.Domain], expression);                    
                 }
 
                 // Select values for written variables
@@ -61,7 +62,7 @@ namespace DataPetriNet.DPNElements
                         .Distinct())
                     {
                         expressionResult &= expressionServices[variable.Domain]
-                                .SelectValue(variable.Name, localVariables);
+                                .SelectValue(variable.Name, localVariables[variable.Domain]);
                     }
                 }
 
@@ -95,21 +96,7 @@ namespace DataPetriNet.DPNElements
 
                 foreach (var variable in variablesToUpdate)
                 {
-                    switch (variable.Domain)
-                    {
-                        case DomainType.Boolean:
-                            globalVariables.WriteBool(variable.Name, localVariables.ReadBool(variable.Name));
-                            break;
-                        case DomainType.String:
-                            globalVariables.WriteString(variable.Name, localVariables.ReadString(variable.Name));
-                            break;
-                        case DomainType.Integer:
-                            globalVariables.WriteInteger(variable.Name, localVariables.ReadInteger(variable.Name));
-                            break;
-                        case DomainType.Real:
-                            globalVariables.WriteReal(variable.Name, localVariables.ReadReal(variable.Name));
-                            break;
-                    }
+                    globalVariables[variable.Domain].Write(variable.Name, localVariables[variable.Domain].Read(variable.Name));
                 }
 
                 ResetState();
