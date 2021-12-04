@@ -1,12 +1,9 @@
 ﻿using DataPetriNet.Abstractions;
 using DataPetriNet.Enums;
-using DataPetriNet.Services;
 using DataPetriNet.Services.ExpressionServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNet.DPNElements
 {
@@ -14,8 +11,8 @@ namespace DataPetriNet.DPNElements
     {
         public List<IConstraintExpression> ConstraintExpressions { get; set; }
         public bool IsSatisfied { get; private set; }
-        private VariablesStore localVariables;
-        private Dictionary<DomainType, IExpressionsService> expressionServices;
+        private readonly VariablesStore localVariables;
+        private readonly Dictionary<DomainType, IExpressionsService> expressionServices;
         public Guard()
         {
             ConstraintExpressions = new List<IConstraintExpression>();
@@ -50,7 +47,7 @@ namespace DataPetriNet.DPNElements
                 foreach (var expression in currentBlock)
                 {
                     expressionResult &= expressionServices[expression.ConstraintVariable.Domain]
-                                .ExecuteExpression(globalVariables[expression.ConstraintVariable.Domain], expression);                    
+                                .ExecuteExpression(globalVariables[expression.ConstraintVariable.Domain], expression);
                 }
 
                 // Select values for written variables
