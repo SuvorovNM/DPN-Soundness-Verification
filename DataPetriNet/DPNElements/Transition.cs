@@ -23,7 +23,7 @@ namespace DataPetriNet.DPNElements
         }
         private void Fire(VariablesStore variables, List<Place> preSet, List<Place> postSet)
         {
-            Guard.UpdateVariables(variables);
+            Guard.UpdateGlobalVariables(variables);
             preSet.ForEach(x => x.Tokens--);
             postSet.ForEach(x => x.Tokens++);
         }

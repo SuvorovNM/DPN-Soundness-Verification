@@ -85,7 +85,7 @@ namespace DataPetriNet.DPNElements
             return delimiter;
         }
 
-        public void UpdateVariables(VariablesStore globalVariables)
+        public void UpdateGlobalVariables(VariablesStore globalVariables)
         {
             if (IsSatisfied)
             {

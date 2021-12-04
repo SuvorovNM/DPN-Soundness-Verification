@@ -28,7 +28,7 @@ namespace DataPetriNet.Services.SourceServices
                 return value;
             }
 
-            throw new KeyNotFoundException("No such boolean variable with name = " + name);
+            throw new KeyNotFoundException("No such real variable with name = " + name);
         }
 
 
