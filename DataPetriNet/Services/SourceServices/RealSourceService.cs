@@ -17,6 +17,11 @@ namespace DataPetriNet.Services.SourceServices
             realVariablesDict.Clear();
         }
 
+        public IEnumerable<string> GetKeys()
+        {
+            return realVariablesDict.Keys;
+        }
+
         public IDefinableValue Read(string name)
         {
             if (realVariablesDict.TryGetValue(name, out var value))

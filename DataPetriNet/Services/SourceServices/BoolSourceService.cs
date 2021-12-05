@@ -16,6 +16,11 @@ namespace DataPetriNet.Services.SourceServices
             booleanVariablesDict.Clear();
         }
 
+        public IEnumerable<string> GetKeys()
+        {
+            return booleanVariablesDict.Keys;
+        }
+
         public IDefinableValue Read(string name)
         {
             if (booleanVariablesDict.TryGetValue(name, out var value))

@@ -18,41 +18,31 @@ namespace DataPetriNet.Services.ExpressionServices
             stringVariablesDict = new Dictionary<string, List<ValueInterval<string>>>();
         }
 
-        public bool ExecuteExpression(ISourceService globalVariables, IConstraintExpression expression)
+        public bool EvaluateExpression(ISourceService globalVariables, IConstraintExpression expression)
         {
             var stringExpression = expression as ConstraintExpression<string>;
-            if (stringExpression.ConstraintVariable.VariableType == VariableType.Read)
-            {
-                return stringExpression.Evaluate(globalVariables.Read(stringExpression.ConstraintVariable.Name) as DefinableValue<string>);
-            }
-            else
-            {
-                if (!stringVariablesDict.ContainsKey(stringExpression.ConstraintVariable.Name))
-                {
-                    stringVariablesDict[stringExpression.ConstraintVariable.Name] = new List<ValueInterval<string>>();
-                }
-
-                stringVariablesDict[stringExpression.ConstraintVariable.Name].Add(stringExpression.GetValueInterval());
-            }
-
-            return true;
+            return stringExpression.Evaluate(globalVariables.Read(stringExpression.ConstraintVariable.Name) as DefinableValue<string>);
         }
 
-        public bool SelectValue(string name, ISourceService values)
+        public void AddValueInterval(IConstraintExpression expression)
         {
-            DefinableValue<string> selectedValue = default;
-
-            var valueCanBeSelected = stringVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
-            if (valueCanBeSelected)
+            var stringExpression = expression as ConstraintExpression<string>;
+            if (!stringVariablesDict.ContainsKey(stringExpression.ConstraintVariable.Name))
             {
-                values.Write(name, selectedValue);
+                stringVariablesDict[stringExpression.ConstraintVariable.Name] = new List<ValueInterval<string>>();
             }
 
-            return valueCanBeSelected;
+            stringVariablesDict[stringExpression.ConstraintVariable.Name].Add(stringExpression.GetValueInterval());
         }
 
-        private bool TryInferValue(string name, out DefinableValue<string> value)
+        public bool TryInferValue(string name, out IDefinableValue value)
         {
+            if (!stringVariablesDict.ContainsKey(name))
+            {
+                value = default;
+                return false;
+            }
+
             // Selected values by "=" sign
             var chosenEqualValues = stringVariablesDict[name]
                 .Where(x => x.Start.HasValue)
@@ -81,6 +71,53 @@ namespace DataPetriNet.Services.ExpressionServices
             }
 
             value = new DefinableValue<string>();
+            return false;
+        }
+
+        public bool GenerateExpressionsBasedOnIntervals(string name, out List<IConstraintExpression> constraintExpressions)
+        {
+            if (!stringVariablesDict.ContainsKey(name))
+            {
+                throw new ArgumentOutOfRangeException(nameof(name));
+            }
+
+            constraintExpressions = new List<IConstraintExpression>();
+
+            // Selected values by "=" sign
+            var chosenEqualValues = stringVariablesDict[name]
+                .Where(x => x.Start.HasValue)
+                .Select(x => x.Start.Value)
+                .Distinct()
+                .ToList();
+
+            if (chosenEqualValues.Count == 1)
+            {
+                // Values selected by "!=" sign must not intersect selected by "=" sign
+                var noForbiddenEqualToChosenEqualValue = !stringVariablesDict[name]
+                    .Where(x => x.ForbiddenValue.HasValue)
+                    .Any(x => x.ForbiddenValue.Value == chosenEqualValues[0]);
+
+                if (noForbiddenEqualToChosenEqualValue)
+                {
+                    constraintExpressions.Add(ConstraintExpression<string>.GenerateEqualExpression(name, DomainType.String, chosenEqualValues[0]));
+                }
+
+                return noForbiddenEqualToChosenEqualValue;
+            }
+            if (chosenEqualValues.Count == 0)
+            {
+                var forbiddenStrings = stringVariablesDict[name]
+                    .Where(x => x.ForbiddenValue.HasValue)
+                    .Select(x => x.ForbiddenValue.Value);
+
+                foreach (var forbiddenString in forbiddenStrings.OrderBy(x=>x.IsDefined).ThenBy(x=>x.Value))
+                {
+                    constraintExpressions.Add(ConstraintExpression<string>.GenerateUnequalExpression(name, DomainType.String, forbiddenString));
+                }
+
+                return true;
+            }
+
             return false;
         }
 

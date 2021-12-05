@@ -1,5 +1,7 @@
-﻿using DataPetriNet.ConstraintGraph;
+﻿using DataPetriNet.Abstractions;
 using DataPetriNet.DPNElements;
+using DataPetriNet.Enums;
+using DataPetriNet.SoundnessVerification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,12 +37,40 @@ namespace DataPetriNet
             return canMakeStep;
         }
 
-        public ConstraintState GenerateConstraintState()
+        public ConstraintState GenerateInitialConstraintState()
         {
             var state = new ConstraintState();
-            Places.ForEach(x => state.PlaceTokens.Add(x, 0));
+            Places.ForEach(x => state.PlaceTokens.Add(x, x.Tokens));
+
+            AddTypedExpressions<string>(state.Constraints, DomainType.String);
+            AddTypedExpressions<bool>(state.Constraints, DomainType.Boolean);
+            AddTypedExpressions<long>(state.Constraints, DomainType.Integer);
+            AddTypedExpressions<double>(state.Constraints, DomainType.Real);
+            state.Constraints[0].LogicalConnective = LogicalConnective.Empty;
 
             return state;
+        }
+
+        private void AddTypedExpressions<T>(List<IConstraintExpression> constraintExpressions, DomainType domain)
+            where T : IEquatable<T>, IComparable<T>
+        {
+            var stringKeys = Variables[domain].GetKeys();
+            foreach (var stringKey in stringKeys)
+            {
+                var variable = Variables[domain].Read(stringKey) as DefinableValue<T>;
+                constraintExpressions.Add(new ConstraintExpression<T>
+                {
+                    Constant = variable,
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Domain = DomainType.String,
+                        Name = stringKey,
+                        VariableType = VariableType.Read // Define if Read / Write
+                    },
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Equal
+                });
+            }
         }
     }
 }

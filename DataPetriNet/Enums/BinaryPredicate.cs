@@ -6,9 +6,9 @@
         Unequal = -1,
 
         GreaterThan = 2,
-        LessThan = -2,
+        LessThanOrEqual = -2,
 
-        GreaterThenOrEqual = 3,
-        LessThanOrEqual = -3
+        GreaterThanOrEqual = 3,
+        LessThan = -3
     }
 }

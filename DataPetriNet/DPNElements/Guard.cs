@@ -9,31 +9,26 @@ namespace DataPetriNet.DPNElements
 {
     public class Guard
     {
-        public List<IConstraintExpression> ConstraintExpressions { get; set; }
-        public bool IsSatisfied { get; private set; }
         private readonly VariablesStore localVariables;
-        private readonly Dictionary<DomainType, IExpressionsService> expressionServices;
+        private readonly ExpressionsServiceStore expressionServices;
+
+        public bool IsSatisfied { get; private set; }
+        public List<IConstraintExpression> ConstraintExpressions { get; set; }
         public Guard()
         {
             ConstraintExpressions = new List<IConstraintExpression>();
             localVariables = new VariablesStore();
-            
-            expressionServices = new Dictionary<DomainType, IExpressionsService>
-            {
-                [DomainType.Boolean] = new BoolExpressionsService(),
-                [DomainType.Integer] = new IntegerExpressionsService(),
-                [DomainType.Real] = new RealExpressionsService(),
-                [DomainType.String] = new StringExpressionsService()
-            };
+            expressionServices = new ExpressionsServiceStore();
         }
 
         public bool Verify(VariablesStore globalVariables)
         {
             var constraintStateDuringEvaluation = new List<IConstraintExpression>(ConstraintExpressions);
-            var expressionResult = true; // Check correctness of true assign
+            bool expressionResult;
 
             do
             {
+                expressionResult = true;
                 localVariables.Clear();
 
                 // Block of ANDs which is currently evaluated
@@ -46,10 +41,14 @@ namespace DataPetriNet.DPNElements
                 constraintStateDuringEvaluation.RemoveRange(0, delimiter);
 
                 // Evaluate all expressions
-                foreach (var expression in currentBlock)
+                foreach (var expression in currentBlock.Where(x=>x.ConstraintVariable.VariableType == VariableType.Read))
                 {
                     expressionResult &= expressionServices[expression.ConstraintVariable.Domain]
-                                .ExecuteExpression(globalVariables[expression.ConstraintVariable.Domain], expression);
+                                .EvaluateExpression(globalVariables[expression.ConstraintVariable.Domain], expression);
+                }
+                foreach (var expression in currentBlock.Where(x => x.ConstraintVariable.VariableType == VariableType.Written))
+                {
+                    expressionServices[expression.ConstraintVariable.Domain].AddValueInterval(expression);
                 }
 
                 // Select values for written variables
@@ -60,8 +59,11 @@ namespace DataPetriNet.DPNElements
                         .Select(x => x.ConstraintVariable)
                         .Distinct())
                     {
-                        expressionResult &= expressionServices[variable.Domain]
-                                .SelectValue(variable.Name, localVariables[variable.Domain]);
+                        expressionResult &= expressionServices[variable.Domain].TryInferValue(variable.Name, out var value);
+                        if (expressionResult)
+                        {
+                            localVariables[variable.Domain].Write(variable.Name, value);
+                        }
                     }
                 }
 
@@ -71,7 +73,7 @@ namespace DataPetriNet.DPNElements
             return expressionResult;
         }
 
-        private static int GetDelimiter(List<IConstraintExpression> constraintStateDuringEvaluation)
+        public static int GetDelimiter(List<IConstraintExpression> constraintStateDuringEvaluation)
         {
             // Find delimiter - OR expression
             var orExpressionIndex = constraintStateDuringEvaluation
@@ -110,6 +112,7 @@ namespace DataPetriNet.DPNElements
         {
             IsSatisfied = false;
             localVariables.Clear();
+            expressionServices.Clear();
         }
     }
 }

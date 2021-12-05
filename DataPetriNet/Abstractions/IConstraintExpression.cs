@@ -8,5 +8,7 @@ namespace DataPetriNet.Abstractions
         LogicalConnective LogicalConnective { get; set; }
         BinaryPredicate Predicate { get; set; }
         ConstraintVariable ConstraintVariable { get; set; }
+
+        IConstraintExpression GetInvertedExpression();
     }
 }

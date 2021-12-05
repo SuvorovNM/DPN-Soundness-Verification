@@ -20,41 +20,31 @@ namespace DataPetriNet.Services.ExpressionServices
             randomGenerator = new Random();
         }
 
-        public bool ExecuteExpression(ISourceService globalVariables, IConstraintExpression expression)
+        public bool EvaluateExpression(ISourceService globalVariables, IConstraintExpression expression)
         {
             var realExpression = expression as ConstraintExpression<double>;
-            if (realExpression.ConstraintVariable.VariableType == VariableType.Read)
-            {
-                return realExpression.Evaluate(globalVariables.Read(realExpression.ConstraintVariable.Name) as DefinableValue<double>);
-            }
-            else
-            {
-                if (!realVariablesDict.ContainsKey(realExpression.ConstraintVariable.Name))
-                {
-                    realVariablesDict[realExpression.ConstraintVariable.Name] = new List<ValueInterval<double>>();
-                }
-
-                realVariablesDict[realExpression.ConstraintVariable.Name].Add(realExpression.GetValueInterval());
-            }
-
-            return true;
+            return realExpression.Evaluate(globalVariables.Read(realExpression.ConstraintVariable.Name) as DefinableValue<double>);
         }
 
-        public bool SelectValue(string name, ISourceService values)
+        public void AddValueInterval(IConstraintExpression expression)
         {
-            DefinableValue<double> selectedValue = default;
-
-            var valueCanBeSelected = realVariablesDict.ContainsKey(name) && TryInferValue(name, out selectedValue);
-            if (valueCanBeSelected)
+            var realExpression = expression as ConstraintExpression<double>;
+            if (!realVariablesDict.ContainsKey(realExpression.ConstraintVariable.Name))
             {
-                values.Write(name, selectedValue);
+                realVariablesDict[realExpression.ConstraintVariable.Name] = new List<ValueInterval<double>>();
             }
 
-            return valueCanBeSelected;
+            realVariablesDict[realExpression.ConstraintVariable.Name].Add(realExpression.GetValueInterval());
         }
 
-        private bool TryInferValue(string name, out DefinableValue<double> value)
+        public bool TryInferValue(string name, out IDefinableValue value)
         {
+            if (!realVariablesDict.ContainsKey(name))
+            {
+                value = default;
+                return false;
+            }
+
             var minimalValue = double.MinValue;
             var maximalValue = double.MaxValue;
 
@@ -100,6 +90,77 @@ namespace DataPetriNet.Services.ExpressionServices
             }
 
             value = new DefinableValue<double>();
+            return false;
+        }
+
+        public bool GenerateExpressionsBasedOnIntervals(string name, out List<IConstraintExpression> constraintExpressions)
+        {
+            if (!realVariablesDict.ContainsKey(name))
+            {
+                throw new ArgumentOutOfRangeException(nameof(name));
+            }
+
+            constraintExpressions = new List<IConstraintExpression>();
+            var minimalValue = double.MinValue;
+            var maximalValue = double.MaxValue;
+
+            var distinctIsDefinedValues = realVariablesDict[name]
+                .Where(x => x.Start.HasValue)
+                .Select(x => x.Start.Value.IsDefined)
+                .Distinct()
+                .ToList();
+
+            if (distinctIsDefinedValues.Count == 1)
+            {
+                if (distinctIsDefinedValues[0] == false)
+                {
+                    var isNullAllowed = !realVariablesDict[name]
+                        .Any(x => x.ForbiddenValue.HasValue && !x.ForbiddenValue.Value.IsDefined);
+
+                    // Format a == b
+                    if (isNullAllowed)
+                        constraintExpressions.Add(ConstraintExpression<double>.GenerateEqualExpression(name, DomainType.Real, new DefinableValue<double>()));
+                    return isNullAllowed;
+                }
+
+                UpdateBorders(name, ref minimalValue, ref maximalValue);
+            }
+            if (distinctIsDefinedValues.Count <= 1)
+            {
+                var forbiddenValues = GetForbiddenNumbers(realVariablesDict[name], minimalValue, maximalValue);
+                var intervals = GenerateIntervals(minimalValue, maximalValue, forbiddenValues);
+                if (intervals.Count == 0)
+                {
+                    return false;
+                }
+
+                minimalValue = intervals[0].start;
+                maximalValue = intervals[^1].end;
+
+                if (minimalValue == maximalValue)
+                {
+                    constraintExpressions.Add(ConstraintExpression<double>.GenerateEqualExpression(name, DomainType.Real, new DefinableValue<double>(minimalValue)));
+                    return true;
+                }
+
+                // Format: a <= max && a >= min && a!=t1 && a!=t2...
+                if (maximalValue != long.MaxValue)
+                {
+                    constraintExpressions.Add(ConstraintExpression<double>.GenerateLessThanOrEqualExpression(name, DomainType.Real, maximalValue));
+                }
+                if (minimalValue != long.MinValue)
+                {
+                    constraintExpressions.Add(ConstraintExpression<double>.GenerateGreaterThanOrEqualExpression(name, DomainType.Real, minimalValue));
+                }
+
+                foreach (var forbiddenValue in forbiddenValues)
+                {
+                    constraintExpressions.Add(ConstraintExpression<double>.GenerateUnequalExpression(name, DomainType.Real, new DefinableValue<double>(forbiddenValue)));
+                }
+
+                return true;
+            }
+
             return false;
         }
 

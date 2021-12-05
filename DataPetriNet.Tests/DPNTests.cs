@@ -70,7 +70,7 @@ namespace DataPetriNet.Tests
                             {
                                 Constant = new DefinableValue<long>(0),
                                 LogicalConnective = LogicalConnective.Empty,
-                                Predicate = BinaryPredicate.GreaterThenOrEqual,
+                                Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
                                     Domain = DomainType.Integer,
