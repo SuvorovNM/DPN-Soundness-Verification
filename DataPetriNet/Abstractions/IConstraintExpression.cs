@@ -9,6 +9,7 @@ namespace DataPetriNet.Abstractions
         BinaryPredicate Predicate { get; set; }
         ConstraintVariable ConstraintVariable { get; set; }
 
+        bool Equals(IConstraintExpression other);
         IConstraintExpression GetInvertedExpression();
         IConstraintExpression Clone();
     }

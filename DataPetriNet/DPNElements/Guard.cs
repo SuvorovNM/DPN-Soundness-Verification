@@ -24,6 +24,10 @@ namespace DataPetriNet.DPNElements
         public bool Verify(VariablesStore globalVariables)
         {
             var constraintStateDuringEvaluation = new List<IConstraintExpression>(ConstraintExpressions);
+            if (constraintStateDuringEvaluation.Count == 0)
+            {
+                return true;
+            }
             bool expressionResult;
 
             do

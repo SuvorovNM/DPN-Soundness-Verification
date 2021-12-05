@@ -79,7 +79,10 @@ namespace DataPetriNet.SoundnessVerification
 
             } while (constraintStateDuringEvaluation.Count > 0);
 
-            resultExpression[0].LogicalConnective = LogicalConnective.Empty;
+            if (resultExpression.Count > 0)
+            {
+                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
+            }
 
             return resultExpression;
         }
@@ -89,6 +92,10 @@ namespace DataPetriNet.SoundnessVerification
             if (expression is null)
             {
                 throw new ArgumentNullException(nameof(expression));
+            }
+            if (expression.Count == 0)
+            {
+                return false;
             }
 
             var constraintStateDuringEvaluation = new List<IConstraintExpression>(expression);
@@ -250,7 +257,7 @@ namespace DataPetriNet.SoundnessVerification
                 {
                     var currentTargetBlock = CutFirstExpressionBlock(targetConstraintsDuringEvaluation).Select(x => x.Clone()).ToList();
 
-                    if (currentTargetBlock.Any())
+                    if (currentTargetBlock.Count > 0)
                     {
                         var sourceBlockToInsert = currentSourceBlock.Select(x => x.Clone()).ToList();
                         sourceBlockToInsert[0].LogicalConnective = LogicalConnective.Or;
@@ -263,12 +270,20 @@ namespace DataPetriNet.SoundnessVerification
 
             } while (sourceConstraintsDuringEvaluation.Count > 0);
 
-            result[0].LogicalConnective = LogicalConnective.Empty;
+            if (result.Count > 0)
+            {
+                result[0].LogicalConnective = LogicalConnective.Empty;
+            }
             return ShortenExpression(result);
         }
 
         private static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
         {
+            if (sourceConstraintsDuringEvaluation.Count == 0)
+            {
+                return new List<IConstraintExpression>();
+            }
+
             List<IConstraintExpression> currentBlock;
             var delimiter = Guard.GetDelimiter(sourceConstraintsDuringEvaluation);
 

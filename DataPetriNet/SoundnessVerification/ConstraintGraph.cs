@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace DataPetriNet.SoundnessVerification
 {
-    public class ConstraintGraph
+    public class ConstraintGraph // TODO: insert Ids
     {
         private ConstraintExpressionOperationService expressionService;
         public DataPetriNet DataPetriNet { get; set; }
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
         public List<ConstraintArc> ConstraintArcs { get; set; }
-        
+
         public Stack<ConstraintState> StatesToConsider { get; set; }
 
         public ConstraintGraph(DataPetriNet dataPetriNet)
@@ -27,7 +27,7 @@ namespace DataPetriNet.SoundnessVerification
 
             InitialState = dataPetriNet.GenerateInitialConstraintState();
 
-            ConstraintStates = new List<ConstraintState> {InitialState };
+            ConstraintStates = new List<ConstraintState> { InitialState };
 
             ConstraintArcs = new List<ConstraintArc>();
 
@@ -44,16 +44,23 @@ namespace DataPetriNet.SoundnessVerification
                 foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
                 {
                     // Considering classical transition
-                    var stateIfTransitionFires = new ConstraintState(currentState, transition);
+                    var readOnlyExpressions = transition.Guard.ConstraintExpressions
+                                                    .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
+                                                    .ToList();
 
-                    if (expressionService.CanBeSatisfied(stateIfTransitionFires.Constraints))
+                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
                     {
-                        if (IsMonotonicallyIncreasedWithUnchangedConstraints(stateIfTransitionFires))
-                        {
-                            return false; // The net is unbound
-                        }
+                        var stateIfTransitionFires = new ConstraintState(currentState, transition);
 
-                        AddNewState(currentState, new ConstraintTransition(transition), stateIfTransitionFires);
+                        if (expressionService.CanBeSatisfied(stateIfTransitionFires.Constraints))
+                        {
+                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(stateIfTransitionFires))
+                            {
+                                return false; // The net is unbound
+                            }
+
+                            AddNewState(currentState, new ConstraintTransition(transition), stateIfTransitionFires);
+                        }
                     }
 
                     if (transition.Label == "Simple assessment")
@@ -64,12 +71,12 @@ namespace DataPetriNet.SoundnessVerification
                     // Considering silent transition
                     var negatedGuardExpressions = expressionService
                         .InverseExpression(transition.Guard.ConstraintExpressions
-                                                .Where(x => x.ConstraintVariable.VariableType != VariableType.Written)
+                                                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
                                                 .ToList());
                     var constraintsIfSilentTransitionFires = expressionService
                         .ConcatExpressions(currentState.Constraints, negatedGuardExpressions);
 
-                    if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) && 
+                    if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                         !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                     {
                         var silentState = new ConstraintState(currentState.PlaceTokens, constraintsIfSilentTransitionFires);
@@ -118,7 +125,9 @@ namespace DataPetriNet.SoundnessVerification
         {
             foreach (var stateInGraph in ConstraintStates)
             {
-                var isConsideredStateTokensGreaterOrEqual = sourceState.PlaceTokens.Keys.All(key => sourceState.PlaceTokens[key] >= stateInGraph.PlaceTokens[key]);
+                var isConsideredStateTokensGreaterOrEqual = stateInGraph.PlaceTokens.Values.Sum() > sourceState.PlaceTokens.Values.Sum() &&
+                    sourceState.PlaceTokens.Keys.All(key => sourceState.PlaceTokens[key] >= stateInGraph.PlaceTokens[key]);
+
                 if (isConsideredStateTokensGreaterOrEqual && expressionService.AreEqual(sourceState.Constraints, stateInGraph.Constraints))
                 {
                     return true;

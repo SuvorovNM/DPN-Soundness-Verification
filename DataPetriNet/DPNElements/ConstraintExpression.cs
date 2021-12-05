@@ -13,11 +13,17 @@ namespace DataPetriNet.DPNElements
         public BinaryPredicate Predicate { get; set; }
         public DefinableValue<T> Constant { get; set; }
 
-        public bool Equals(ConstraintExpression<T> other)
+        public bool Equals(IConstraintExpression other)
         {
-            return ConstraintVariable == other.ConstraintVariable &&
-                Predicate == other.Predicate &&
-                Constant == other.Constant;
+            var otherExpression = other as ConstraintExpression<T>;
+            if (otherExpression == null)
+            {
+                return false;
+            }
+
+            return ConstraintVariable == otherExpression.ConstraintVariable &&
+                Predicate == otherExpression.Predicate &&
+                Constant.Equals(otherExpression.Constant);
         }
 
         public bool Evaluate(DefinableValue<T> variableValue)
