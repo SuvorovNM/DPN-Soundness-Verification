@@ -145,7 +145,7 @@ namespace DataPetriNet.Services.ExpressionServices
                 if (allowedValuesExist)
                 {
                     // Forbidden list can contain both null-values and normal values - only defined values needed for consideration
-                    var isPossibleToInvert = chosenUnequalValues.Any(x => x.IsDefined) && chosenEqualValues.Any(x=>!x.IsDefined);
+                    var isPossibleToInvert = chosenUnequalValues.Any(x => x.IsDefined) && chosenUnequalValues.Any(x=>!x.IsDefined);
 
                     if (isPossibleToInvert)
                     {

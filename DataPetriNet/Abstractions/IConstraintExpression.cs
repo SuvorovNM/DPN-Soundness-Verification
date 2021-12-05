@@ -10,5 +10,6 @@ namespace DataPetriNet.Abstractions
         ConstraintVariable ConstraintVariable { get; set; }
 
         IConstraintExpression GetInvertedExpression();
+        IConstraintExpression Clone();
     }
 }

@@ -1,6 +1,7 @@
 using DataPetriNet.Abstractions;
 using DataPetriNet.DPNElements;
 using DataPetriNet.Enums;
+using DataPetriNet.SoundnessVerification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
@@ -9,8 +10,9 @@ namespace DataPetriNet.Tests
     [TestClass]
     public class DPNTests
     {
-        [TestMethod]
-        public void RunDPN()
+        private DataPetriNet dataPetriNet;
+        [TestInitialize]
+        public void Initialize()
         {
             var placesList = new List<Place>
             {
@@ -193,19 +195,30 @@ namespace DataPetriNet.Tests
                 }
             };
 
-            var dpn = new DataPetriNet
+            dataPetriNet = new DataPetriNet
             {
                 Places = placesList,
                 Transitions = transitionList,
                 Variables = variables
             };
+        }
 
+        //[TestMethod]        
+        public void RunDPN()
+        {          
             bool canMakeNextStep;
             do
             {
-                canMakeNextStep = dpn.MakeStep();
+                canMakeNextStep = dataPetriNet.MakeStep();
             } while (canMakeNextStep);
         }
 
+        [TestMethod]
+        public void BuildConstraintGraph()
+        {
+            var constraintGraph = new ConstraintGraph(dataPetriNet);
+
+            constraintGraph.GenerateGraph();
+        }
     }
 }

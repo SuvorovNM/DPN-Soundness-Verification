@@ -153,7 +153,7 @@ namespace DataPetriNet.Services.ExpressionServices
                     constraintExpressions.Add(ConstraintExpression<double>.GenerateGreaterThanOrEqualExpression(name, DomainType.Real, minimalValue));
                 }
 
-                foreach (var forbiddenValue in forbiddenValues)
+                foreach (var forbiddenValue in forbiddenValues.Except(new[] { minimalValue - 1, maximalValue + 1 }))
                 {
                     constraintExpressions.Add(ConstraintExpression<double>.GenerateUnequalExpression(name, DomainType.Real, new DefinableValue<double>(forbiddenValue)));
                 }

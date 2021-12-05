@@ -124,5 +124,16 @@ namespace DataPetriNet.DPNElements
                 }
             };
         }
+
+        public IConstraintExpression Clone()
+        {
+            return new ConstraintExpression<T>
+            {
+                Constant = this.Constant,
+                LogicalConnective = this.LogicalConnective,
+                Predicate = this.Predicate,
+                ConstraintVariable = this.ConstraintVariable
+            };
+        }
     }
 }

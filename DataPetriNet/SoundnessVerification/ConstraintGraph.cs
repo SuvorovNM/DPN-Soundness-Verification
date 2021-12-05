@@ -56,6 +56,11 @@ namespace DataPetriNet.SoundnessVerification
                         AddNewState(currentState, new ConstraintTransition(transition), stateIfTransitionFires);
                     }
 
+                    if (transition.Label == "Simple assessment")
+                    {
+
+                    }
+
                     // Considering silent transition
                     var negatedGuardExpressions = expressionService
                         .InverseExpression(transition.Guard.ConstraintExpressions

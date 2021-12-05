@@ -77,12 +77,13 @@ namespace DataPetriNet.DPNElements
         {
             // Find delimiter - OR expression
             var orExpressionIndex = constraintStateDuringEvaluation
+                .GetRange(1, constraintStateDuringEvaluation.Count - 1) // TODO: Make search more effective
                 .FindIndex(x => x.LogicalConnective == LogicalConnective.Or);
 
             // If OR exists, we only need expressions before first OR
             var delimiter = orExpressionIndex == -1
                 ? constraintStateDuringEvaluation.Count
-                : orExpressionIndex;
+                : orExpressionIndex + 1;
             return delimiter;
         }
 

@@ -110,7 +110,6 @@ namespace DataPetriNet.SoundnessVerification
                 if (expressionResult)
                 {
                     foreach (var variable in currentBlock
-                        .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
                         .Select(x => x.ConstraintVariable)
                         .Distinct())
                     {
@@ -181,6 +180,8 @@ namespace DataPetriNet.SoundnessVerification
                         {
                             isFound &= currentSourceBlock[i].Equals(blockedTargetConstraints[index][i]);
                         }
+
+                        index++;
                     }
                     else
                     {
@@ -209,6 +210,22 @@ namespace DataPetriNet.SoundnessVerification
             {
                 throw new ArgumentNullException(nameof(target));
             }
+            if (target.Count == 0)
+            {
+                return source;
+            }
+
+            var allTargetToRead = new List<IConstraintExpression>(target.Select(x => x.Clone()));
+            allTargetToRead.ForEach(x => x.ConstraintVariable = new ConstraintVariable
+            {
+                Domain = x.ConstraintVariable.Domain,
+                Name = x.ConstraintVariable.Name,
+                VariableType = VariableType.Read,
+            });
+            if (source.Count == 0)
+            {
+                return allTargetToRead;
+            }
 
             var result = new List<IConstraintExpression>();
 
@@ -217,28 +234,36 @@ namespace DataPetriNet.SoundnessVerification
                 .Select(x => (x.ConstraintVariable.Domain, x.ConstraintVariable.Name));
 
             var sourceExpressionsExceptRewrittenInTarget = source
-                .Where(x => !writtenVariables.Contains((x.ConstraintVariable.Domain, x.ConstraintVariable.Name)));
+                .Where(x => !writtenVariables.Contains((x.ConstraintVariable.Domain, x.ConstraintVariable.Name)))
+                .ToList();
 
             var sourceConstraintsDuringEvaluation = new List<IConstraintExpression>(sourceExpressionsExceptRewrittenInTarget);
-            sourceConstraintsDuringEvaluation[0].LogicalConnective = LogicalConnective.Empty;
 
             do
             {
                 var currentSourceBlock = CutFirstExpressionBlock(sourceConstraintsDuringEvaluation);
 
-                var targetConstraintsDuringEvaluation = new List<IConstraintExpression>(target);
+                var targetConstraintsDuringEvaluation = new List<IConstraintExpression>(allTargetToRead);
                 targetConstraintsDuringEvaluation[0].LogicalConnective = LogicalConnective.And;
 
                 do
                 {
-                    var currentTargetBlock = CutFirstExpressionBlock(targetConstraintsDuringEvaluation);
+                    var currentTargetBlock = CutFirstExpressionBlock(targetConstraintsDuringEvaluation).Select(x => x.Clone()).ToList();
 
-                    result.AddRange(currentSourceBlock.Concat(currentTargetBlock));
+                    if (currentTargetBlock.Any())
+                    {
+                        var sourceBlockToInsert = currentSourceBlock.Select(x => x.Clone()).ToList();
+                        sourceBlockToInsert[0].LogicalConnective = LogicalConnective.Or;
+
+                        currentTargetBlock[0].LogicalConnective = LogicalConnective.And;                        
+                        result.AddRange(sourceBlockToInsert.Concat(currentTargetBlock));
+                    }
 
                 } while (targetConstraintsDuringEvaluation.Count > 0);
 
             } while (sourceConstraintsDuringEvaluation.Count > 0);
 
+            result[0].LogicalConnective = LogicalConnective.Empty;
             return ShortenExpression(result);
         }
 

@@ -63,7 +63,7 @@ namespace DataPetriNet
                     Constant = variable,
                     ConstraintVariable = new ConstraintVariable
                     {
-                        Domain = DomainType.String,
+                        Domain = domain,
                         Name = stringKey,
                         VariableType = VariableType.Read // Define if Read / Write
                     },

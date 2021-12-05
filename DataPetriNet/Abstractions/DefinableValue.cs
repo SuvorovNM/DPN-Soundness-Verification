@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DataPetriNet.Abstractions
 {
@@ -6,7 +8,7 @@ namespace DataPetriNet.Abstractions
     {
         bool IsDefined { get; }
     }
-    public class DefinableValue<T> : IDefinableValue
+    public class DefinableValue<T> : IDefinableValue, IEquatable<DefinableValue<T>>
         where T : IEquatable<T>, IComparable<T>
     {
         public DefinableValue()

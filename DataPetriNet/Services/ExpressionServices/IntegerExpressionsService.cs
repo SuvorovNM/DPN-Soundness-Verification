@@ -84,7 +84,10 @@ namespace DataPetriNet.Services.ExpressionServices
                 else
                 {
                     var intervalNumber = randomGenerator.Next(0, intervals.Count);
-                    value = new DefinableValue<long>(LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end));
+
+                    value = intervals[intervalNumber].start == intervals[intervalNumber].end
+                        ? new DefinableValue<long>(intervals[intervalNumber].start)
+                        : new DefinableValue<long>(LongRandom(intervals[intervalNumber].start, intervals[intervalNumber].end));
                 }
 
                 return intervals.Count > 0;
@@ -154,7 +157,7 @@ namespace DataPetriNet.Services.ExpressionServices
                     constraintExpressions.Add(ConstraintExpression<long>.GenerateGreaterThanOrEqualExpression(name, DomainType.Integer, minimalValue));
                 }
 
-                foreach (var forbiddenValue in forbiddenValues)
+                foreach (var forbiddenValue in forbiddenValues.Except(new[] { minimalValue - 1, maximalValue + 1}))
                 {
                     constraintExpressions.Add(ConstraintExpression<long>.GenerateUnequalExpression(name, DomainType.Integer, new DefinableValue<long>(forbiddenValue)));
                 }
