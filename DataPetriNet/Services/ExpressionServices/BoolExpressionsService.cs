@@ -59,7 +59,7 @@ namespace DataPetriNet.Services.ExpressionServices
                 // Values selected by "!=" sign must not intersect selected by "=" sign
                 var noForbiddenEqualToChosenEqualValue = !booleanVariablesDict[name]
                     .Where(x => x.ForbiddenValue.HasValue)
-                    .Any(x => x.ForbiddenValue.Value == chosenEqualValues[0]);
+                    .Any(x => x.ForbiddenValue.Value.Equals(chosenEqualValues[0]));
 
                 value = noForbiddenEqualToChosenEqualValue
                     ? chosenEqualValues[0]
@@ -121,7 +121,7 @@ namespace DataPetriNet.Services.ExpressionServices
                 // Values selected by "!=" sign must not intersect selected by "=" sign
                 var noForbiddenEqualToChosenEqualValue = !booleanVariablesDict[name]
                     .Where(x => x.ForbiddenValue.HasValue)
-                    .Any(x => x.ForbiddenValue.Value == chosenEqualValues[0]);
+                    .Any(x => x.ForbiddenValue.Value.Equals(chosenEqualValues[0]));
 
                 if (noForbiddenEqualToChosenEqualValue)
                 {

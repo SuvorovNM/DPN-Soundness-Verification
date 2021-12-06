@@ -43,6 +43,12 @@ namespace DataPetriNet.SoundnessVerification
 
                 foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
                 {
+
+                    if (transition.Label == "Advanced assessment")
+                    {
+
+                    }
+
                     // Considering classical transition
                     var readOnlyExpressions = transition.Guard.ConstraintExpressions
                                                     .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
@@ -63,16 +69,12 @@ namespace DataPetriNet.SoundnessVerification
                         }
                     }
 
-                    if (transition.Label == "Simple assessment")
-                    {
-
-                    }
-
                     // Considering silent transition
                     var negatedGuardExpressions = expressionService
                         .InverseExpression(transition.Guard.ConstraintExpressions
                                                 .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
                                                 .ToList());
+
                     var constraintsIfSilentTransitionFires = expressionService
                         .ConcatExpressions(currentState.Constraints, negatedGuardExpressions);
 
@@ -141,7 +143,9 @@ namespace DataPetriNet.SoundnessVerification
         {
             foreach (var stateInGraph in ConstraintStates)
             {
-                var isConsideredStateTokensEqual = sourceState.PlaceTokens.Keys.All(key => sourceState.PlaceTokens[key] == stateInGraph.PlaceTokens[key]);
+                var isConsideredStateTokensEqual = sourceState.PlaceTokens.Keys
+                    .All(key => sourceState.PlaceTokens[key] == stateInGraph.PlaceTokens[key]);
+
                 if (isConsideredStateTokensEqual && expressionService.AreEqual(sourceState.Constraints, stateInGraph.Constraints))
                 {
                     return stateInGraph;

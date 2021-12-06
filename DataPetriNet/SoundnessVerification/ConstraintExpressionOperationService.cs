@@ -81,7 +81,38 @@ namespace DataPetriNet.SoundnessVerification
 
             if (resultExpression.Count > 0)
             {
-                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
+                var expressionAfterRemovingDuplicates = new List<IConstraintExpression>();
+                var expressionsDuringEvaluation = new List<IConstraintExpression>(resultExpression);
+                var blocks = new List<List<IConstraintExpression>>();
+                do
+                {
+                    blocks.Add(CutFirstExpressionBlock(expressionsDuringEvaluation));
+                } while (expressionsDuringEvaluation.Count > 0);
+
+                var blocksToRemove = new List<int>();
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    for (int j = i + 1; j < blocks.Count; j++)
+                    {
+                        var areBlocksEqual = AreEqual(blocks[i], blocks[j]);
+                        if (areBlocksEqual)
+                        {
+                            blocksToRemove.Add(j);
+                        }
+                    }
+                }
+
+                foreach(var block in blocksToRemove.Distinct().OrderByDescending(x => x))
+                {
+                    blocks.RemoveAt(block);
+                }
+                foreach(var block in blocks)
+                {
+                    expressionAfterRemovingDuplicates.AddRange(block);
+                }
+
+                expressionAfterRemovingDuplicates[0].LogicalConnective = LogicalConnective.Empty;
+                return expressionAfterRemovingDuplicates;
             }
 
             return resultExpression;
@@ -177,10 +208,11 @@ namespace DataPetriNet.SoundnessVerification
                 var currentSourceBlock = blockedSourceConstraints[0];
                 blockedSourceConstraints.RemoveAt(0);
 
-                bool isFound = true;
+                bool isFound;
                 var index = 0;
                 do
                 {
+                    isFound = true;
                     if (blockedTargetConstraints[index].Count == currentSourceBlock.Count)
                     {
                         for (int i = 0; i < currentSourceBlock.Count; i++)
@@ -188,12 +220,13 @@ namespace DataPetriNet.SoundnessVerification
                             isFound &= currentSourceBlock[i].Equals(blockedTargetConstraints[index][i]);
                         }
 
-                        index++;
                     }
                     else
                     {
                         isFound = false;
                     }
+
+                    index++;
 
                 } while (isFound!= true && index < blockedTargetConstraints.Count);
 
