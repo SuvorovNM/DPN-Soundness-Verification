@@ -449,6 +449,8 @@ namespace DataPetriNet.Tests
             var constraintGraph = new ConstraintGraph(dataPetriNet);
 
             constraintGraph.GenerateGraph();
+
+            var analysis = new ConstraintGraphAnalyzer().GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
         }
     }
 }
