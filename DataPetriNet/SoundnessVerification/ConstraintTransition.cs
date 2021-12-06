@@ -12,7 +12,7 @@ namespace DataPetriNet.SoundnessVerification
     {
         public bool IsSilent { get; set; }
 
-        public ConstraintTransition(Node transition, bool isSilent = false)
+        public ConstraintTransition(Transition transition, bool isSilent = false)
         {
             IsSilent = isSilent;
             Label = transition.Label;
