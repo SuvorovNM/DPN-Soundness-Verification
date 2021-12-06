@@ -56,10 +56,14 @@ namespace DataPetriNet.SoundnessVerification
 
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
                     {
-                        var stateIfTransitionFires = new ConstraintState(currentState, transition);
+                        var constraintsIfTransitionFires = expressionService
+                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions);
 
-                        if (expressionService.CanBeSatisfied(stateIfTransitionFires.Constraints))
+                        if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
+                            var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens);
+                            var stateIfTransitionFires = new ConstraintState(updatedMarking, constraintsIfTransitionFires);
+
                             if (IsMonotonicallyIncreasedWithUnchangedConstraints(stateIfTransitionFires))
                             {
                                 return false; // The net is unbound
@@ -106,7 +110,6 @@ namespace DataPetriNet.SoundnessVerification
             }
         }
 
-        // TODO: Проверить, что для обычных Transition отработает - возможно нужны именно ConstraintTransition
         private IEnumerable<Transition> GetTransitionsWhichCanFire(Dictionary<Node, int> marking)
         {
             var transitionsWhichCanFire = new List<Transition>();

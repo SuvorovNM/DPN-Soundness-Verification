@@ -1,4 +1,5 @@
 ﻿using DataPetriNet.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,6 +27,26 @@ namespace DataPetriNet.DPNElements
             Guard.UpdateGlobalVariables(variables);
             PreSetPlaces.ForEach(x => x.Tokens--);
             PostSetPlaces.ForEach(x => x.Tokens++);
+        }
+
+        public Dictionary<Node, int> FireOnGivenMarking(Dictionary<Node, int> tokens)
+        {
+            var updatedMarking = new Dictionary<Node, int>(tokens);
+
+            foreach (var presetPlace in PreSetPlaces)
+            {
+                if (updatedMarking[presetPlace] <= 0)
+                {
+                    throw new ArgumentException("Transition cannot fire on given marking!");
+                }
+                updatedMarking[presetPlace]--;
+            }
+            foreach (var postsetPlace in PostSetPlaces)
+            {
+                updatedMarking[postsetPlace]++;
+            }
+
+            return updatedMarking;
         }
     }
 }
