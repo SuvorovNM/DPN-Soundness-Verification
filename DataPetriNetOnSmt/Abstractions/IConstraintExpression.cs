@@ -11,6 +11,8 @@ namespace DataPetriNetOnSmt.Abstractions
         ConstraintVariable ConstraintVariable { get; set; }
 
         bool Equals(IConstraintExpression other);
+        IConstraintExpression GetInvertedExpression();
+        IConstraintExpression Clone();
 
         BoolExpr GetSmtExpression(Context ctx);
     }

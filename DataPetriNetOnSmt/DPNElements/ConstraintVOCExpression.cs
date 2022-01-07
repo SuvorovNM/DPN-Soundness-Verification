@@ -28,6 +28,27 @@ namespace DataPetriNetOnSmt.DPNElements
                 Constant.Equals(otherExpression.Constant);
         }
 
+        public IConstraintExpression GetInvertedExpression()
+        {
+            var expression = new ConstraintVOCExpression<T>();
+            expression.Constant = Constant;
+            expression.Predicate = (BinaryPredicate)(-(long)Predicate);
+            expression.LogicalConnective = (LogicalConnective)(-(long)LogicalConnective);
+            expression.ConstraintVariable = ConstraintVariable;
+
+            return expression;
+        }
+
+        public IConstraintExpression Clone()
+        {
+            return new ConstraintVOCExpression<T>
+            {
+                Constant = this.Constant,
+                LogicalConnective = this.LogicalConnective,
+                Predicate = this.Predicate,
+                ConstraintVariable = this.ConstraintVariable
+            };
+        }
 
         public BoolExpr GetSmtExpression(Context ctx) // TODO: По возможности отрефакторить, добавить возможность сравнения переменных
         {
@@ -48,7 +69,7 @@ namespace DataPetriNetOnSmt.DPNElements
             };
 
             var variable = ctx.MkConst(ctx.MkSymbol(ConstraintVariable.Name + (ConstraintVariable.VariableType == VariableType.Read ? "_r" : "_w")), sort);
-
+            
             return Predicate switch
             {
                 BinaryPredicate.Equal => ctx.MkEq(variable, constToCompare),

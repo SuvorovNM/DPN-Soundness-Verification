@@ -30,6 +30,28 @@ namespace DataPetriNetOnSmt.DPNElements
                 VariableToCompare == otherExpression.VariableToCompare;
         }
 
+        public IConstraintExpression GetInvertedExpression()
+        {
+            var expression = new ConstraintVOVExpression();
+            expression.VariableToCompare = VariableToCompare;
+            expression.Predicate = (BinaryPredicate)(-(long)Predicate);
+            expression.LogicalConnective = (LogicalConnective)(-(long)LogicalConnective);
+            expression.ConstraintVariable = ConstraintVariable;
+
+            return expression;
+        }
+
+        public IConstraintExpression Clone()
+        {
+            return new ConstraintVOVExpression
+            {
+                LogicalConnective = this.LogicalConnective,
+                Predicate = this.Predicate,
+                ConstraintVariable = this.ConstraintVariable,
+                VariableToCompare = this.VariableToCompare
+            };
+        }
+
         public BoolExpr GetSmtExpression(Context ctx)
         {
             Sort sort = ConstraintVariable.Domain switch

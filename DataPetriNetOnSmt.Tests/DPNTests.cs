@@ -84,11 +84,11 @@ namespace DataPetriNetOnSmt.Tests
                             new ConstraintVOVExpression
                             {
                                 LogicalConnective = LogicalConnective.And,
-                                Predicate = BinaryPredicate.LessThan,
+                                Predicate = BinaryPredicate.GreaterThan,
                                 ConstraintVariable = new ConstraintVariable
                                 {
                                     Domain = DomainType.Integer,
-                                    Name = "amount",
+                                    Name = "remained",
                                     VariableType = VariableType.Written
                                 },
                                 VariableToCompare = new ConstraintVariable
