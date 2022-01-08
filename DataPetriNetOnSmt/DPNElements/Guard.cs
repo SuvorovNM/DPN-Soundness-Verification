@@ -29,7 +29,7 @@ namespace DataPetriNetOnSmt.DPNElements
             }
 
             // TODO: Probably, it is better to assign variables from the current guard, not all the vars
-            var goal = ctx.MkGoal(true);
+            var goal = ctx.MkGoal();
 
             AssignCurrentValues(globalVariables, ctx, goal);
 

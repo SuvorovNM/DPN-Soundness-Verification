@@ -36,6 +36,59 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             StatesToConsider.Push(InitialState);
         }
 
+        public bool GenerateGraph()
+        {
+            while (StatesToConsider.Count > 0)
+            {
+                var currentState = StatesToConsider.Pop();
+
+                foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
+                {
+                    // Considering classical transition
+                    var readOnlyExpressions = GetReadExpressions(transition.Guard.ConstraintExpressions);
+
+                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
+                    {
+                        var constraintsIfTransitionFires = expressionService
+                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions);
+
+                        if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
+                        {
+                            var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
+
+                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires))
+                            {
+                                return false; // The net is unbound
+                            }
+
+                            AddNewState(currentState, new ConstraintTransition(transition), updatedMarking, constraintsIfTransitionFires);
+                        }
+                    }
+
+                    // Considering silent transition - check correctness of such negation [a && b || c && d] !!!!!!!!!!!!!!!!!!!!!!!!
+                    var negatedGuardExpressions = expressionService
+                        .InverseExpression(transition.Guard.ConstraintExpressions
+                                                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
+                                                .ToList());
+
+                    if (negatedGuardExpressions.Count > 0)
+                    {
+                        var constraintsIfSilentTransitionFires = expressionService
+                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions);
+
+                        if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
+                            !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
+                        {
+                            AddNewState(currentState, new ConstraintTransition(transition, true), currentState.PlaceTokens, constraintsIfSilentTransitionFires);
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+
         private List<IConstraintExpression> GetReadExpressions(List<IConstraintExpression> constraints) // TODO: Check for correctness
         {
             var expressionList = constraints
@@ -68,74 +121,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             return expressionList;
         }
 
-        private BoolExpr TransformConstraintsToBoolExpr(List<IConstraintExpression> constraints) // TODO: LETTERS _w _r!!!
-                                                                                                 // Check: when GetSmtExpression is executed, written vars are returned as x_w, but in final constraint set these vars must be x_r
-        {
-            if (constraints.Count == 0)
-            {
-                return ContextProvider.Context.MkTrue();
-            }
-
-            var smtExpression = constraints[0].GetSmtExpression(ContextProvider.Context);
-
-            for (int i = 1; i < constraints.Count; i++)
-            {
-                smtExpression = constraints[i].LogicalConnective == LogicalConnective.Or
-                    ? ContextProvider.Context.MkOr(smtExpression, constraints[i].GetSmtExpression(ContextProvider.Context))
-                    : ContextProvider.Context.MkAnd(smtExpression, constraints[i].GetSmtExpression(ContextProvider.Context));
-            }
-
-            return smtExpression;
-        }
-
-        public bool GenerateGraph()
-        {
-            while (StatesToConsider.Count > 0)
-            {
-                var currentState = StatesToConsider.Pop();
-
-                foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
-                {
-                    // Considering classical transition
-                    var readOnlyExpressions = GetReadExpressions(transition.Guard.ConstraintExpressions);
-
-                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
-                    {
-                        var constraintsIfTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions);
-
-                        if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
-                        {
-                            var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
-
-                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires))
-                            {
-                                return false; // The net is unbound
-                            }
-
-                            AddNewState(currentState, new ConstraintTransition(transition), updatedMarking, constraintsIfTransitionFires);
-                        }
-                    }
-
-                    // Considering silent transition
-                    var negatedGuardExpressions = expressionService
-                        .InverseExpression(transition.Guard.ConstraintExpressions
-                                                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
-                                                .ToList());
-
-                    var constraintsIfSilentTransitionFires = expressionService
-                        .ConcatExpressions(currentState.Constraints, negatedGuardExpressions);
-
-                    if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
-                        !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
-                    {
-                        AddNewState(currentState, new ConstraintTransition(transition, true), currentState.PlaceTokens, constraintsIfSilentTransitionFires);
-                    }
-                }
-            }
-
-            return true;
-        }
 
         private void AddNewState(ConstraintState currentState,
                                 ConstraintTransition transition,

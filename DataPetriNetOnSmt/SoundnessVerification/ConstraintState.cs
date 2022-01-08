@@ -12,7 +12,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
     {
         private static int stateCounter = 0;
         public Dictionary<Node, int> PlaceTokens { get; }
-        public BoolExpr Constraints { get; }
+        public BoolExpr Constraints { get; set; }
         public int Id { get; }
 
         public ConstraintState()

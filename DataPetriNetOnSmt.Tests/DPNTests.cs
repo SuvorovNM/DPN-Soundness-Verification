@@ -1,8 +1,11 @@
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.SoundnessVerification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 
 namespace DataPetriNetOnSmt.Tests
 {
@@ -471,7 +474,7 @@ namespace DataPetriNetOnSmt.Tests
             };
         }
 
-        [TestMethod]        
+        //[TestMethod]        
         public void RunDPN()
         {
             bool canMakeNextStep;
@@ -479,6 +482,17 @@ namespace DataPetriNetOnSmt.Tests
             {
                 canMakeNextStep = dataPetriNet.MakeStep();
             } while (canMakeNextStep);
+        }
+
+        [TestMethod]
+        public void BuildConstraintGraphForBanking()
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var constraintGraph = new ConstraintGraph(dataPetriNet);
+
+            constraintGraph.GenerateGraph();
         }
     }
 }

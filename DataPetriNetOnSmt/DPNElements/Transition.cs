@@ -52,7 +52,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
             foreach (var presetPlace in presetPlaces)
             {
-                if (updatedMarking[presetPlace] <= arcsDict[(presetPlace, this)])
+                if (updatedMarking[presetPlace] < arcsDict[(presetPlace, this)])
                 {
                     throw new ArgumentException("Transition cannot fire on given marking!");
                 }
