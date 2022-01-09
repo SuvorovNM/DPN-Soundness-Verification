@@ -75,5 +75,21 @@ namespace DataPetriNetOnSmt.DPNElements
                 BinaryPredicate.GreaterThanOrEqual => ctx.MkGe((ArithExpr)variable, (ArithExpr)variableToCompare),
             };
         }
+
+        public IConstraintExpression CloneAsReadExpression()
+        {
+            return new ConstraintVOVExpression
+            {
+                LogicalConnective = this.LogicalConnective,
+                Predicate = this.Predicate,
+                ConstraintVariable = new ConstraintVariable
+                {
+                    VariableType = VariableType.Read,
+                    Domain = this.ConstraintVariable.Domain,
+                    Name = this.ConstraintVariable.Name,
+                },
+                VariableToCompare = this.VariableToCompare
+            };
+        }
     }
 }

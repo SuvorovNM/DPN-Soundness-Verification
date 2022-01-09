@@ -13,6 +13,7 @@ namespace DataPetriNetOnSmt.Abstractions
         bool Equals(IConstraintExpression other);
         IConstraintExpression GetInvertedExpression();
         IConstraintExpression Clone();
+        IConstraintExpression CloneAsReadExpression();
 
         BoolExpr GetSmtExpression(Context ctx);
     }
