@@ -1,5 +1,6 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.Extensions;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace DataPetriNetOnSmt.DPNElements
                                 .Where(x => x.Key.Name.ToString().EndsWith("_w"))
                                 .ToDictionary(x => string.Concat(x.Key.Name.ToString().SkipLast(2)), y => y.Value);
 
-            var writeVariables = ConstraintExpressions.Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+            var writeVariables = ConstraintExpressions.GetExpressionsOfType(VariableType.Written)
                 .Select(x => x.ConstraintVariable)
                 .Distinct();
 
@@ -143,7 +144,7 @@ namespace DataPetriNetOnSmt.DPNElements
             if (IsSatisfied)
             {
                 var variablesToUpdate = ConstraintExpressions
-                    .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+                    .GetExpressionsOfType(VariableType.Written)
                     .Select(x => x.ConstraintVariable)
                     .Distinct();
 

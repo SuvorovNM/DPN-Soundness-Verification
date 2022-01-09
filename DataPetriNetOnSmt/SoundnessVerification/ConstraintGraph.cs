@@ -1,6 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.Extensions;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
@@ -68,7 +69,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     // Considering silent transition - check correctness of such negation [a && b || c && d] !!!!!!!!!!!!!!!!!!!!!!!!
                     var negatedGuardExpressions = expressionService
                         .InverseExpression(transition.Guard.ConstraintExpressions
-                                                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
+                                                .GetExpressionsOfType(VariableType.Read)
                                                 .ToList());
 
                     if (negatedGuardExpressions.Count > 0)
@@ -92,8 +93,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         private List<IConstraintExpression> GetReadExpressions(List<IConstraintExpression> constraints) // TODO: Check for correctness
         {
             var expressionList = constraints
-                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
-                                                    .ToList();
+                .GetExpressionsOfType(VariableType.Read)
+                .ToList();
 
             var readOnlyConstraintsIndex = 0;
             var lastCorrespondingConstraintIndex = -1;

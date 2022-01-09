@@ -8,16 +8,17 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataPetriNetOnSmt.Extensions;
 
 namespace DataPetriNetOnSmt.SoundnessVerification
 {
     public class ConstraintExpressionOperationService
     {
-        private static long integerMax = long.MaxValue;
-        private static long integerMin = long.MinValue;
-        private static double realMax = 99999999999999;
-        private static double realMin = -99999999999999;
-
+        private BoolExprImplicationService implicationService;
+        public ConstraintExpressionOperationService()
+        {
+            implicationService = new BoolExprImplicationService();
+        }
         // TODO: Rework - currently works incorrectly
         public List<IConstraintExpression> InverseExpression(List<IConstraintExpression> expression)
         {
@@ -103,8 +104,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 var currentTargetBlock = CutFirstExpressionBlock(targetConstraintsDuringEvaluation);
 
                 var expressionsWithOverwrite = currentTargetBlock
-                    .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
-                    .ToList();
+                    .GetExpressionsOfType(VariableType.Written);
                 var overwrittenVarNames = expressionsWithOverwrite
                     .Select(x => x.ConstraintVariable.Name + "_r")
                     .Distinct();
@@ -118,7 +118,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                         .Select(x => x.GetSmtExpression(ContextProvider.Context)));
 
                     var expressionGroupWithImplications = new List<BoolExpr>(concatenatedExpressionGroup);
-                    var bothOverwrittenExpressions = GetVOVExpressionsWithBothVarsOverwrittenByTransitionFiring(expressionsWithOverwrite);
+                    var bothOverwrittenExpressions = expressionsWithOverwrite.GetVOVExpressionsWithBothVarsOverwrittenByTransitionFiring();
 
                     // Firstly, it is needed to examine VoV-constraints where both vars are overwritten by a transition firing
                     AddImplicationsBasedOnWriteExpressions(concatenatedExpressionGroup, expressionGroupWithImplications, bothOverwrittenExpressions);
@@ -135,13 +135,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 : ContextProvider.Context.MkOr(andBlockExpressions);
         }
 
-        private static void UpdateImplicationsBasedOnReadExpressions(IEnumerable<string> overwrittenVarNames, IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications)
+        private void UpdateImplicationsBasedOnReadExpressions(IEnumerable<string> overwrittenVarNames, IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications)
         {
             foreach (var sourceExpression in concatenatedExpressionGroup)
             {
-                var expressionToInspect = sourceExpression.IsNot
-                    ? sourceExpression.Args[0] as BoolExpr
-                    : sourceExpression;
+                var expressionToInspect = sourceExpression.GetExpressionWithoutNotClause();
 
                 if (expressionGroupWithImplications.Contains(sourceExpression) // Нужна ли эта проверка?
                     && expressionToInspect.Args.Any(x => overwrittenVarNames.Contains(x.ToString())))
@@ -183,7 +181,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
         }
 
-        private static void AddImplicationsBasedOnWriteExpressions(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, IEnumerable<IConstraintExpression> bothOverwrittenExpressions)
+        private void AddImplicationsBasedOnWriteExpressions(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, IEnumerable<IConstraintExpression> bothOverwrittenExpressions)
         {
             foreach (ConstraintVOVExpression overwriteExpr in bothOverwrittenExpressions)
             {
@@ -206,12 +204,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
         }
 
-        private static void UpdateExpressionsBasedOnWrittenGreaterThan(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        private void UpdateExpressionsBasedOnWrittenGreaterThan(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
             var varToOverwrite = overwriteExpressionWithReadVars.Args[1];
             var secondVar = overwriteExpressionWithReadVars.Args[0];
 
-            var newExpression = GetImplicationOfGreaterExpression(concatenatedExpressionGroup,
+            var newExpression = implicationService.GetImplicationOfGreaterExpression(concatenatedExpressionGroup,
                 overwriteExpr.Predicate,
                 varToOverwrite,
                 secondVar);
@@ -219,12 +217,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             expressionGroupWithImplications.Add(newExpression);
         }
 
-        private static void UpdateExpressionsBasedOnWrittenLessThan(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        private void UpdateExpressionsBasedOnWrittenLessThan(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
             var varToOverwrite = overwriteExpressionWithReadVars.Args[1];
             var secondVar = overwriteExpressionWithReadVars.Args[0];
 
-            var newExpression = GetImplicationOfLessExpression(
+            var newExpression = implicationService.GetImplicationOfLessExpression(
                 concatenatedExpressionGroup,
                 overwriteExpr.Predicate,
                 varToOverwrite,
@@ -233,19 +231,17 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             expressionGroupWithImplications.Add(newExpression);
         }
 
-        private static void UpdateExpressionsBasedOnWrittenEquality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        private void UpdateExpressionsBasedOnWrittenEquality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
             var addedExpressions = new List<BoolExpr>();
             foreach (var readExpression in expressionGroupWithImplications)
             {
-                var expressionToInspect = readExpression.IsNot
-                    ? readExpression.Args[0] as BoolExpr
-                    : readExpression;
+                var expressionToInspect = readExpression.GetExpressionWithoutNotClause();
 
                 if (expressionToInspect.Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name))
                 {
                     var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
-                    BoolExpr newExpression = GetImplicationOfEqualityExpression(
+                    BoolExpr newExpression = implicationService.GetImplicationOfEqualityExpression(
                         overwriteExpressionWithReadVars.Args[0],
                         readExpression,
                         expressionToInspect,
@@ -258,7 +254,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             expressionGroupWithImplications.AddRange(addedExpressions);
         }
 
-        private static void UpdateExpressionsBasedOnReadGreaterExpression(
+        private void UpdateExpressionsBasedOnReadGreaterExpression(
             IEnumerable<string> overwrittenVarNames,
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             List<BoolExpr> updatedExpression,
@@ -267,7 +263,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
 
-            var newExpression = GetImplicationOfGreaterExpression(
+            var newExpression = implicationService.GetImplicationOfGreaterExpression(
                 concatenatedExpressionGroup,
                 sourceExpression.IsLT ? BinaryPredicate.LessThan : BinaryPredicate.LessThanOrEqual,
                 varToOverwrite,
@@ -276,7 +272,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             updatedExpression.Add(newExpression);
         }
 
-        private static void UpdateExpressionsBasedOnReadLessExpression(
+        private void UpdateExpressionsBasedOnReadLessExpression(
             IEnumerable<string> overwrittenVarNames,
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             List<BoolExpr> updatedExpression,
@@ -285,7 +281,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
 
-            var newExpression = GetImplicationOfLessExpression(
+            var newExpression = implicationService.GetImplicationOfLessExpression(
                 concatenatedExpressionGroup,
                 sourceExpression.IsLT ? BinaryPredicate.LessThan : BinaryPredicate.LessThanOrEqual,
                 varToOverwrite,
@@ -294,7 +290,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             updatedExpression.Add(newExpression);
         }
 
-        private static void UpdateExpressionsBasedOnReadEquality(
+        private void UpdateExpressionsBasedOnReadEquality(
             IEnumerable<string> overwrittenVarNames,
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             List<BoolExpr> updatedExpression,
@@ -313,13 +309,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             foreach (var expression in allBoolExpressionsWithOverwrittenVar)
             {
                 // Make a copy of expr - obliged to create new expressions
-                var expressionToReplace = expression.IsNot
-                    ? expression.Args[0] as BoolExpr
-                    : expression;
+                var expressionToReplace = expression.GetExpressionWithoutNotClause();
 
                 var operandToSave = expressionToReplace.Args[0] == varToOverwrite ? 1 : 0;// Take var/const opposite to varToOverwrite
 
-                BoolExpr newExpression = GetImplicationOfEqualityExpression(
+                var newExpression = implicationService.GetImplicationOfEqualityExpression(
                                         secondVar,
                                         expression,
                                         expressionToInspect,
@@ -335,151 +329,25 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
         }
 
-        private static BoolExpr GetImplicationOfGreaterExpression(IEnumerable<BoolExpr> concatenatedExpressionGroup, BinaryPredicate predicate, Expr varToOverwrite, Expr secondVar)
-        {
-            var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
-
-            optimizer.MkMinimize(varToOverwrite);
-            if (optimizer.Check() == Status.SATISFIABLE)
-            {
-                var minVarValue = optimizer.Model.Consts
-                    .FirstOrDefault(x => x.Key.Name.ToString() == varToOverwrite.ToString())
-                    .Value;
-
-                if (minVarValue.IsRatNum && minVarValue.ToString() != realMin.ToString()
-                    || minVarValue.IsIntNum && minVarValue.ToString() != integerMin.ToString())
-                {
-                    return predicate == BinaryPredicate.GreaterThan
-                        ? ContextProvider.Context.MkGt((ArithExpr)secondVar, (ArithExpr)minVarValue)
-                        : ContextProvider.Context.MkGe((ArithExpr)secondVar, (ArithExpr)minVarValue);
-                }
-            }
-
-            return ContextProvider.Context.MkFalse();
-        }
-
-        private static BoolExpr GetImplicationOfLessExpression(IEnumerable<BoolExpr> concatenatedExpressionGroup, BinaryPredicate predicate, Expr varToOverwrite, Expr secondVar)
-        {
-            var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
-
-            optimizer.MkMaximize(varToOverwrite);
-            if (optimizer.Check() == Status.SATISFIABLE)
-            {
-                var maxVarValue = optimizer.Model.Consts
-                    .FirstOrDefault(x => x.Key.Name.ToString() == varToOverwrite.ToString())
-                    .Value;
-
-                if (maxVarValue.IsRatNum && maxVarValue.ToString() != realMax.ToString()
-                    || maxVarValue.IsIntNum && maxVarValue.ToString() != integerMax.ToString())
-                {
-                    return predicate == BinaryPredicate.LessThan
-                        ? ContextProvider.Context.MkLt((ArithExpr)secondVar, (ArithExpr)maxVarValue)
-                        : ContextProvider.Context.MkLe((ArithExpr)secondVar, (ArithExpr)maxVarValue);
-                }
-            }
-
-            return ContextProvider.Context.MkFalse();
-        }        
-
-        private static BoolExpr GetImplicationOfEqualityExpression(
-            Expr replacementVar,
-            BoolExpr readExpression,
-            BoolExpr? expressionToInspect,
-            Expr? oldValue,
-            int operandToSave)
-        {
-            BoolExpr newExpression = null;
-            if (expressionToInspect.IsEq)
-            {
-                newExpression = ContextProvider.Context.MkEq(replacementVar, oldValue);
-            }
-            if (expressionToInspect.IsGT)
-            {
-                newExpression = operandToSave == 0
-                    ? ContextProvider.Context.MkGt((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                    : ContextProvider.Context.MkGt((ArithExpr)replacementVar, (ArithExpr)oldValue);
-            }
-            if (expressionToInspect.IsGE)
-            {
-                newExpression = operandToSave == 0
-                   ? ContextProvider.Context.MkGe((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                   : ContextProvider.Context.MkGe((ArithExpr)replacementVar, (ArithExpr)oldValue);
-            }
-            if (expressionToInspect.IsLE)
-            {
-                newExpression = operandToSave == 0
-                   ? ContextProvider.Context.MkLe((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                   : ContextProvider.Context.MkLe((ArithExpr)replacementVar, (ArithExpr)oldValue);
-            }
-            if (expressionToInspect.IsLT)
-            {
-                newExpression = operandToSave == 0
-                    ? ContextProvider.Context.MkLt((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                    : ContextProvider.Context.MkLt((ArithExpr)replacementVar, (ArithExpr)oldValue);
-            }
-
-            if (readExpression.IsNot)
-            {
-                newExpression = ContextProvider.Context.MkNot(newExpression);
-            }
-
-            return newExpression;
-        }
-
-        private static IEnumerable<IConstraintExpression> GetVOVExpressionsWithBothVarsOverwrittenByTransitionFiring(List<IConstraintExpression> expressionsWithOverwrite)
-        {
-            return expressionsWithOverwrite
-                .Where(x => x as ConstraintVOVExpression != null
-                    && expressionsWithOverwrite
-                        .Select(x => x.ConstraintVariable.Name)
-                        .Contains((x as ConstraintVOVExpression).VariableToCompare.Name));
-        }
-
         private static BoolExpr GenerateAndBlockExpression(IEnumerable<IConstraintExpression> expressionsWithOverwrite, IEnumerable<BoolExpr> updatedExpression)
         {
-            //var accumulatedExpr = ContextProvider.Context.MkAnd(updatedExpression);
             var targetExprList = new List<BoolExpr>();
             foreach (var targetExpr in expressionsWithOverwrite)
             {
                 // Write vars must become read ones
-                var clonedTargetExpr = targetExpr.CloneAsReadExpression();
-
-                targetExprList.Add(clonedTargetExpr.GetSmtExpression(ContextProvider.Context));
+                targetExprList.Add(targetExpr.CloneAsReadExpression().GetSmtExpression(ContextProvider.Context));
             }
             targetExprList.AddRange(updatedExpression);
+
             return ContextProvider.Context.MkAnd(targetExprList);
-        }        
-
-        private static Optimize SetOptimizer(IEnumerable<BoolExpr> concatenatedExpressionGroup, Expr? varToOverwrite)
-        {
-            var optimizer = ContextProvider.Context.MkOptimize();
-            foreach (var expression in concatenatedExpressionGroup)
-            {
-                optimizer.Assert(expression);
-            }
-            ArithExpr minimalPossibleValue = varToOverwrite.IsRatNum
-                ? ContextProvider.Context.MkReal(realMin.ToString(CultureInfo.InvariantCulture))
-                : ContextProvider.Context.MkInt(integerMin.ToString());
-
-            ArithExpr maximalPossibleValue = varToOverwrite.IsRatNum
-                ? ContextProvider.Context.MkReal(realMax.ToString(CultureInfo.InvariantCulture))
-                : ContextProvider.Context.MkInt(integerMax.ToString());
-
-            optimizer.Assert(ContextProvider.Context.MkGe((ArithExpr)varToOverwrite, minimalPossibleValue));
-            optimizer.Assert(ContextProvider.Context.MkLe((ArithExpr)varToOverwrite, maximalPossibleValue));
-
-            return optimizer;
         }        
 
         private static IEnumerable<BoolExpr[]> SplitSourceExpressionByOrDelimiter(BoolExpr source)
         {
             if (!source.IsOr)
             {
-                var expressionBlocks = new List<BoolExpr[]>();
                 var expressions = source.Args.Select(x => x as BoolExpr).ToArray();
-                expressionBlocks.Add(expressions);
-
-                return expressionBlocks;
+                return new List<BoolExpr[]> { expressions };
             }
 
             var appliedTactic = ContextProvider.Context.MkTactic("split-clause");
@@ -488,8 +356,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             goalToMakeOrSplit.Assert(source);
             var applyResult = appliedTactic.Apply(goalToMakeOrSplit);
 
-            var sourceExpressionBlocks = applyResult.Subgoals.Select(x => x.Formulas);
-            return sourceExpressionBlocks;
+            return applyResult.Subgoals.Select(x => x.Formulas);
         }
 
         private static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
