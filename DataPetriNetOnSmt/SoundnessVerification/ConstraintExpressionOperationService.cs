@@ -19,21 +19,72 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         {
             implicationService = new BoolExprImplicationService();
         }
-        // TODO: Rework - currently works incorrectly
-        public List<IConstraintExpression> InverseExpression(List<IConstraintExpression> expression)
+
+        public List<IConstraintExpression> GetInvertedReadExpression(List<IConstraintExpression> sourceExpression)
         {
-            if (expression is null)
+            if (sourceExpression is null)
             {
-                throw new ArgumentNullException(nameof(expression));
+                throw new ArgumentNullException(nameof(sourceExpression));
+            }
+            if (sourceExpression.Count == 0)
+            {
+                return sourceExpression;
             }
 
-            var result = new List<IConstraintExpression>();
-            foreach (var item in expression)
+            var blocks = new List<List<IConstraintExpression>>();
+            var expressionDuringExecution = new List<IConstraintExpression>(sourceExpression);
+            do
             {
-                result.Add(item.GetInvertedExpression());
+                var expressionBlock = CutFirstExpressionBlock(expressionDuringExecution)
+                    .GetExpressionsOfType(VariableType.Read)
+                    .Select(x => x.GetInvertedExpression())
+                    .ToList();
+
+                if (expressionBlock.Count > 0)
+                {
+                    blocks.Add(expressionBlock);
+                }
+            } while (expressionDuringExecution.Count > 0);
+
+            var allCombinations = GetAllPossibleCombos(blocks);
+            return MakeSingleExpressionListFromMultipleLists(allCombinations);
+        }
+
+        private static List<IConstraintExpression> MakeSingleExpressionListFromMultipleLists(List<List<IConstraintExpression>> allCombinations)
+        {
+            var resultExpression = new List<IConstraintExpression>();
+
+            foreach (var combination in allCombinations.Where(x=>x.Count > 0))
+            {
+                var firstExpressionInBlock = combination[0].Clone();
+                firstExpressionInBlock.LogicalConnective = LogicalConnective.Or;
+                resultExpression.Add(firstExpressionInBlock);
+
+                for (int i = 1; i < combination.Count; i++)
+                {
+                    var currentExpression = combination[i].Clone();
+                    currentExpression.LogicalConnective = LogicalConnective.And;
+                    resultExpression.Add(currentExpression);
+                }
+            }
+            if (resultExpression.Count > 0)
+            {
+                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
             }
 
-            return result;
+            return resultExpression;
+        }
+
+        private static List<List<IConstraintExpression>> GetAllPossibleCombos(List<List<IConstraintExpression>> expressions)
+        {
+            IEnumerable<List<IConstraintExpression>> combos = new[] { new List<IConstraintExpression>() };
+
+            foreach (var inner in expressions)
+                combos = from c in combos
+                         from i in inner
+                         select c.Union(new List<IConstraintExpression> { i }).ToList();
+
+            return combos.ToList();
         }
 
         public BoolExpr ShortenExpression(BoolExpr expression)
@@ -340,7 +391,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             targetExprList.AddRange(updatedExpression);
 
             return ContextProvider.Context.MkAnd(targetExprList);
-        }        
+        }
 
         private static IEnumerable<BoolExpr[]> SplitSourceExpressionByOrDelimiter(BoolExpr source)
         {

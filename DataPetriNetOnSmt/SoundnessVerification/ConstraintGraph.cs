@@ -68,9 +68,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
                     // Considering silent transition - check correctness of such negation [a && b || c && d] !!!!!!!!!!!!!!!!!!!!!!!!
                     var negatedGuardExpressions = expressionService
-                        .InverseExpression(transition.Guard.ConstraintExpressions
-                                                .GetExpressionsOfType(VariableType.Read)
-                                                .ToList());
+                        .GetInvertedReadExpression(transition.Guard.ConstraintExpressions);
 
                     if (negatedGuardExpressions.Count > 0)
                     {
