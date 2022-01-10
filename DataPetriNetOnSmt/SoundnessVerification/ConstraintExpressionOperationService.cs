@@ -54,7 +54,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         {
             var resultExpression = new List<IConstraintExpression>();
 
-            foreach (var combination in allCombinations.Where(x=>x.Count > 0))
+            foreach (var combination in allCombinations.Where(x => x.Count > 0))
             {
                 var firstExpressionInBlock = combination[0].Clone();
                 firstExpressionInBlock.LogicalConnective = LogicalConnective.Or;
@@ -244,6 +244,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 {
                     UpdateExpressionsBasedOnWrittenEquality(expressionGroupWithImplications, overwriteExpr, overwriteExpressionWithReadVars);
                 }
+                if (overwriteExpr.Predicate == BinaryPredicate.Unequal)
+                {
+                    UpdateExpressionsBasedOnWrittenUnequality(expressionGroupWithImplications, overwriteExpr, overwriteExpressionWithReadVars);
+                }
                 if (overwriteExpr.Predicate == BinaryPredicate.LessThan || overwriteExpr.Predicate == BinaryPredicate.LessThanOrEqual)
                 {
                     UpdateExpressionsBasedOnWrittenLessThan(concatenatedExpressionGroup, expressionGroupWithImplications, overwriteExpr, overwriteExpressionWithReadVars);
@@ -252,6 +256,37 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 {
                     UpdateExpressionsBasedOnWrittenGreaterThan(concatenatedExpressionGroup, expressionGroupWithImplications, overwriteExpr, overwriteExpressionWithReadVars);
                 }
+            }
+        }
+
+        private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        {
+            // Invert all existing equalities with overwritten var
+            foreach (var expressionToInvert in expressionGroupWithImplications
+                .Where(expression => expression.IsEq && expression.Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name)))
+            {
+                var oldValue = expressionToInvert.Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
+
+                var newExpression = implicationService.GetImplicationOfInequalityExpression(
+                    overwriteExpressionWithReadVars.Args[0],
+                    oldValue);
+
+                expressionGroupWithImplications.Add(newExpression);
+            }
+
+            // Invert all existing unequalities with overwritten var
+            foreach (var expressionToInvert in expressionGroupWithImplications
+                .Where(expression => expression.IsNot 
+                    && expression.Args[0].Args[0].IsBool 
+                    && expression.Args[0].Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name)))
+            {
+                var oldValue = expressionToInvert.Args[0].Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
+
+                var newExpression = implicationService.GetImplicationOfInequalityExpression(
+                    overwriteExpressionWithReadVars.Args[0],
+                    ContextProvider.Context.MkNot((BoolExpr)oldValue));
+
+                expressionGroupWithImplications.Add(newExpression);
             }
         }
 

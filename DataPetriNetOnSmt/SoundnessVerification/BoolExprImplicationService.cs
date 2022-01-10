@@ -18,7 +18,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         private const double realMax = 99999999999999;
         private const double realMin = -99999999999999;
 
-        public BoolExpr GetImplicationOfGreaterExpression(IEnumerable<BoolExpr> concatenatedExpressionGroup, BinaryPredicate predicate, Expr varToOverwrite, Expr secondVar)
+        public BoolExpr GetImplicationOfGreaterExpression(
+            IEnumerable<BoolExpr> concatenatedExpressionGroup, 
+            BinaryPredicate predicate, 
+            Expr varToOverwrite, 
+            Expr secondVar)
         {
             var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
 
@@ -41,7 +45,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             return ContextProvider.Context.MkFalse();
         }
 
-        public BoolExpr GetImplicationOfLessExpression(IEnumerable<BoolExpr> concatenatedExpressionGroup, BinaryPredicate predicate, Expr varToOverwrite, Expr secondVar)
+        public BoolExpr GetImplicationOfLessExpression(
+            IEnumerable<BoolExpr> concatenatedExpressionGroup, 
+            BinaryPredicate predicate, 
+            Expr varToOverwrite, 
+            Expr secondVar)
         {
             var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
 
@@ -62,6 +70,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
 
             return ContextProvider.Context.MkFalse();
+        }
+
+        public BoolExpr GetImplicationOfInequalityExpression(
+            Expr replacementVar,
+            Expr? oldValue)
+        {
+            return ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(replacementVar, oldValue));
         }
 
         public BoolExpr GetImplicationOfEqualityExpression(
