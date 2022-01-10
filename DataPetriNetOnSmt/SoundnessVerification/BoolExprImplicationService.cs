@@ -72,11 +72,33 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             return ContextProvider.Context.MkFalse();
         }
 
-        public BoolExpr GetImplicationOfInequalityExpression(
-            Expr replacementVar,
-            Expr? oldValue)
+        public BoolExpr? GetImplicationOfInequalityExpression(
+            IEnumerable<BoolExpr> concatenatedExpressionGroup,
+            Expr varToOverwrite,
+            Expr? secondVar)
         {
-            return ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(replacementVar, oldValue));
+            var solver = ContextProvider.Context.MkSimpleSolver();
+            solver.Assert(concatenatedExpressionGroup.ToArray());
+
+            if (solver.Check() == Status.SATISFIABLE)
+            {
+                var firstValue = solver.Model.Consts
+                    .FirstOrDefault(x => x.Key.Name.ToString() == varToOverwrite.ToString())
+                    .Value;
+
+                solver = ContextProvider.Context.MkSimpleSolver();
+                solver.Assert(concatenatedExpressionGroup.ToArray());
+
+                var expressionToAdd = ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(varToOverwrite, firstValue));
+                solver.Assert(expressionToAdd);
+
+                if (solver.Check() == Status.UNSATISFIABLE)
+                {
+                    return ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(secondVar, firstValue));
+                }
+            }
+
+            return null;
         }
 
         public BoolExpr GetImplicationOfEqualityExpression(

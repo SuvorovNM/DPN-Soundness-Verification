@@ -207,6 +207,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                                 sourceExpression,
                                 expressionToInspect);
                         }
+                        if (sourceExpression.IsNot)
+                        {
+                            UpdateExpressionsBasedOnReadUnequality(
+                                overwrittenVarNames,
+                                concatenatedExpressionGroup,
+                                expressionGroupWithImplications,
+                                sourceExpression);
+                        }
                         // Maybe we can add inequality when only one value is possible...
                         if (sourceExpression.IsLT || sourceExpression.IsLE)
                         {
@@ -259,34 +267,18 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
         }
 
-        private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> concatenatedExpressionGroup, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
-            // Invert all existing equalities with overwritten var
-            foreach (var expressionToInvert in expressionGroupWithImplications
-                .Where(expression => expression.IsEq && expression.Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name)))
+            var varToOverwrite = overwriteExpressionWithReadVars.Args[1];
+            var secondVar = overwriteExpressionWithReadVars.Args[0];
+
+            var newExpression = implicationService.GetImplicationOfInequalityExpression(concatenatedExpressionGroup,
+                varToOverwrite,
+                secondVar);
+
+            if (newExpression != null)
             {
-                var oldValue = expressionToInvert.Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
-
-                var newExpression = implicationService.GetImplicationOfInequalityExpression(
-                    overwriteExpressionWithReadVars.Args[0],
-                    oldValue);
-
-                expressionGroupWithImplications.Add(newExpression);
-            }
-
-            // Invert all existing unequalities with overwritten var
-            foreach (var expressionToInvert in expressionGroupWithImplications
-                .Where(expression => expression.IsNot 
-                    && expression.Args[0].Args[0].IsBool 
-                    && expression.Args[0].Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name)))
-            {
-                var oldValue = expressionToInvert.Args[0].Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
-
-                var newExpression = implicationService.GetImplicationOfInequalityExpression(
-                    overwriteExpressionWithReadVars.Args[0],
-                    ContextProvider.Context.MkNot((BoolExpr)oldValue));
-
-                expressionGroupWithImplications.Add(newExpression);
+                concatenatedExpressionGroup.Add(newExpression);
             }
         }
 
@@ -356,6 +348,26 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 secondVar);
 
             updatedExpression.Add(newExpression);
+        }
+
+        private void UpdateExpressionsBasedOnReadUnequality(
+            IEnumerable<string> overwrittenVarNames,
+            IEnumerable<BoolExpr> concatenatedExpressionGroup,
+            List<BoolExpr> updatedExpression,
+            BoolExpr sourceExpression)
+        {
+            var varToOverwrite = sourceExpression.Args[0].Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
+            var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
+
+            var newExpression = implicationService.GetImplicationOfInequalityExpression(
+                concatenatedExpressionGroup,
+                varToOverwrite,
+                secondVar);
+
+            if (newExpression != null)
+            {
+                updatedExpression.Add(newExpression);
+            }
         }
 
         private void UpdateExpressionsBasedOnReadLessExpression(
