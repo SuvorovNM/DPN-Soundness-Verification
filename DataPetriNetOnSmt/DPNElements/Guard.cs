@@ -43,6 +43,7 @@ namespace DataPetriNetOnSmt.DPNElements
             if (s.Check() == Status.SATISFIABLE)
             {
                 AssignLocalVariables(s);
+                IsSatisfied = true;
             }
 
             return IsSatisfied;

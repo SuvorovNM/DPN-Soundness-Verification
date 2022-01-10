@@ -474,7 +474,7 @@ namespace DataPetriNetOnSmt.Tests
             };
         }
 
-        //[TestMethod]        
+        [TestMethod]        
         public void RunDPN()
         {
             bool canMakeNextStep;
