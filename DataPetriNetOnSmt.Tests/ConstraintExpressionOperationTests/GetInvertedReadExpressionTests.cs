@@ -77,11 +77,13 @@ namespace DataPetriNetOnSmt.Tests.ConstraintExpressionOperationTests
         }
 
         [TestMethod]
-        public void InvertConjunctionOfReadAndWriteExpressions()
+        [DataRow(LogicalConnective.And)]
+        [DataRow(LogicalConnective.Or)]
+        public void InvertCombinationOfReadAndWriteExpressions(LogicalConnective connective)
         {
             IConstraintExpression writeExpression = GenerateWriteExpression();
             IConstraintExpression readExpression = GenerateReadVOCExpression();
-            readExpression.LogicalConnective = LogicalConnective.And;
+            readExpression.LogicalConnective = connective;
 
             var expressionListWithConjunctionOfReadAndWriteExpressions = new List<IConstraintExpression>() { writeExpression, readExpression };
 
@@ -186,6 +188,43 @@ namespace DataPetriNetOnSmt.Tests.ConstraintExpressionOperationTests
             Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression2.ConstraintVariable) == 2);
             Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression3.ConstraintVariable) == 2);
             Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression4.ConstraintVariable) == 2);
+
+            Assert.IsTrue(invertedList[0].LogicalConnective == LogicalConnective.Empty);
+            for (int i = 1; i < invertedList.Count; i += 2)
+                Assert.IsTrue(invertedList[i].LogicalConnective == LogicalConnective.And);
+            for (int i = 2; i < invertedList.Count; i += 2)
+                Assert.IsTrue(invertedList[i].LogicalConnective == LogicalConnective.Or);
+        }
+
+        [TestMethod]
+        [Description("Used for cases such as a_r AND b_r OR t_w OR c_r AND d_w - result must be a cartesian product without written vars")]
+        public void InvertDisjunctionOfConjunctionsOfReadAndWriteExpressions()
+        {
+            IConstraintExpression readExpression1 = GenerateReadVOVExpression();
+            IConstraintExpression readExpression2 = GenerateReadVOCExpression();
+            readExpression2.LogicalConnective = LogicalConnective.And;
+            IConstraintExpression writeExpression1 = GenerateWriteExpression();
+            writeExpression1.LogicalConnective = LogicalConnective.Or;
+            IConstraintExpression readExpression3 = GenerateReadVOCExpression();
+            readExpression3.LogicalConnective = LogicalConnective.Or;
+            IConstraintExpression writeExpression2 = GenerateWriteExpression();
+            writeExpression2.LogicalConnective = LogicalConnective.And;
+
+            var expressionListWithCombinationOfReadExpressions = new List<IConstraintExpression>()
+            {
+                readExpression1,
+                readExpression2,
+                writeExpression1,
+                readExpression3,
+                writeExpression2
+            };
+
+            var invertedList = constraintExpressionOperationService.GetInvertedReadExpression(expressionListWithCombinationOfReadExpressions);
+
+            Assert.IsTrue(invertedList.Count == 2 * 2);
+            Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression1.ConstraintVariable) == 1);
+            Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression2.ConstraintVariable) == 1);
+            Assert.IsTrue(invertedList.Count(x => x.ConstraintVariable == readExpression3.ConstraintVariable) == 2);
 
             Assert.IsTrue(invertedList[0].LogicalConnective == LogicalConnective.Empty);
             for (int i = 1; i < invertedList.Count; i += 2)
