@@ -20,10 +20,23 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         public BoolExpr GetImplicationOfGreaterExpression(
             IEnumerable<BoolExpr> concatenatedExpressionGroup, 
-            BinaryPredicate predicate, 
+            bool includeEquality, 
             Expr varToOverwrite, 
             Expr secondVar)
         {
+            if (concatenatedExpressionGroup == null)
+            {
+                throw new ArgumentNullException(nameof(concatenatedExpressionGroup));
+            }
+            if (varToOverwrite == null)
+            {
+                throw new ArgumentNullException(nameof(varToOverwrite));
+            }
+            if (secondVar == null)
+            {
+                throw new ArgumentNullException(nameof(secondVar));
+            }
+
             var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
 
             optimizer.MkMinimize(varToOverwrite);
@@ -36,21 +49,38 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 if (minVarValue.IsRatNum && minVarValue.ToString() != realMin.ToString()
                     || minVarValue.IsIntNum && minVarValue.ToString() != integerMin.ToString())
                 {
-                    return predicate == BinaryPredicate.GreaterThan
-                        ? ContextProvider.Context.MkGt((ArithExpr)secondVar, (ArithExpr)minVarValue)
-                        : ContextProvider.Context.MkGe((ArithExpr)secondVar, (ArithExpr)minVarValue);
+                    return includeEquality
+                        ? ContextProvider.Context.MkGe((ArithExpr)secondVar, (ArithExpr)minVarValue)
+                        : ContextProvider.Context.MkGt((ArithExpr)secondVar, (ArithExpr)minVarValue);
                 }
+
+                // If no value restrictions return true
+                return ContextProvider.Context.MkTrue();
             }
 
+            // If expressionGroup is unsatisfiable, false is returned
             return ContextProvider.Context.MkFalse();
         }
 
         public BoolExpr GetImplicationOfLessExpression(
-            IEnumerable<BoolExpr> concatenatedExpressionGroup, 
-            BinaryPredicate predicate, 
+            IEnumerable<BoolExpr> concatenatedExpressionGroup,
+            bool includeEquality,
             Expr varToOverwrite, 
             Expr secondVar)
         {
+            if (concatenatedExpressionGroup == null)
+            {
+                throw new ArgumentNullException(nameof(concatenatedExpressionGroup));
+            }
+            if (varToOverwrite == null)
+            {
+                throw new ArgumentNullException(nameof(varToOverwrite));
+            }
+            if (secondVar == null)
+            {
+                throw new ArgumentNullException(nameof(secondVar));
+            }
+
             var optimizer = SetOptimizer(concatenatedExpressionGroup, varToOverwrite);
 
             optimizer.MkMaximize(varToOverwrite);
@@ -63,20 +93,36 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 if (maxVarValue.IsRatNum && maxVarValue.ToString() != realMax.ToString()
                     || maxVarValue.IsIntNum && maxVarValue.ToString() != integerMax.ToString())
                 {
-                    return predicate == BinaryPredicate.LessThan
-                        ? ContextProvider.Context.MkLt((ArithExpr)secondVar, (ArithExpr)maxVarValue)
-                        : ContextProvider.Context.MkLe((ArithExpr)secondVar, (ArithExpr)maxVarValue);
+                    return includeEquality
+                        ? ContextProvider.Context.MkLe((ArithExpr)secondVar, (ArithExpr)maxVarValue)
+                        : ContextProvider.Context.MkLt((ArithExpr)secondVar, (ArithExpr)maxVarValue);
                 }
+                // If no value restrictions return true
+                return ContextProvider.Context.MkTrue();
             }
 
+            // If expressionGroup is unsatisfiable, false is returned
             return ContextProvider.Context.MkFalse();
         }
 
         public BoolExpr? GetImplicationOfInequalityExpression(
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             Expr varToOverwrite,
-            Expr? secondVar)
+            Expr secondVar)
         {
+            if (concatenatedExpressionGroup == null)
+            {
+                throw new ArgumentNullException(nameof(concatenatedExpressionGroup));
+            }
+            if (varToOverwrite == null)
+            {
+                throw new ArgumentNullException(nameof(varToOverwrite));
+            }
+            if (secondVar == null)
+            {
+                throw new ArgumentNullException(nameof(secondVar));
+            }
+
             var solver = ContextProvider.Context.MkSimpleSolver();
             solver.Assert(concatenatedExpressionGroup.ToArray());
 
@@ -85,6 +131,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 var firstValue = solver.Model.Consts
                     .FirstOrDefault(x => x.Key.Name.ToString() == varToOverwrite.ToString())
                     .Value;
+                if (firstValue == null)
+                {
+                    return null;
+                }
 
                 solver = ContextProvider.Context.MkSimpleSolver();
                 solver.Assert(concatenatedExpressionGroup.ToArray());
@@ -103,11 +153,24 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         public BoolExpr GetImplicationOfEqualityExpression(
             Expr replacementVar,
-            BoolExpr readExpression,
+            bool addNegation,
             BoolExpr? expressionToInspect,
             Expr? oldValue,
             int operandToSave)
         {
+            if (expressionToInspect == null)
+            {
+                throw new ArgumentNullException(nameof(expressionToInspect));
+            }          
+            if (oldValue == null)
+            {
+                throw new ArgumentNullException(nameof(oldValue));
+            }
+            if (replacementVar == null)
+            {
+                throw new ArgumentNullException(nameof(replacementVar));
+            }
+
             BoolExpr newExpression = null;
             if (expressionToInspect.IsEq)
             {
@@ -138,7 +201,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     : ContextProvider.Context.MkLt((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
 
-            if (readExpression.IsNot)
+            if (addNegation)
             {
                 newExpression = ContextProvider.Context.MkNot(newExpression);
             }

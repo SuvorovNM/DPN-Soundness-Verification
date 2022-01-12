@@ -254,7 +254,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 }
                 if (overwriteExpr.Predicate == BinaryPredicate.Unequal)
                 {
-                    UpdateExpressionsBasedOnWrittenUnequality(expressionGroupWithImplications, overwriteExpr, overwriteExpressionWithReadVars);
+                    UpdateExpressionsBasedOnWrittenUnequality(expressionGroupWithImplications, overwriteExpressionWithReadVars);
                 }
                 if (overwriteExpr.Predicate == BinaryPredicate.LessThan || overwriteExpr.Predicate == BinaryPredicate.LessThanOrEqual)
                 {
@@ -267,7 +267,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
         }
 
-        private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> concatenatedExpressionGroup, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
+        private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> concatenatedExpressionGroup, BoolExpr overwriteExpressionWithReadVars)
         {
             var varToOverwrite = overwriteExpressionWithReadVars.Args[1];
             var secondVar = overwriteExpressionWithReadVars.Args[0];
@@ -288,7 +288,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             var secondVar = overwriteExpressionWithReadVars.Args[0];
 
             var newExpression = implicationService.GetImplicationOfGreaterExpression(concatenatedExpressionGroup,
-                overwriteExpr.Predicate,
+                overwriteExpr.Predicate == BinaryPredicate.GreaterThanOrEqual,
                 varToOverwrite,
                 secondVar);
 
@@ -302,7 +302,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             var newExpression = implicationService.GetImplicationOfLessExpression(
                 concatenatedExpressionGroup,
-                overwriteExpr.Predicate,
+                overwriteExpr.Predicate == BinaryPredicate.LessThanOrEqual,
                 varToOverwrite,
                 secondVar);
 
@@ -321,7 +321,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
                     BoolExpr newExpression = implicationService.GetImplicationOfEqualityExpression(
                         overwriteExpressionWithReadVars.Args[0],
-                        readExpression,
+                        readExpression.IsNot,
                         expressionToInspect,
                         oldValue,
                         expressionToInspect.Args[0] == oldValue ? 0 : 1);
@@ -343,7 +343,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             var newExpression = implicationService.GetImplicationOfGreaterExpression(
                 concatenatedExpressionGroup,
-                sourceExpression.IsLT ? BinaryPredicate.LessThan : BinaryPredicate.LessThanOrEqual,
+                sourceExpression.IsGE,
                 varToOverwrite,
                 secondVar);
 
@@ -381,7 +381,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             var newExpression = implicationService.GetImplicationOfLessExpression(
                 concatenatedExpressionGroup,
-                sourceExpression.IsLT ? BinaryPredicate.LessThan : BinaryPredicate.LessThanOrEqual,
+                sourceExpression.IsLE,
                 varToOverwrite,
                 secondVar);
 
@@ -413,7 +413,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
                 var newExpression = implicationService.GetImplicationOfEqualityExpression(
                                         secondVar,
-                                        expression,
+                                        expression.IsNot,
                                         expressionToInspect,
                                         expressionToReplace.Args[operandToSave],
                                         operandToSave);
