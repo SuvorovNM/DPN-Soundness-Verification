@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetOnSmt.Tests.ConstraintExpressionOperationTests
+namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
 {
     [TestClass]
     public class GetInvertedReadExpressionTests
@@ -143,11 +143,11 @@ namespace DataPetriNetOnSmt.Tests.ConstraintExpressionOperationTests
             IConstraintExpression readExpression2 = GenerateReadVOCExpression();
             readExpression2.LogicalConnective = LogicalConnective.And;
 
-            var expressionListWithCombinationOfReadAndWriteExpressions = new List<IConstraintExpression>() 
-            { 
-                readExpression1, 
-                writeExpression, 
-                readExpression2 
+            var expressionListWithCombinationOfReadAndWriteExpressions = new List<IConstraintExpression>()
+            {
+                readExpression1,
+                writeExpression,
+                readExpression2
             };
 
             var invertedList = constraintExpressionOperationService.GetInvertedReadExpression(expressionListWithCombinationOfReadAndWriteExpressions);
@@ -173,9 +173,9 @@ namespace DataPetriNetOnSmt.Tests.ConstraintExpressionOperationTests
             IConstraintExpression readExpression4 = GenerateReadVOCExpression();
             readExpression4.LogicalConnective = LogicalConnective.And;
 
-            var expressionListWithCombinationOfReadExpressions = new List<IConstraintExpression>() 
-            { 
-                readExpression1, 
+            var expressionListWithCombinationOfReadExpressions = new List<IConstraintExpression>()
+            {
+                readExpression1,
                 readExpression2,
                 readExpression3,
                 readExpression4
