@@ -155,8 +155,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             Expr replacementVar,
             bool addNegation,
             BoolExpr? expressionToInspect,
-            Expr? oldValue,
-            int operandToSave)
+            Expr? oldValue)
         {
             if (expressionToInspect == null)
             {
@@ -178,25 +177,25 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             }
             if (expressionToInspect.IsGT)
             {
-                newExpression = operandToSave == 0
+                newExpression = expressionToInspect.Args[0] == oldValue
                     ? ContextProvider.Context.MkGt((ArithExpr)oldValue, (ArithExpr)replacementVar)
                     : ContextProvider.Context.MkGt((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsGE)
             {
-                newExpression = operandToSave == 0
+                newExpression = expressionToInspect.Args[0] == oldValue
                    ? ContextProvider.Context.MkGe((ArithExpr)oldValue, (ArithExpr)replacementVar)
                    : ContextProvider.Context.MkGe((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsLE)
             {
-                newExpression = operandToSave == 0
+                newExpression = expressionToInspect.Args[0] == oldValue
                    ? ContextProvider.Context.MkLe((ArithExpr)oldValue, (ArithExpr)replacementVar)
                    : ContextProvider.Context.MkLe((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsLT)
             {
-                newExpression = operandToSave == 0
+                newExpression = expressionToInspect.Args[0] == oldValue
                     ? ContextProvider.Context.MkLt((ArithExpr)oldValue, (ArithExpr)replacementVar)
                     : ContextProvider.Context.MkLt((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }

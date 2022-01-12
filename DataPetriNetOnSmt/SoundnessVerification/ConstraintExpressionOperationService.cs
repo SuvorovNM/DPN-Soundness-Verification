@@ -323,8 +323,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                         overwriteExpressionWithReadVars.Args[0],
                         readExpression.IsNot,
                         expressionToInspect,
-                        oldValue,
-                        expressionToInspect.Args[0] == oldValue ? 0 : 1);
+                        oldValue);
 
                     addedExpressions.Add(newExpression);
                 }
@@ -415,8 +414,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                                         secondVar,
                                         expression.IsNot,
                                         expressionToInspect,
-                                        expressionToReplace.Args[operandToSave],
-                                        operandToSave);
+                                        expressionToReplace.Args[operandToSave]);
 
                 updatedExpression.Add(newExpression);
 
