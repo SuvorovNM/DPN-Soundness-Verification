@@ -399,6 +399,67 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
 
         #endregion
 
+        #region GetImplicationOfEquality
+
+
+        [TestMethod]
+        public void GetImplicationOfEqualityExpressionFromEqualityExpression()
+        {
+            var replacementVar = ContextProvider.Context.MkConst("secondIntVar", ContextProvider.Context.MkIntSort());
+            var expressionToInspect = GetExpressionWithVarOverwrittenInsideBounds();
+            var oldVar = expressionToInspect.Args[1];
+
+            var resultExpression = exprImplicationService.GetImplicationOfEqualityExpression(replacementVar, false, expressionToInspect, oldVar);
+
+            Assert.IsTrue(resultExpression.IsEq);
+            Assert.IsTrue(resultExpression.Args.Any(x=>x.ToString() == replacementVar.ToString()));
+            Assert.IsTrue(resultExpression.Args.Any(x=>x.ToString() == oldVar.ToString()));
+        }
+
+        [TestMethod]
+        public void GetImplicationOfEqualityExpressionFromUnequalityExpression()
+        {
+            var replacementVar = ContextProvider.Context.MkConst("secondIntVar", ContextProvider.Context.MkIntSort());
+            var expressionToInspect = GetExpressionWithVarOverwrittenInsideBounds();
+            var oldVar = expressionToInspect.Args[1];
+
+            var resultExpression = exprImplicationService.GetImplicationOfEqualityExpression(replacementVar, true, expressionToInspect, oldVar);
+
+            Assert.IsTrue(resultExpression.IsNot && resultExpression.Args[0].IsEq);
+            Assert.IsTrue(resultExpression.Args[0].Args.Any(x => x.ToString() == replacementVar.ToString()));
+            Assert.IsTrue(resultExpression.Args[0].Args.Any(x => x.ToString() == oldVar.ToString()));
+        }
+
+        [TestMethod]
+        public void GetImplicationOfEqualityExpressionFromLessExpression()
+        {
+            var replacementVar = ContextProvider.Context.MkConst("secondIntVar", ContextProvider.Context.MkIntSort());
+            var expressionToInspect = GetExpressionWithVarOverwrittenUpperBound();
+            var oldVar = expressionToInspect.Args[1];
+
+            var resultExpression = exprImplicationService.GetImplicationOfEqualityExpression(replacementVar, false, expressionToInspect, oldVar);
+
+            Assert.IsTrue(resultExpression.IsLE);
+            Assert.IsTrue(resultExpression.Args.Any(x => x.ToString() == replacementVar.ToString()));
+            Assert.IsTrue(resultExpression.Args.Any(x => x.ToString() == oldVar.ToString()));
+        }
+
+        [TestMethod]
+        public void GetImplicationOfEqualityExpressionFromGreaterExpression()
+        {
+            var replacementVar = ContextProvider.Context.MkConst("secondIntVar", ContextProvider.Context.MkIntSort());
+            var expressionToInspect = GetExpressionWithVarOverwrittenLowerBound();
+            var oldVar = expressionToInspect.Args[1];
+
+            var resultExpression = exprImplicationService.GetImplicationOfEqualityExpression(replacementVar, false, expressionToInspect, oldVar);
+
+            Assert.IsTrue(resultExpression.IsGE);
+            Assert.IsTrue(resultExpression.Args.Any(x => x.ToString() == replacementVar.ToString()));
+            Assert.IsTrue(resultExpression.Args.Any(x => x.ToString() == oldVar.ToString()));
+        }
+
+        #endregion
+
         private BoolExpr GetExpressionWithNoVarOverwritten()
         {
             var intVariable = ContextProvider.Context.MkConst("varNotOverwritten", ContextProvider.Context.MkIntSort());
