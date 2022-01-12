@@ -427,13 +427,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         private static BoolExpr GenerateAndBlockExpression(IEnumerable<IConstraintExpression> expressionsWithOverwrite, IEnumerable<BoolExpr> updatedExpression)
         {
-            var targetExprList = new List<BoolExpr>();
+            var targetExprList = new List<BoolExpr>(updatedExpression);
             foreach (var targetExpr in expressionsWithOverwrite)
             {
                 // Write vars must become read ones
                 targetExprList.Add(targetExpr.CloneAsReadExpression().GetSmtExpression(ContextProvider.Context));
             }
-            targetExprList.AddRange(updatedExpression);
 
             return ContextProvider.Context.MkAnd(targetExprList);
         }
