@@ -215,11 +215,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             {
                 optimizer.Assert(expression);
             }
-            ArithExpr minimalPossibleValue = varToOverwrite.IsRatNum
+            ArithExpr minimalPossibleValue = varToOverwrite.IsReal
                 ? ContextProvider.Context.MkReal(realMin.ToString(CultureInfo.InvariantCulture))
                 : ContextProvider.Context.MkInt(integerMin.ToString());
 
-            ArithExpr maximalPossibleValue = varToOverwrite.IsRatNum
+            ArithExpr maximalPossibleValue = varToOverwrite.IsReal
                 ? ContextProvider.Context.MkReal(realMax.ToString(CultureInfo.InvariantCulture))
                 : ContextProvider.Context.MkInt(integerMax.ToString());
 

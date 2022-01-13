@@ -188,6 +188,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         private void UpdateImplicationsBasedOnReadExpressions(IEnumerable<string> overwrittenVarNames, IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications)
         {
+            var expressionsToRemove = new List<BoolExpr>();
             foreach (var sourceExpression in concatenatedExpressionGroup)
             {
                 var expressionToInspect = sourceExpression.GetExpressionWithoutNotClause();
@@ -196,7 +197,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     && expressionToInspect.Args.Any(x => overwrittenVarNames.Contains(x.ToString())))
                 {
                     if (!expressionToInspect.Args.All(x => overwrittenVarNames.Contains(x.ToString()))
-                        && !expressionToInspect.Args.Any(x => x.IsConst))
+                        && expressionToInspect.Args.All(x => x.IsConst))
                     {
                         if (sourceExpression.IsEq) // Check - may not work!
                         {
@@ -235,9 +236,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                                 sourceExpression);
                         }
                     }
-                    expressionGroupWithImplications.Remove(sourceExpression);
+                    expressionsToRemove.Add(sourceExpression);
                 }
             }
+
+            expressionsToRemove.ForEach(x => expressionGroupWithImplications.Remove(x));
         }
 
         private void AddImplicationsBasedOnWriteExpressions(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, IEnumerable<IConstraintExpression> bothOverwrittenExpressions)
@@ -292,7 +295,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 varToOverwrite,
                 secondVar);
 
-            expressionGroupWithImplications.Add(newExpression);
+            if (!newExpression.IsTrue)
+                expressionGroupWithImplications.Add(newExpression);
         }
 
         private void UpdateExpressionsBasedOnWrittenLessThan(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
@@ -306,19 +310,21 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 varToOverwrite,
                 secondVar);
 
-            expressionGroupWithImplications.Add(newExpression);
+            if (!newExpression.IsTrue)
+                expressionGroupWithImplications.Add(newExpression);
         }
 
         private void UpdateExpressionsBasedOnWrittenEquality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
             var addedExpressions = new List<BoolExpr>();
+            var overwriteVarName = overwriteExpr.VariableToCompare.Name + "_r";
             foreach (var readExpression in expressionGroupWithImplications)
             {
                 var expressionToInspect = readExpression.GetExpressionWithoutNotClause();
 
-                if (expressionToInspect.Args.Any(x => x.ToString() == overwriteExpr.VariableToCompare.Name))
+                if (expressionToInspect.Args.Any(x => x.ToString() == overwriteVarName))
                 {
-                    var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteExpr.VariableToCompare.Name != x.ToString());
+                    var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteVarName != x.ToString());
                     BoolExpr newExpression = implicationService.GetImplicationOfEqualityExpression(
                         overwriteExpressionWithReadVars.Args[0],
                         readExpression.IsNot,
@@ -346,7 +352,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 varToOverwrite,
                 secondVar);
 
-            updatedExpression.Add(newExpression);
+            if (!newExpression.IsTrue)
+                updatedExpression.Add(newExpression);
         }
 
         private void UpdateExpressionsBasedOnReadUnequality(
@@ -384,7 +391,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 varToOverwrite,
                 secondVar);
 
-            updatedExpression.Add(newExpression);
+            if (!newExpression.IsTrue)
+                updatedExpression.Add(newExpression);
         }
 
         private void UpdateExpressionsBasedOnReadEquality(
@@ -413,7 +421,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 var newExpression = implicationService.GetImplicationOfEqualityExpression(
                                         secondVar,
                                         expression.IsNot,
-                                        expressionToInspect,
+                                        expressionToReplace,
                                         expressionToReplace.Args[operandToSave]);
 
                 updatedExpression.Add(newExpression);
@@ -434,7 +442,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 targetExprList.Add(targetExpr.CloneAsReadExpression().GetSmtExpression(ContextProvider.Context));
             }
 
-            return ContextProvider.Context.MkAnd(targetExprList);
+            return targetExprList.Count > 0
+                ? ContextProvider.Context.MkAnd(targetExprList)
+                : ContextProvider.Context.MkTrue();
         }
 
         private static IEnumerable<BoolExpr[]> SplitSourceExpressionByOrDelimiter(BoolExpr source)
