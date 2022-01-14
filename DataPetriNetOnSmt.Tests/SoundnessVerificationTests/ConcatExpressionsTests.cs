@@ -336,9 +336,9 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
         public void ConcatVOCExpressionWithVOVExpressionForUnusedVar(VariableType varType)
         {
             var sourceExpression = MakeVOCConstraintsExpression();
-            var targetExpressionListWithSingleExpression = new List<IConstraintExpression> 
-            { 
-                MakeVOVConstraintForNonusedVar(varType) 
+            var targetExpressionListWithSingleExpression = new List<IConstraintExpression>
+            {
+                MakeVOVConstraintForNonusedVar(varType)
             };
 
             var resultExpression = constraintExpressionOperationService.ConcatExpressions(sourceExpression, targetExpressionListWithSingleExpression);
@@ -425,9 +425,9 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
                 MakeVOCConstraintForOverwrittenUsedVarWithExpectedImplications(VariableType.Written)
             };
 
-            var expressionsToOverwriteInFirstBlock = new[] 
-            { 
-                sourceExpression.Args[0].Args[0], 
+            var expressionsToOverwriteInFirstBlock = new[]
+            {
+                sourceExpression.Args[0].Args[0],
                 sourceExpression.Args[0].Args[1],
                 sourceExpression.Args[0].Args[5],
             };
@@ -670,7 +670,7 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
                         LogicalConnective = LogicalConnective.Empty,
                         Predicate = BinaryPredicate.GreaterThan,
                         Constant = new DefinableValue<long>(0)
-                    }.GetSmtExpression(ContextProvider.Context),                    
+                    }.GetSmtExpression(ContextProvider.Context),
                 }));
 
             var expectedSecondBlock = sourceExpression.Args[1];
@@ -733,6 +733,47 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
             var expectedExpression = ContextProvider.Context.MkAnd(expectedExpressionBlock);
 
             var resultExpression = constraintExpressionOperationService.ConcatExpressions(sourceExpression, targetExpressionListWithEqualityExpressions);
+
+            Assert.AreEqual(expectedExpression.ToString(), resultExpression.ToString());
+        }
+
+        [TestMethod]
+        public void ConcatCombinedUnequalityExpressionsWithVOVUnequalityExpressions()
+        {
+            var sourceExpression = MakeCombinedConstraintsWithUnequalitiesExpression();
+            var targetExpressionListWithUnequalityExpressions = MakeVOVUnequalityExpressions(VariableType.Written);
+
+            var expectedExpressionBlock = new List<BoolExpr>
+            {
+                new ConstraintVOCExpression<long>
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = a,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    },
+                    Constant = new DefinableValue<long>(1),
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Unequal
+                }.GetSmtExpression(ContextProvider.Context),
+
+                new ConstraintVOCExpression<long>
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = d,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    },
+                    Constant = new DefinableValue<long>(1),
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Unequal
+                }.GetSmtExpression(ContextProvider.Context),
+            };
+            var expectedExpression = ContextProvider.Context.MkAnd(expectedExpressionBlock);
+
+            var resultExpression = constraintExpressionOperationService.ConcatExpressions(sourceExpression, targetExpressionListWithUnequalityExpressions);
 
             Assert.AreEqual(expectedExpression.ToString(), resultExpression.ToString());
         }
@@ -848,6 +889,108 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
             };
 
             return ContextProvider.Context.MkAnd(expression);
+        }
+
+        private BoolExpr MakeCombinedConstraintsWithUnequalitiesExpression()
+        {
+            var aVariable = ContextProvider.Context.MkConst(a + "_r", ContextProvider.Context.MkIntSort());
+            var eVariable = ContextProvider.Context.MkConst(e + "_r", ContextProvider.Context.MkIntSort());
+            var fVariable = ContextProvider.Context.MkConst(f + "_r", ContextProvider.Context.MkIntSort());
+            var dVariable = ContextProvider.Context.MkConst(d + "_r", ContextProvider.Context.MkIntSort());
+
+            //var fUnequalsA = ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(fVariable, aVariable));
+            var fUnequalsE = ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(fVariable, eVariable));
+            var aUnequalsD = ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(aVariable, dVariable));
+            var dUnquals1 = ContextProvider.Context.MkEq(dVariable, ContextProvider.Context.MkInt(1));
+            var eLess2 = ContextProvider.Context.MkLt((ArithExpr)eVariable, ContextProvider.Context.MkInt(2));
+            var eGreater0 = ContextProvider.Context.MkGt((ArithExpr)eVariable, ContextProvider.Context.MkInt(0));
+
+            var expression = new BoolExpr[]
+            {
+                //fUnequalsA,
+                fUnequalsE,
+                aUnequalsD,
+                dUnquals1,
+                eLess2,
+                eGreater0
+            };
+
+            return ContextProvider.Context.MkAnd(expression);
+        }
+
+        private List<IConstraintExpression> MakeVOVUnequalityExpressions(VariableType varType)
+        {
+            return new List<IConstraintExpression>
+            {
+                new ConstraintVOVExpression
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = f,
+                        Domain = DomainType.Integer,
+                        VariableType = varType
+                    },
+                    LogicalConnective = LogicalConnective.Empty,
+                    Predicate = BinaryPredicate.Unequal,
+                    VariableToCompare = new ConstraintVariable
+                    {
+                        Name = a,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    }
+                },
+                new ConstraintVOVExpression
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = a,
+                        Domain = DomainType.Integer,
+                        VariableType = varType
+                    },
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Unequal,
+                    VariableToCompare = new ConstraintVariable
+                    {
+                        Name = d,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    }
+                },
+                new ConstraintVOVExpression
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = d,
+                        Domain = DomainType.Integer,
+                        VariableType = varType
+                    },
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Unequal,
+                    VariableToCompare = new ConstraintVariable
+                    {
+                        Name = e,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    }
+                },
+                new ConstraintVOVExpression
+                {
+                    ConstraintVariable = new ConstraintVariable
+                    {
+                        Name = e,
+                        Domain = DomainType.Integer,
+                        VariableType = varType
+                    },
+                    LogicalConnective = LogicalConnective.And,
+                    Predicate = BinaryPredicate.Unequal,
+                    VariableToCompare = new ConstraintVariable
+                    {
+                        Name = f,
+                        Domain = DomainType.Integer,
+                        VariableType = VariableType.Read
+                    }
+                }
+            };
         }
 
         private List<IConstraintExpression> MakeVOVEqualityExpressions(VariableType varType)
