@@ -189,58 +189,79 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         private void UpdateImplicationsBasedOnReadExpressions(IEnumerable<string> overwrittenVarNames, IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications)
         {
             var expressionsToRemove = new List<BoolExpr>();
-            foreach (var sourceExpression in concatenatedExpressionGroup)
-            {
-                var expressionToInspect = sourceExpression.GetExpressionWithoutNotClause();
+            var expressionsUpdated = false;
+            var finalImplications = new List<BoolExpr>();
 
-                if (expressionGroupWithImplications.Contains(sourceExpression) // Нужна ли эта проверка?
-                    && expressionToInspect.Args.Any(x => overwrittenVarNames.Contains(x.ToString())))
-                {
-                    if (!expressionToInspect.Args.All(x => overwrittenVarNames.Contains(x.ToString()))
-                        && expressionToInspect.Args.All(x => x.IsConst))
-                    {
-                        if (sourceExpression.IsEq) // Check - may not work!
-                        {
-                            UpdateExpressionsBasedOnReadEquality(
-                                overwrittenVarNames,
-                                concatenatedExpressionGroup,
-                                expressionGroupWithImplications,
-                                sourceExpression,
-                                expressionToInspect);
-                        }
-                        if (sourceExpression.IsNot)
-                        {
-                            UpdateExpressionsBasedOnReadUnequality(
-                                overwrittenVarNames,
-                                concatenatedExpressionGroup,
-                                expressionGroupWithImplications,
-                                sourceExpression);
-                        }
-                        // Maybe we can add inequality when only one value is possible...
-                        if (sourceExpression.IsLT || sourceExpression.IsLE)
-                        {
-                            // Find max by optimization
-                            UpdateExpressionsBasedOnReadLessExpression(
-                                overwrittenVarNames,
-                                concatenatedExpressionGroup,
-                                expressionGroupWithImplications,
-                                sourceExpression);
-                        }
-                        if (sourceExpression.IsGT || sourceExpression.IsGE)
-                        {
-                            // Find min by optimization
-                            UpdateExpressionsBasedOnReadGreaterExpression(
-                                overwrittenVarNames,
-                                concatenatedExpressionGroup,
-                                expressionGroupWithImplications,
-                                sourceExpression);
-                        }
-                    }
-                    expressionsToRemove.Add(sourceExpression);
-                }
+            finalImplications.AddRange(expressionGroupWithImplications
+                .Except(concatenatedExpressionGroup)
+                .Where(x => x.Args.Any(y => !overwrittenVarNames.Contains(y.ToString()))));
+
+            foreach(var implication in finalImplications)
+            {
+                expressionGroupWithImplications.Remove(implication);
             }
 
-            expressionsToRemove.ForEach(x => expressionGroupWithImplications.Remove(x));
+            do
+            {
+                expressionsUpdated = false;
+                var expressionsToExamine = new List<BoolExpr>(expressionGroupWithImplications);
+                foreach (var sourceExpression in expressionsToExamine)
+                {
+                    var expressionToInspect = sourceExpression.GetExpressionWithoutNotClause();
+
+                    if (expressionToInspect.Args.Any(x => overwrittenVarNames.Contains(x.ToString())))
+                    //&& expressionGroupWithImplications.Contains(sourceExpression) // Нужна ли эта проверка?
+                    {
+                        if (expressionToInspect.Args.All(x => x.IsConst))
+                        {
+                            if (sourceExpression.IsEq) // Check - may not work!
+                            {
+                                UpdateExpressionsBasedOnReadEquality(
+                                    overwrittenVarNames,
+                                    concatenatedExpressionGroup,
+                                    expressionGroupWithImplications,
+                                    sourceExpression,
+                                    expressionToInspect,
+                                    finalImplications);
+                            }
+                            if (sourceExpression.IsNot)
+                            {
+                                UpdateExpressionsBasedOnReadUnequality(
+                                    overwrittenVarNames,
+                                    concatenatedExpressionGroup,
+                                    expressionGroupWithImplications,
+                                    sourceExpression);
+                            }
+                            // Maybe we can add inequality when only one value is possible...
+                            if (sourceExpression.IsLT || sourceExpression.IsLE)
+                            {
+                                // Find max by optimization
+                                UpdateExpressionsBasedOnReadLessExpression(
+                                    overwrittenVarNames,
+                                    concatenatedExpressionGroup,
+                                    expressionGroupWithImplications,
+                                    sourceExpression);
+                            }
+                            if (sourceExpression.IsGT || sourceExpression.IsGE)
+                            {
+                                // Find min by optimization
+                                UpdateExpressionsBasedOnReadGreaterExpression(
+                                    overwrittenVarNames,
+                                    concatenatedExpressionGroup,
+                                    expressionGroupWithImplications,
+                                    sourceExpression);
+                            }
+                        }
+                        expressionsToRemove.Add(sourceExpression);
+                    }
+                }
+                expressionsToRemove.ForEach(x => expressionGroupWithImplications.Remove(x));
+                if (!expressionGroupWithImplications.SequenceEqual(expressionsToExamine))
+                {
+                    expressionsUpdated = true;
+                }
+            } while (expressionsUpdated);
+            expressionGroupWithImplications.AddRange(finalImplications);        
         }
 
         private void AddImplicationsBasedOnWriteExpressions(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, IEnumerable<IConstraintExpression> bothOverwrittenExpressions)
@@ -316,25 +337,38 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         private void UpdateExpressionsBasedOnWrittenEquality(List<BoolExpr> expressionGroupWithImplications, ConstraintVOVExpression overwriteExpr, BoolExpr overwriteExpressionWithReadVars)
         {
-            var addedExpressions = new List<BoolExpr>();
             var overwriteVarName = overwriteExpr.VariableToCompare.Name + "_r";
-            foreach (var readExpression in expressionGroupWithImplications)
+            bool addedExpressionsListUpdated;
+            do
             {
-                var expressionToInspect = readExpression.GetExpressionWithoutNotClause();
-
-                if (expressionToInspect.Args.Any(x => x.ToString() == overwriteVarName))
+                var addedExpressions = new List<BoolExpr>();
+                addedExpressionsListUpdated = false;
+                foreach (var readExpression in expressionGroupWithImplications)
                 {
-                    var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteVarName != x.ToString());
-                    BoolExpr newExpression = implicationService.GetImplicationOfEqualityExpression(
-                        overwriteExpressionWithReadVars.Args[0],
-                        readExpression.IsNot,
-                        expressionToInspect,
-                        oldValue);
+                    var expressionToInspect = readExpression.GetExpressionWithoutNotClause();
 
-                    addedExpressions.Add(newExpression);
+                    if (expressionToInspect.Args.Any(x => x.ToString() == overwriteVarName))
+                    {
+                        var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteVarName != x.ToString());
+
+                        if (oldValue.ToString() != overwriteExpressionWithReadVars.Args[0].ToString())
+                        {
+                            BoolExpr newExpression = implicationService.GetImplicationOfEqualityExpression(
+                                overwriteExpressionWithReadVars.Args[0],
+                                readExpression.IsNot,
+                                expressionToInspect,
+                                oldValue);
+
+                            if (!expressionGroupWithImplications.Select(x => x.ToString()).Contains(newExpression.ToString()))
+                            {
+                                addedExpressions.Add(newExpression);
+                                addedExpressionsListUpdated = true;
+                            }
+                        }
+                    }
                 }
-            }
-            expressionGroupWithImplications.AddRange(addedExpressions);
+                expressionGroupWithImplications.AddRange(addedExpressions);
+            } while (addedExpressionsListUpdated);
         }
 
         private void UpdateExpressionsBasedOnReadGreaterExpression(
@@ -346,13 +380,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
 
-            var newExpression = implicationService.GetImplicationOfGreaterExpression(
+            var newExpression = sourceExpression.Args[0] == secondVar
+                ? implicationService.GetImplicationOfGreaterExpression(
                 concatenatedExpressionGroup,
                 sourceExpression.IsGE,
                 varToOverwrite,
+                secondVar)
+                : implicationService.GetImplicationOfLessExpression(
+                concatenatedExpressionGroup,
+                sourceExpression.IsLE,
+                varToOverwrite,
                 secondVar);
 
-            if (!newExpression.IsTrue)
+            if (!newExpression.IsTrue && !updatedExpression.Select(x => x.ToString()).Contains(newExpression.ToString()))
                 updatedExpression.Add(newExpression);
         }
 
@@ -370,7 +410,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 varToOverwrite,
                 secondVar);
 
-            if (newExpression != null)
+            if (newExpression != null && !updatedExpression.Select(x => x.ToString()).Contains(newExpression.ToString()))
             {
                 updatedExpression.Add(newExpression);
             }
@@ -385,13 +425,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
 
-            var newExpression = implicationService.GetImplicationOfLessExpression(
+            var newExpression = sourceExpression.Args[0] == secondVar
+                ? implicationService.GetImplicationOfLessExpression(
+                concatenatedExpressionGroup,
+                sourceExpression.IsLE,
+                varToOverwrite,
+                secondVar)
+                : implicationService.GetImplicationOfGreaterExpression(
                 concatenatedExpressionGroup,
                 sourceExpression.IsLE,
                 varToOverwrite,
                 secondVar);
 
-            if (!newExpression.IsTrue)
+            if (!newExpression.IsTrue && !updatedExpression.Select(x => x.ToString()).Contains(newExpression.ToString()))
                 updatedExpression.Add(newExpression);
         }
 
@@ -400,16 +446,34 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             List<BoolExpr> updatedExpression,
             BoolExpr sourceExpression,
-            BoolExpr? expressionToInspect)
+            BoolExpr? expressionToInspect,
+            List<BoolExpr> finalImplications)
         {
             var varToOverwrite = expressionToInspect.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
-            var secondVar = expressionToInspect.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
+            var secondVar = expressionToInspect.Args.FirstOrDefault(x => x != varToOverwrite);
 
+            UpdateExpressionsByEqualityForGivenVars(overwrittenVarNames, concatenatedExpressionGroup, updatedExpression, sourceExpression, varToOverwrite, secondVar, finalImplications);
+
+            if (overwrittenVarNames.Contains(secondVar.ToString()))
+            {
+                UpdateExpressionsByEqualityForGivenVars(overwrittenVarNames, concatenatedExpressionGroup, updatedExpression, sourceExpression, secondVar, varToOverwrite, finalImplications);
+            }
+        }
+
+        private void UpdateExpressionsByEqualityForGivenVars(
+            IEnumerable<string> overwrittenVarNames,
+            IEnumerable<BoolExpr> concatenatedExpressionGroup,
+            List<BoolExpr> updatedExpression,
+            BoolExpr sourceExpression,
+            Expr? varToOverwrite,
+            Expr? secondVar,
+            List<BoolExpr> finalImplications)
+        {
             var allBoolExpressionsWithOverwrittenVar = concatenatedExpressionGroup // Clarify, does it work
-                .Where(x => (x.Args.Contains(varToOverwrite) && !expressionToInspect.Args.All(x => overwrittenVarNames.Contains(x.ToString())))
-                    || (x.IsNot && x.Args[0].Args.Contains(varToOverwrite) && !expressionToInspect.Args[0].Args.All(x => overwrittenVarNames.Contains(x.ToString()))))
-                .Except(new[] { sourceExpression })
-                .ToList();
+                            .Where(x => (x.Args.Contains(varToOverwrite))
+                                || (x.IsNot && x.Args[0].Args.Contains(varToOverwrite)))
+                            .Except(new[] { sourceExpression })
+                            .ToList();
 
             foreach (var expression in allBoolExpressionsWithOverwrittenVar)
             {
@@ -418,17 +482,31 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
                 var operandToSave = expressionToReplace.Args[0] == varToOverwrite ? 1 : 0;// Take var/const opposite to varToOverwrite
 
-                var newExpression = implicationService.GetImplicationOfEqualityExpression(
-                                        secondVar,
-                                        expression.IsNot,
-                                        expressionToReplace,
-                                        expressionToReplace.Args[operandToSave]);
-
-                updatedExpression.Add(newExpression);
-
-                if (updatedExpression.Contains(expression))
+                if (secondVar != expressionToReplace.Args[operandToSave])
                 {
-                    updatedExpression.Remove(expression);
+                    var newExpression = implicationService.GetImplicationOfEqualityExpression(
+                                            secondVar,
+                                            expression.IsNot,
+                                            expressionToReplace,
+                                            expressionToReplace.Args[operandToSave]);
+
+                    if (!updatedExpression.Select(x => x.ToString()).Contains(newExpression.ToString()) &&
+                        newExpression.Args.All(x => x.IsConst))
+                    {
+                        updatedExpression.Add(newExpression);
+                    }
+                    else
+                    {
+                        if (!finalImplications.Select(x => x.ToString()).Contains(newExpression.ToString()) && newExpression.Args.Any(x => !x.IsConst))
+                        {
+                            finalImplications.Add(newExpression);
+                        }
+                    }
+
+                    if (updatedExpression.Contains(expression))
+                    {
+                        updatedExpression.Remove(expression);
+                    }
                 }
             }
         }
