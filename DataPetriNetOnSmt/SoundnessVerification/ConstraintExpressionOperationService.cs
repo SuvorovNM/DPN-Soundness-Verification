@@ -293,8 +293,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         private void UpdateExpressionsBasedOnWrittenUnequality(List<BoolExpr> concatenatedExpressionGroup, BoolExpr overwriteExpressionWithReadVars)
         {
-            var varToOverwrite = overwriteExpressionWithReadVars.Args[1];
-            var secondVar = overwriteExpressionWithReadVars.Args[0];
+            var varToOverwrite = overwriteExpressionWithReadVars.Args[0].Args[1];
+            var secondVar = overwriteExpressionWithReadVars.Args[0].Args[0];
 
             var newExpression = implicationService.GetImplicationOfInequalityExpression(concatenatedExpressionGroup,
                 varToOverwrite,
@@ -403,7 +403,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             BoolExpr sourceExpression)
         {
             var varToOverwrite = sourceExpression.Args[0].Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
-            var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
+            var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => x!= varToOverwrite);
 
             var newExpression = implicationService.GetImplicationOfInequalityExpression(
                 concatenatedExpressionGroup,
