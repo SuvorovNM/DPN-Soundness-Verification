@@ -177,7 +177,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     // Secondly, go by read expressions and make implications based on those which contain a variable overwritten by a transition firing
                     UpdateImplicationsBasedOnReadExpressions(overwrittenVarNames, concatenatedExpressionGroup, expressionGroupWithImplications);
 
-                    andBlockExpressions.Add(GenerateAndBlockExpression(expressionsWithOverwrite.Except(bothOverwrittenExpressions), expressionGroupWithImplications));
+                    var andBlockExpression = GenerateAndBlockExpression(expressionsWithOverwrite.Except(bothOverwrittenExpressions), expressionGroupWithImplications);
+                    var solver = ContextProvider.Context.MkSolver();
+                    solver.Add(andBlockExpression);
+                    if (solver.Check() == Status.SATISFIABLE)
+                    {
+                        andBlockExpressions.Add(andBlockExpression);
+                    }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
 
