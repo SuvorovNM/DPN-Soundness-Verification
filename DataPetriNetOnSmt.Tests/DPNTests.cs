@@ -59,8 +59,6 @@ namespace DataPetriNetOnSmt.Tests
 
             var variables = new VariablesStore();
             variables[DomainType.Integer].Write("amount", new DefinableValue<long>(0));
-            variables[DomainType.Integer].Write("remained", new DefinableValue<long>(10000));
-            variables[DomainType.Real].Write("test_real", new DefinableValue<double>(1111.444));
             variables[DomainType.Boolean].Write("ok", new DefinableValue<bool>(false));
 
             var transitionList = new List<Transition>
@@ -74,44 +72,15 @@ namespace DataPetriNetOnSmt.Tests
                         {
                             new ConstraintVOCExpression<long>
                             {
-                                Constant = new DefinableValue<long>(1000),
+                                Constant = new DefinableValue<long>(0),
                                 LogicalConnective = LogicalConnective.Empty,
-                                Predicate = BinaryPredicate.GreaterThan,
+                                Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
                                     Domain = DomainType.Integer,
                                     Name = "amount",
                                     VariableType = VariableType.Written
                                 }
-                            },
-                            new ConstraintVOVExpression
-                            {
-                                LogicalConnective = LogicalConnective.And,
-                                Predicate = BinaryPredicate.GreaterThan,
-                                ConstraintVariable = new ConstraintVariable
-                                {
-                                    Domain = DomainType.Integer,
-                                    Name = "remained",
-                                    VariableType = VariableType.Written
-                                },
-                                VariableToCompare = new ConstraintVariable
-                                {
-                                    Domain = DomainType.Integer,
-                                    Name = "remained",
-                                    VariableType = VariableType.Read
-                                }
-                            },
-                            new ConstraintVOCExpression<double>
-                            {
-                                LogicalConnective = LogicalConnective.And,
-                                Predicate = BinaryPredicate.GreaterThan,
-                                ConstraintVariable = new ConstraintVariable
-                                {
-                                    Domain = DomainType.Real,
-                                    Name = "test_real",
-                                    VariableType = VariableType.Written
-                                },
-                                Constant = new DefinableValue<double>(4444.111)
                             }
                         }
                     },
@@ -134,7 +103,7 @@ namespace DataPetriNetOnSmt.Tests
                                     Name = "ok",
                                     VariableType = VariableType.Written
                                 }
-                            }/*,
+                            },
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -146,7 +115,7 @@ namespace DataPetriNetOnSmt.Tests
                                     Name = "ok",
                                     VariableType = VariableType.Written
                                 }
-                            }*/
+                            }
                         }
                     },
                 },
@@ -273,7 +242,7 @@ namespace DataPetriNetOnSmt.Tests
                         {
                             new ConstraintVOCExpression<long>
                             {
-                                Constant = new DefinableValue<long>(5000),
+                                Constant = new DefinableValue<long>(15000),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
@@ -373,7 +342,7 @@ namespace DataPetriNetOnSmt.Tests
                 },
                 new Transition
                 {
-                    Label = "Inform acceptance customer VIP",
+                    Label = "Inform rejection customer VIP",
                     Guard = new Guard
                     {
                         ConstraintExpressions = new List<IConstraintExpression>
@@ -407,7 +376,7 @@ namespace DataPetriNetOnSmt.Tests
                 },
                 new Transition
                 {
-                    Label = "Inform acceptance customer VIP",
+                    Label = "Open credit loan",
                     Guard = new Guard
                     {
                         ConstraintExpressions = new List<IConstraintExpression>
@@ -457,7 +426,6 @@ namespace DataPetriNetOnSmt.Tests
                 new Arc(transitionList[7], placesList[6]),
                 new Arc(transitionList[8], placesList[6]),
                 new Arc(transitionList[9], placesList[6]),
-                new Arc(transitionList[5], placesList[5]),
                 new Arc(placesList[5], transitionList[10]),
                 new Arc(transitionList[10], placesList[7]),
                 new Arc(placesList[6], transitionList[11]),
