@@ -10,7 +10,7 @@ using System.Threading;
 namespace DataPetriNetOnSmt.Tests
 {
     [TestClass]
-    public class DPNTests
+    public class VOCDPNTests
     {
         private DataPetriNet dataPetriNet;
         [TestInitialize]
@@ -398,7 +398,7 @@ namespace DataPetriNetOnSmt.Tests
                 },
                 new Transition
                 {
-                    Label = "AND join",
+                    Label = "AND split",
                     Guard = new Guard()
                 }
             };
@@ -463,6 +463,15 @@ namespace DataPetriNetOnSmt.Tests
             constraintGraph.GenerateGraph();
 
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
+
+            Assert.AreEqual(48, constraintGraph.ConstraintStates.Count);
+            Assert.AreEqual(73, constraintGraph.ConstraintArcs.Count);
+
+            Assert.AreEqual(1, typedStates[StateType.Initial].Count);
+            Assert.AreEqual(4, typedStates[StateType.Deadlock].Count);
+            Assert.AreEqual(0, typedStates[StateType.UncleanFinal].Count);
+            Assert.AreEqual(4, typedStates[StateType.CleanFinal].Count);
+            Assert.AreEqual(39, typedStates[StateType.SoundIntermediate].Count);
         }
     }
 }
