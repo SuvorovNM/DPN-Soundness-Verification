@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataPetriNetOnSmt.Extensions;
+using System.Diagnostics;
 
 namespace DataPetriNetOnSmt.SoundnessVerification
 {
@@ -178,6 +179,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     UpdateImplicationsBasedOnReadExpressions(overwrittenVarNames, concatenatedExpressionGroup, expressionGroupWithImplications);
 
                     var andBlockExpression = GenerateAndBlockExpression(expressionsWithOverwrite.Except(bothOverwrittenExpressions), expressionGroupWithImplications);
+
                     var solver = ContextProvider.Context.MkSolver();
                     solver.Add(andBlockExpression);
                     if (solver.Check() == Status.SATISFIABLE)
@@ -539,13 +541,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 return new List<BoolExpr[]> { expressions };
             }
 
-            var appliedTactic = ContextProvider.Context.MkTactic("split-clause");
+            var expressionList = new List<BoolExpr[]>();
+            foreach (var expression in source.Args)
+            {
+                expressionList.Add(expression.Args.Select(x=>(BoolExpr)x).ToArray());
+            }
 
-            var goalToMakeOrSplit = ContextProvider.Context.MkGoal(true);
-            goalToMakeOrSplit.Assert(source);
-            var applyResult = appliedTactic.Apply(goalToMakeOrSplit);
-
-            return applyResult.Subgoals.Select(x => x.Formulas);
+            return expressionList;
         }
 
         private static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
