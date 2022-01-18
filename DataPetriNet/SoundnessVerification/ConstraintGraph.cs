@@ -67,10 +67,7 @@ namespace DataPetriNet.SoundnessVerification
                     }
 
                     // Considering silent transition
-                    var negatedGuardExpressions = expressionService
-                        .InverseExpression(transition.Guard.ConstraintExpressions
-                                                .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
-                                                .ToList());
+                    var negatedGuardExpressions = GetInvertedReadExpression(transition.Guard.ConstraintExpressions);
 
                     var constraintsIfSilentTransitionFires = expressionService
                         .ConcatExpressions(currentState.Constraints, negatedGuardExpressions);
@@ -152,6 +149,88 @@ namespace DataPetriNet.SoundnessVerification
             }
 
             return null;
+        }
+
+        private List<IConstraintExpression> GetInvertedReadExpression(List<IConstraintExpression> sourceExpression)
+        {
+            if (sourceExpression is null)
+            {
+                throw new ArgumentNullException(nameof(sourceExpression));
+            }
+            if (sourceExpression.Count == 0)
+            {
+                return sourceExpression;
+            }
+
+            var blocks = new List<List<IConstraintExpression>>();
+            var expressionDuringExecution = new List<IConstraintExpression>(sourceExpression);
+            do
+            {
+                var expressionBlock = CutFirstExpressionBlock(expressionDuringExecution)
+                    .Where(x => x.ConstraintVariable.VariableType == VariableType.Read)
+                    .Select(x => x.GetInvertedExpression())
+                    .ToList();
+
+                if (expressionBlock.Count > 0)
+                {
+                    blocks.Add(expressionBlock);
+                }
+            } while (expressionDuringExecution.Count > 0);
+
+            var allCombinations = GetAllPossibleCombos(blocks);
+            return MakeSingleExpressionListFromMultipleLists(allCombinations);
+        }
+
+        private static List<IConstraintExpression> MakeSingleExpressionListFromMultipleLists(List<List<IConstraintExpression>> allCombinations)
+        {
+            var resultExpression = new List<IConstraintExpression>();
+
+            foreach (var combination in allCombinations.Where(x => x.Count > 0))
+            {
+                var firstExpressionInBlock = combination[0].Clone();
+                firstExpressionInBlock.LogicalConnective = LogicalConnective.Or;
+                resultExpression.Add(firstExpressionInBlock);
+
+                for (int i = 1; i < combination.Count; i++)
+                {
+                    var currentExpression = combination[i].Clone();
+                    currentExpression.LogicalConnective = LogicalConnective.And;
+                    resultExpression.Add(currentExpression);
+                }
+            }
+            if (resultExpression.Count > 0)
+            {
+                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
+            }
+
+            return resultExpression;
+        }
+
+        private static List<List<IConstraintExpression>> GetAllPossibleCombos(List<List<IConstraintExpression>> expressions)
+        {
+            IEnumerable<List<IConstraintExpression>> combos = new[] { new List<IConstraintExpression>() };
+
+            foreach (var inner in expressions)
+                combos = from c in combos
+                         from i in inner
+                         select c.Union(new List<IConstraintExpression> { i }).ToList();
+
+            return combos.ToList();
+        }
+
+        private static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
+        {
+            if (sourceConstraintsDuringEvaluation.Count == 0)
+            {
+                return new List<IConstraintExpression>();
+            }
+
+            List<IConstraintExpression> currentBlock;
+            var delimiter = Guard.GetDelimiter(sourceConstraintsDuringEvaluation);
+
+            currentBlock = new List<IConstraintExpression>(sourceConstraintsDuringEvaluation.GetRange(0, delimiter));
+            sourceConstraintsDuringEvaluation.RemoveRange(0, delimiter);
+            return currentBlock;
         }
     }
 }

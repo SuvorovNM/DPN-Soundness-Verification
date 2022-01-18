@@ -4,6 +4,7 @@ using DataPetriNet.Enums;
 using DataPetriNet.SoundnessVerification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace DataPetriNet.Tests
 {
@@ -79,19 +80,7 @@ namespace DataPetriNet.Tests
                                     Name = "amount",
                                     VariableType = VariableType.Written
                                 }
-                            },
-                            /*new ConstraintExpression<long>
-                            {
-                                Constant = new DefinableValue<long>(5000),
-                                LogicalConnective = LogicalConnective.And,
-                                Predicate = BinaryPredicate.LessThan,
-                                ConstraintVariable = new ConstraintVariable
-                                {
-                                    Domain = DomainType.Integer,
-                                    Name = "amount",
-                                    VariableType = VariableType.Written
-                                }
-                            }*/
+                            }
                         }
                     },
                     PreSetPlaces = new List<Place>{placesList[0]},
@@ -106,9 +95,21 @@ namespace DataPetriNet.Tests
                         {
                             new ConstraintExpression<bool>
                             {
-                                Constant = new DefinableValue<bool>(),
+                                Constant = new DefinableValue<bool>(true),
                                 LogicalConnective = LogicalConnective.Empty,
-                                Predicate = BinaryPredicate.Unequal,
+                                Predicate = BinaryPredicate.Equal,
+                                ConstraintVariable = new ConstraintVariable
+                                {
+                                    Domain = DomainType.Boolean,
+                                    Name = "ok",
+                                    VariableType = VariableType.Written
+                                }
+                            },
+                            new ConstraintExpression<bool>
+                            {
+                                Constant = new DefinableValue<bool>(false),
+                                LogicalConnective = LogicalConnective.Or,
+                                Predicate = BinaryPredicate.Equal,
                                 ConstraintVariable = new ConstraintVariable
                                 {
                                     Domain = DomainType.Boolean,
@@ -193,7 +194,7 @@ namespace DataPetriNet.Tests
                     PreSetPlaces = new List<Place>{placesList[2]},
                     PostSetPlaces = new List<Place>{placesList[3]}
                 },
-                new Transition
+                /*new Transition
                 {
                     Label = "Advanced assessment",
                     PreSetPlaces = new List<Place>{placesList[2]},
@@ -245,14 +246,14 @@ namespace DataPetriNet.Tests
                 {
                     Label = "Renegotiate request",
                     PreSetPlaces = new List<Place>{placesList[3]},
-                    PostSetPlaces = new List<Place>{placesList[0]},
+                    PostSetPlaces = new List<Place>{placesList[1]},
                     Guard = new Guard
                     {
                         ConstraintExpressions = new List<IConstraintExpression>
                         {
                             new ConstraintExpression<long>
                             {
-                                Constant = new DefinableValue<long>(5000),
+                                Constant = new DefinableValue<long>(15000),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
@@ -358,7 +359,7 @@ namespace DataPetriNet.Tests
                 },
                 new Transition
                 {
-                    Label = "Inform acceptance customer VIP",
+                    Label = "Inform rejection customer VIP",
                     PreSetPlaces = new List<Place>{placesList[4]},
                     PostSetPlaces = new List<Place> {placesList[6]},
                     Guard = new Guard
@@ -394,7 +395,7 @@ namespace DataPetriNet.Tests
                 },
                 new Transition
                 {
-                    Label = "Inform acceptance customer VIP",
+                    Label = "Open credit loan",
                     PreSetPlaces = new List<Place>{placesList[5]},
                     PostSetPlaces = new List<Place> {placesList[7]},
                     Guard = new Guard
@@ -422,7 +423,7 @@ namespace DataPetriNet.Tests
                     PreSetPlaces = new List<Place>{placesList[6], placesList[7]},
                     PostSetPlaces = new List<Place> {placesList[8]},
                     Guard = new Guard()
-                }
+                }*/
             };
 
             dataPetriNet = new DataPetriNet
@@ -448,7 +449,10 @@ namespace DataPetriNet.Tests
         {
             var constraintGraph = new ConstraintGraph(dataPetriNet);
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             constraintGraph.GenerateGraph();
+            stopwatch.Stop();
 
             var analysis = new ConstraintGraphAnalyzer().GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
         }
