@@ -16,6 +16,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
     public class ConstraintExpressionOperationService
     {
         private BoolExprImplicationService implicationService;
+        public TimeSpan totalTimeForConcatenation = new TimeSpan(0, 0, 0);
+        public TimeSpan totalTimeForSatisfaction = new TimeSpan(0, 0, 0);
+        public TimeSpan totalTimeForEqualityCheck = new TimeSpan(0, 0, 0);
         public ConstraintExpressionOperationService()
         {
             implicationService = new BoolExprImplicationService();
@@ -100,15 +103,21 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         public bool CanBeSatisfied(BoolExpr expression)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             if (expression is null)
             {
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            Solver s = ContextProvider.Context.MkSolver();
+            Solver s = ContextProvider.Context.MkSimpleSolver();
             s.Assert(expression);
 
-            return s.Check() == Status.SATISFIABLE;
+            var result = s.Check() == Status.SATISFIABLE;
+            stopwatch.Stop();
+            totalTimeForSatisfaction = totalTimeForSatisfaction.Add(stopwatch.Elapsed);
+
+            return result;
         }
 
         public bool AreEqual(BoolExpr expressionSource, BoolExpr expressionTarget)
@@ -122,18 +131,25 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 throw new ArgumentNullException(nameof(expressionTarget));
             }
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
             var exprWithSourceNegated = ContextProvider.Context.MkAnd(ContextProvider.Context.MkNot(expressionSource), expressionTarget);
             var exprWithTargetNegated = ContextProvider.Context.MkAnd(expressionSource, ContextProvider.Context.MkNot(expressionTarget));
             var expressionToCheck = ContextProvider.Context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
 
-            Solver s = ContextProvider.Context.MkSolver();
+            Solver s = ContextProvider.Context.MkSimpleSolver();
             s.Assert(expressionToCheck);
 
-            return s.Check() == Status.UNSATISFIABLE;
+            var result = s.Check() == Status.UNSATISFIABLE;
+            stopwatch.Stop();
+            totalTimeForEqualityCheck = totalTimeForEqualityCheck.Add(stopwatch.Elapsed);
+
+            return result;
         }
 
-        public BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target)
+        public BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
         {
             if (source is null)
             {
@@ -147,6 +163,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             {
                 return source;
             }
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             // Presume that source does not have any 'not' expressions except for inequality
             var targetConstraintsDuringEvaluation = new List<IConstraintExpression>(target);
@@ -180,14 +199,24 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
                     var andBlockExpression = GenerateAndBlockExpression(expressionsWithOverwrite.Except(bothOverwrittenExpressions), expressionGroupWithImplications);
 
-                    var solver = ContextProvider.Context.MkSolver();
-                    solver.Add(andBlockExpression);
-                    if (solver.Check() == Status.SATISFIABLE)
+                    if (removeRedundantBlocks)
+                    {
+                        var solver = ContextProvider.Context.MkSimpleSolver();
+                        solver.Add(andBlockExpression);
+                        if (solver.Check() == Status.SATISFIABLE)
+                        {
+                            andBlockExpressions.Add(andBlockExpression);
+                        }
+                    }
+                    else
                     {
                         andBlockExpressions.Add(andBlockExpression);
                     }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
+
+            stopwatch.Stop();
+            totalTimeForConcatenation = totalTimeForConcatenation.Add(stopwatch.Elapsed);
 
             return andBlockExpressions.Count() == 1
                 ? andBlockExpressions[0]

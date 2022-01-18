@@ -5,6 +5,7 @@ using DataPetriNetOnSmt.SoundnessVerification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -382,7 +383,14 @@ namespace DataPetriNetOnSmt.Tests
 
             var constraintGraph = new ConstraintGraph(dataPetriNet);
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             constraintGraph.GenerateGraph();
+            stopwatch.Stop();
+
+            var concatTime = constraintGraph.expressionService.totalTimeForConcatenation;
+            var satisfTime = constraintGraph.expressionService.totalTimeForSatisfaction;
+            var equalityTime = constraintGraph.expressionService.totalTimeForEqualityCheck;
 
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
