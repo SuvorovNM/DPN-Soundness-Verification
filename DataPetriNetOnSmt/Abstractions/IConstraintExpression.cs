@@ -16,5 +16,7 @@ namespace DataPetriNetOnSmt.Abstractions
         IConstraintExpression CloneAsReadExpression();
 
         BoolExpr GetSmtExpression(Context ctx);
+
+        string ToString();
     }
 }

@@ -96,5 +96,31 @@ namespace DataPetriNetOnSmt.DPNElements
                 }
             };
         }
+
+        public override string ToString()
+        {
+            var predicate = Predicate switch
+            {
+                BinaryPredicate.GreaterThan => ">",
+                BinaryPredicate.LessThan => "<",
+                BinaryPredicate.LessThanOrEqual => "<=",
+                BinaryPredicate.GreaterThanOrEqual => ">=",
+                BinaryPredicate.Equal => "=",
+                BinaryPredicate.Unequal => "!="
+            };
+            var logicalConnective = LogicalConnective switch
+            {
+                LogicalConnective.And => "∧",
+                LogicalConnective.Or => "∨",
+                LogicalConnective.Empty => string.Empty
+            };
+            var variableSuffix = ConstraintVariable.VariableType switch
+            {
+                VariableType.Read => "_r",
+                VariableType.Written => "_w"
+            };
+
+            return logicalConnective + " " + ConstraintVariable.Name + variableSuffix + predicate + Constant.Value.ToString();
+        }
     }
 }

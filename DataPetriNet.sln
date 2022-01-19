@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNet", "DataPetriNe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNet.Tests", "DataPetriNet.Tests\DataPetriNet.Tests.csproj", "{19A03AA8-7B96-4284-9BE1-34E4D4ACC55D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetOnSmt", "DataPetriNetOnSmt\DataPetriNetOnSmt.csproj", "{F76B2DA4-35E8-4127-9350-87F7A6C938BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetOnSmt", "DataPetriNetOnSmt\DataPetriNetOnSmt.csproj", "{F76B2DA4-35E8-4127-9350-87F7A6C938BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetOnSmt.Tests", "DataPetriNetOnSmt.Tests\DataPetriNetOnSmt.Tests.csproj", "{CCA5638A-4561-4CCB-9904-7A5163681538}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetOnSmt.Tests", "DataPetriNetOnSmt.Tests\DataPetriNetOnSmt.Tests.csproj", "{CCA5638A-4561-4CCB-9904-7A5163681538}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetOnSmt.Visualization", "DataPetriNetOnSmt.Visualization\DataPetriNetOnSmt.Visualization.csproj", "{675C092D-7139-47D6-AA77-3AEE7B263100}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{CCA5638A-4561-4CCB-9904-7A5163681538}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCA5638A-4561-4CCB-9904-7A5163681538}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCA5638A-4561-4CCB-9904-7A5163681538}.Release|Any CPU.Build.0 = Release|Any CPU
+		{675C092D-7139-47D6-AA77-3AEE7B263100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{675C092D-7139-47D6-AA77-3AEE7B263100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{675C092D-7139-47D6-AA77-3AEE7B263100}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{675C092D-7139-47D6-AA77-3AEE7B263100}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,23 @@
+﻿<Window x:Class="DataPetriNetOnSmt.Visualization.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataPetriNetOnSmt.Visualization" xmlns:wpfgraphcontrol="http://mlsagl"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Menu HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="792">
+            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558">
+                <MenuItem.Header>
+                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="21,0,-21,0"/>
+                </MenuItem.Header>
+                <MenuItem x:Name="OpenMenuItem" Header="Open..." Click="OpenMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="Model">
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness" Click="CheckSoundnessMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+        <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,31,0,0" />
+    </Grid>
+</Window>
