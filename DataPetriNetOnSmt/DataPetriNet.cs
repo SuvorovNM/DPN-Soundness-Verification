@@ -16,6 +16,7 @@ namespace DataPetriNetOnSmt
         private readonly Random randomGenerator;
         private readonly Context context;
 
+        public string Name { get; set; }
         public List<Place> Places { get; set; }
         public List<Transition> Transitions { get; set; }
         public List<Arc> Arcs { get; set; }
@@ -29,6 +30,8 @@ namespace DataPetriNetOnSmt
             Places = new List<Place>();
             Transitions = new List<Transition>();
             Arcs = new List<Arc>();
+            Variables = new VariablesStore();
+            Name = string.Empty;
         }
 
         public bool MakeStep()

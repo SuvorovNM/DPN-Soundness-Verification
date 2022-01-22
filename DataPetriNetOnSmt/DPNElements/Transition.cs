@@ -9,6 +9,10 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Transition : Node
     {
         public Guard Guard { get; set; }
+        public Transition()
+        {
+            Guard = new Guard();
+        }
 
         public bool TryFire(VariablesStore variables, IEnumerable<Arc> arcs, Context ctx)
         {

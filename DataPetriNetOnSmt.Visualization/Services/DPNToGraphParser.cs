@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetOnSmt.Visualization
+namespace DataPetriNetOnSmt.Visualization.Services
 {
     public class DPNToGraphParser
     {
@@ -45,7 +45,7 @@ namespace DataPetriNetOnSmt.Visualization
                     edgeToAdd.Attr.LineWidth = 0;
                     edgeToAdd.Attr.ArrowheadAtSource = ArrowStyle.None;
                     edgeToAdd.Attr.ArrowheadAtTarget = ArrowStyle.None;
-                    edgeToAdd.LabelText = String.Join(" ", transition.Guard.ConstraintExpressions.Select(x => x.ToString()));
+                    edgeToAdd.LabelText = string.Join(" ", transition.Guard.ConstraintExpressions.Select(x => x.ToString()));
                     edgeToAdd.Attr.Color = Color.White;
                 }
             }

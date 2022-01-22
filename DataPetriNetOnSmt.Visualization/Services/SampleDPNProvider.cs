@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetOnSmt.Visualization
+namespace DataPetriNetOnSmt.Visualization.Services
 {
     public class SampleDPNProvider
     {
