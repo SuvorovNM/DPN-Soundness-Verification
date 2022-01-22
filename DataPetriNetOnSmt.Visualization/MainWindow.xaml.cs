@@ -1,4 +1,5 @@
-﻿using Microsoft.Msagl.Drawing;
+﻿using DataPetriNetOnSmt.SoundnessVerification;
+using Microsoft.Msagl.Drawing;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace DataPetriNetOnSmt.Visualization
             //if (ofd.ShowDialog() == true)
             {
                 //Stream stream = ofd.OpenFile();
-                currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();// TODO: add serialization
+                currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();// TODO: add serialization
                 //stream.Close();
 
                 graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
@@ -43,9 +44,16 @@ namespace DataPetriNetOnSmt.Visualization
             }
         }
 
-        private void CheckSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
+        private async void CheckSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Open new window with CG
+            if (currentDisplayedNet != null)
+            {
+                var constraintGraph = new ConstraintGraph(currentDisplayedNet);
+                await Task.Run(() => constraintGraph.GenerateGraph());
+                ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
+                constraintGraphWindow.Owner = this;
+                constraintGraphWindow.Show();
+            }
         }
     }
 }

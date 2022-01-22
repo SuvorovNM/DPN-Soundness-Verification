@@ -8,10 +8,10 @@ namespace DataPetriNetOnSmt.Enums
 {
     public enum StateType
     {
-        Initial,
-        SoundIntermediate,
-        Deadlock,
-        UncleanFinal,
-        CleanFinal
+        Initial = 0,
+        SoundIntermediate = 1,
+        CleanFinal = 2,
+        UncleanFinal = 3,
+        Deadlock = 4
     }
 }

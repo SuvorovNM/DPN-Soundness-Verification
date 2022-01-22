@@ -15,20 +15,23 @@ namespace DataPetriNetOnSmt.Visualization
         {
             Graph graph = new Graph();
 
-            foreach (var place in dpn.Places)
+            AddPlacesToGraph(dpn, graph);
+            AddTransitionsToGraph(dpn, graph);
+            AddArcsToGraph(dpn, graph);
+
+            return graph;
+        }
+
+        private static void AddArcsToGraph(DataPetriNet dpn, Graph graph)
+        {
+            foreach (var arc in dpn.Arcs)
             {
-                var nodeToAdd = new Node(place.Label);
-                nodeToAdd.Attr.Shape = Shape.Circle;
-
-                if (place == dpn.Places[0] || place == dpn.Places[^1])
-                {
-                    nodeToAdd.Attr.FillColor = Color.LightGray;
-                    nodeToAdd.Attr.LineWidth = 3;
-                }
-
-                graph.AddNode(nodeToAdd);
+                graph.AddEdge(arc.Source.Label, arc.Destination.Label);
             }
+        }
 
+        private static void AddTransitionsToGraph(DataPetriNet dpn, Graph graph)
+        {
             foreach (var transition in dpn.Transitions)
             {
                 var nodeToAdd = new Node(transition.Label);
@@ -46,13 +49,23 @@ namespace DataPetriNetOnSmt.Visualization
                     edgeToAdd.Attr.Color = Color.White;
                 }
             }
+        }
 
-            foreach (var arc in dpn.Arcs)
+        private static void AddPlacesToGraph(DataPetriNet dpn, Graph graph)
+        {
+            foreach (var place in dpn.Places)
             {
-                graph.AddEdge(arc.Source.Label, arc.Destination.Label);
-            }
+                var nodeToAdd = new Node(place.Label);
+                nodeToAdd.Attr.Shape = Shape.Circle;
 
-            return graph;
+                if (place == dpn.Places[0] || place == dpn.Places[^1])
+                {
+                    nodeToAdd.Attr.FillColor = Color.LightGray;
+                    nodeToAdd.Attr.LineWidth = 3;
+                }
+
+                graph.AddNode(nodeToAdd);
+            }
         }
     }
 }
