@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetOnSmt.SoundnessVerification
+namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public class BoolExprImplicationService
     {
@@ -19,9 +19,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         private const double realMin = -99999999999999;
 
         public BoolExpr GetImplicationOfGreaterExpression(
-            IEnumerable<BoolExpr> concatenatedExpressionGroup, 
-            bool includeEquality, 
-            Expr varToOverwrite, 
+            IEnumerable<BoolExpr> concatenatedExpressionGroup,
+            bool includeEquality,
+            Expr varToOverwrite,
             Expr secondVar)
         {
             if (concatenatedExpressionGroup == null)
@@ -65,7 +65,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         public BoolExpr GetImplicationOfLessExpression(
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             bool includeEquality,
-            Expr varToOverwrite, 
+            Expr varToOverwrite,
             Expr secondVar)
         {
             if (concatenatedExpressionGroup == null)
@@ -160,7 +160,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             if (expressionToInspect == null)
             {
                 throw new ArgumentNullException(nameof(expressionToInspect));
-            }          
+            }
             if (oldValue == null)
             {
                 throw new ArgumentNullException(nameof(oldValue));

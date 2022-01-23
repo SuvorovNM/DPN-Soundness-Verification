@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetOnSmt.SoundnessVerification
+namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public static class ConstraintGraphAnalyzer
     {

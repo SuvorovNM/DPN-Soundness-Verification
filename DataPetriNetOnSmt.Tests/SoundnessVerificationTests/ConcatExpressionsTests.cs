@@ -1,7 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Z3;
 using System;
@@ -26,7 +26,7 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
         private readonly string g = "g";
         private readonly string h = "h";
 
-        private ConstraintExpressionOperationService constraintExpressionOperationService;
+        private ConstraintExpressionOperationServiceWithManualConcat constraintExpressionOperationService;
 
         [TestInitialize]
         public void Initialize()
@@ -34,7 +34,7 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            constraintExpressionOperationService = new ConstraintExpressionOperationService();
+            constraintExpressionOperationService = new ConstraintExpressionOperationServiceWithManualConcat();
         }
 
         [TestMethod]

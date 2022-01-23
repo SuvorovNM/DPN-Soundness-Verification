@@ -11,145 +11,20 @@ using System.Threading.Tasks;
 using DataPetriNetOnSmt.Extensions;
 using System.Diagnostics;
 
-namespace DataPetriNetOnSmt.SoundnessVerification
+namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public class ConstraintExpressionOperationService
+    public class ConstraintExpressionOperationServiceWithManualConcat : AbstractConstraintExpressionService
     {
         private BoolExprImplicationService implicationService;
         public TimeSpan totalTimeForConcatenation = new TimeSpan(0, 0, 0);
         public TimeSpan totalTimeForSatisfaction = new TimeSpan(0, 0, 0);
         public TimeSpan totalTimeForEqualityCheck = new TimeSpan(0, 0, 0);
-        public ConstraintExpressionOperationService()
+        public ConstraintExpressionOperationServiceWithManualConcat()
         {
             implicationService = new BoolExprImplicationService();
         }
 
-        public List<IConstraintExpression> GetInvertedReadExpression(List<IConstraintExpression> sourceExpression)
-        {
-            if (sourceExpression is null)
-            {
-                throw new ArgumentNullException(nameof(sourceExpression));
-            }
-            if (sourceExpression.Count == 0)
-            {
-                return sourceExpression;
-            }
-
-            var blocks = new List<List<IConstraintExpression>>();
-            var expressionDuringExecution = new List<IConstraintExpression>(sourceExpression);
-            do
-            {
-                var expressionBlock = CutFirstExpressionBlock(expressionDuringExecution)
-                    .GetExpressionsOfType(VariableType.Read)
-                    .Select(x => x.GetInvertedExpression())
-                    .ToList();
-
-                if (expressionBlock.Count > 0)
-                {
-                    blocks.Add(expressionBlock);
-                }
-            } while (expressionDuringExecution.Count > 0);
-
-            var allCombinations = GetAllPossibleCombos(blocks);
-            return MakeSingleExpressionListFromMultipleLists(allCombinations);
-        }
-
-        private static List<IConstraintExpression> MakeSingleExpressionListFromMultipleLists(List<List<IConstraintExpression>> allCombinations)
-        {
-            var resultExpression = new List<IConstraintExpression>();
-
-            foreach (var combination in allCombinations.Where(x => x.Count > 0))
-            {
-                var firstExpressionInBlock = combination[0].Clone();
-                firstExpressionInBlock.LogicalConnective = LogicalConnective.Or;
-                resultExpression.Add(firstExpressionInBlock);
-
-                for (int i = 1; i < combination.Count; i++)
-                {
-                    var currentExpression = combination[i].Clone();
-                    currentExpression.LogicalConnective = LogicalConnective.And;
-                    resultExpression.Add(currentExpression);
-                }
-            }
-            if (resultExpression.Count > 0)
-            {
-                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
-            }
-
-            return resultExpression;
-        }
-
-        private static List<List<IConstraintExpression>> GetAllPossibleCombos(List<List<IConstraintExpression>> expressions)
-        {
-            IEnumerable<List<IConstraintExpression>> combos = new[] { new List<IConstraintExpression>() };
-
-            foreach (var inner in expressions)
-                combos = from c in combos
-                         from i in inner
-                         select c.Union(new List<IConstraintExpression> { i }).ToList();
-
-            return combos.ToList();
-        }
-
-        public BoolExpr ShortenExpression(BoolExpr expression)
-        {
-            if (expression is null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
-            return (BoolExpr)expression.Simplify();
-        }
-
-        public bool CanBeSatisfied(BoolExpr expression)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            if (expression is null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
-            Solver s = ContextProvider.Context.MkSimpleSolver();
-            s.Assert(expression);
-
-            var result = s.Check() == Status.SATISFIABLE;
-            stopwatch.Stop();
-            totalTimeForSatisfaction = totalTimeForSatisfaction.Add(stopwatch.Elapsed);
-
-            return result;
-        }
-
-        public bool AreEqual(BoolExpr expressionSource, BoolExpr expressionTarget)
-        {
-            if (expressionSource is null)
-            {
-                throw new ArgumentNullException(nameof(expressionSource));
-            }
-            if (expressionTarget is null)
-            {
-                throw new ArgumentNullException(nameof(expressionTarget));
-            }
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
-            var exprWithSourceNegated = ContextProvider.Context.MkAnd(ContextProvider.Context.MkNot(expressionSource), expressionTarget);
-            var exprWithTargetNegated = ContextProvider.Context.MkAnd(expressionSource, ContextProvider.Context.MkNot(expressionTarget));
-            var expressionToCheck = ContextProvider.Context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
-
-            Solver s = ContextProvider.Context.MkSimpleSolver();
-            s.Assert(expressionToCheck);
-
-            var result = s.Check() == Status.UNSATISFIABLE;
-            stopwatch.Stop();
-            totalTimeForEqualityCheck = totalTimeForEqualityCheck.Add(stopwatch.Elapsed);
-
-            return result;
-        }
-
-        public BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
+        public override BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
         {
             if (source is null)
             {
@@ -233,7 +108,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                 .Except(concatenatedExpressionGroup)
                 .Where(x => x.Args.Any(y => !overwrittenVarNames.Contains(y.ToString()))));
 
-            foreach(var implication in finalImplications)
+            foreach (var implication in finalImplications)
             {
                 expressionGroupWithImplications.Remove(implication);
             }
@@ -298,7 +173,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     expressionsUpdated = true;
                 }
             } while (expressionsUpdated);
-            expressionGroupWithImplications.AddRange(finalImplications);        
+            expressionGroupWithImplications.AddRange(finalImplications);
         }
 
         private void AddImplicationsBasedOnWriteExpressions(IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications, IEnumerable<IConstraintExpression> bothOverwrittenExpressions)
@@ -440,7 +315,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             BoolExpr sourceExpression)
         {
             var varToOverwrite = sourceExpression.Args[0].Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
-            var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => x!= varToOverwrite);
+            var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => x != varToOverwrite);
 
             var newExpression = implicationService.GetImplicationOfInequalityExpression(
                 concatenatedExpressionGroup,
@@ -507,8 +382,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             List<BoolExpr> finalImplications)
         {
             var allBoolExpressionsWithOverwrittenVar = concatenatedExpressionGroup // Clarify, does it work
-                            .Where(x => (x.Args.Contains(varToOverwrite))
-                                || (x.IsNot && x.Args[0].Args.Contains(varToOverwrite)))
+                            .Where(x => x.Args.Contains(varToOverwrite)
+                                || x.IsNot && x.Args[0].Args.Contains(varToOverwrite))
                             .Except(new[] { sourceExpression })
                             .ToList();
 
@@ -560,38 +435,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             return targetExprList.Count > 0
                 ? ContextProvider.Context.MkAnd(targetExprList)
                 : ContextProvider.Context.MkTrue();
-        }
-
-        private static IEnumerable<BoolExpr[]> SplitSourceExpressionByOrDelimiter(BoolExpr source)
-        {
-            if (!source.IsOr)
-            {
-                var expressions = source.Args.Select(x => x as BoolExpr).ToArray();
-                return new List<BoolExpr[]> { expressions };
-            }
-
-            var expressionList = new List<BoolExpr[]>();
-            foreach (var expression in source.Args)
-            {
-                expressionList.Add(expression.Args.Select(x=>(BoolExpr)x).ToArray());
-            }
-
-            return expressionList;
-        }
-
-        private static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
-        {
-            if (sourceConstraintsDuringEvaluation.Count == 0)
-            {
-                return new List<IConstraintExpression>();
-            }
-
-            List<IConstraintExpression> currentBlock;
-            var delimiter = Guard.GetDelimiter(sourceConstraintsDuringEvaluation);
-
-            currentBlock = new List<IConstraintExpression>(sourceConstraintsDuringEvaluation.GetRange(0, delimiter));
-            sourceConstraintsDuringEvaluation.RemoveRange(0, delimiter);
-            return currentBlock;
-        }
+        }       
     }
 }

@@ -1,7 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -15,11 +15,11 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
     public class GetInvertedReadExpressionTests
     {
         private static int variableIndex = 0;
-        private ConstraintExpressionOperationService constraintExpressionOperationService;
+        private ConstraintExpressionOperationServiceWithManualConcat constraintExpressionOperationService;
         [TestInitialize]
         public void Initialize()
         {
-            constraintExpressionOperationService = new ConstraintExpressionOperationService();
+            constraintExpressionOperationService = new ConstraintExpressionOperationServiceWithManualConcat();
         }
 
 

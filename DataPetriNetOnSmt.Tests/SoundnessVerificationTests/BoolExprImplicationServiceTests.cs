@@ -1,4 +1,4 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification;
+﻿using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Z3;
 using System;

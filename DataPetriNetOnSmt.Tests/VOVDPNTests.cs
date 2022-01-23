@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -387,10 +388,11 @@ namespace DataPetriNetOnSmt.Tests
             stopwatch.Start();
             constraintGraph.GenerateGraph();
             stopwatch.Stop();
+            var resultTime = stopwatch.Elapsed;
 
-            var concatTime = constraintGraph.expressionService.totalTimeForConcatenation;
-            var satisfTime = constraintGraph.expressionService.totalTimeForSatisfaction;
-            var equalityTime = constraintGraph.expressionService.totalTimeForEqualityCheck;
+            //var concatTime = constraintGraph.expressionService.totalTimeForConcatenation;
+            //var satisfTime = constraintGraph.expressionService.totalTimeForSatisfaction;
+            //var equalityTime = constraintGraph.expressionService.totalTimeForEqualityCheck;
 
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 

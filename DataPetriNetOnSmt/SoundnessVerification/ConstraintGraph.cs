@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
+using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 {
     public class ConstraintGraph // TODO: insert Ids
     {
-        public ConstraintExpressionOperationService expressionService;
+        public AbstractConstraintExpressionService expressionService;
         public DataPetriNet DataPetriNet { get; set; }
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
@@ -24,7 +25,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         public ConstraintGraph(DataPetriNet dataPetriNet)
         {
-            expressionService = new ConstraintExpressionOperationService();
+            expressionService = new ConstraintExpressionOperationServiceWithEqTacticConcat();
+            //expressionService = new ConstraintExpressionOperationServiceWithManualConcat();
 
             DataPetriNet = dataPetriNet;
 
