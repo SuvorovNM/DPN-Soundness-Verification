@@ -89,7 +89,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
             {
                 LogicalConnective.Or => string.Join(" ∨\n", expression.Args.Select(x => FormStringRepresentationOfBoolExpr((BoolExpr)x))),
                 LogicalConnective.And => string.Join(" ∧ ", expression.Args.Select(x => FormStringRepresentationOfBoolExpr((BoolExpr)x))),
-                LogicalConnective.Empty => GetExpressionString(expression),
+                LogicalConnective.Empty => expression.ToString(),//GetExpressionString(expression),
                 _ => throw new Exception("The logical connective is not supported for getting string representation")
             };
 
