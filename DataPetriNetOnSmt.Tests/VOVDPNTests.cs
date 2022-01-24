@@ -382,7 +382,7 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet);
+            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat());
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();

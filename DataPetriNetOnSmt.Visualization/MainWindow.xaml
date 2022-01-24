@@ -7,15 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Menu HorizontalAlignment="Left" Height="26" VerticalAlignment="Top" Width="792">
+        <Menu HorizontalAlignment="Stretch" Height="26" VerticalAlignment="Top">
             <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558">
                 <MenuItem.Header>
-                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="21,0,-21,0"/>
+                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0"/>
                 </MenuItem.Header>
                 <MenuItem x:Name="OpenMenuItem" Header="Open..." Click="OpenMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="Model">
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness" Click="CheckSoundnessMenuItem_Click"/>
+                <MenuItem x:Name="RedrawMenuItem" Header="Redraw model" Click="RedrawMenuItem_Click"/>
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness">
+                    <MenuItem x:Name="ManualSoundnessMenuItem" Header="Manual Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>
+                    <MenuItem x:Name="QeTacticSoundnessMenuItem" Header="Qe-based Implication Implementation" Click="QeTacticSoundnessMenuItem_Click"/>
+                </MenuItem>
             </MenuItem>
         </Menu>
         <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,31,0,0" />

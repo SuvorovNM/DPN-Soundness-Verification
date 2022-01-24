@@ -23,9 +23,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         public Stack<ConstraintState> StatesToConsider { get; set; }
 
-        public ConstraintGraph(DataPetriNet dataPetriNet)
+        public ConstraintGraph(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
         {
-            expressionService = new ConstraintExpressionOperationServiceWithEqTacticConcat();
+            expressionService = abstractConstraintExpressionService;
             //expressionService = new ConstraintExpressionOperationServiceWithManualConcat();
 
             DataPetriNet = dataPetriNet;

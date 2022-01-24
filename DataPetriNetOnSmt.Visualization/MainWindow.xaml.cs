@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Win32;
@@ -31,6 +32,9 @@ namespace DataPetriNetOnSmt.Visualization
             dpnParser = new DPNToGraphParser();
             dpnProvider = new SampleDPNProvider();
             pnmlParser = new PnmlParser();
+
+            currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 
         private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
@@ -41,18 +45,43 @@ namespace DataPetriNetOnSmt.Visualization
             {
                 XmlDocument xDoc = new XmlDocument();                
                 xDoc.Load(ofd.FileName);
+
                 currentDisplayedNet = pnmlParser.DeserializeDpn(xDoc);
-                //currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();// TODO: add serialization
 
                 graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
             }
         }
 
-        private async void CheckSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
+        private void RedrawMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
+        private async void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await DisplayConstraintGraphBasedOnQeConcat();
+        }
+        private async void ManualSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await DisplayConstraintGraphManualConcat();
+        }
+
+        private async Task DisplayConstraintGraphBasedOnQeConcat()
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraph = new ConstraintGraph(currentDisplayedNet);
+                var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithEqTacticConcat());
+                await Task.Run(() => constraintGraph.GenerateGraph());
+                ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
+                constraintGraphWindow.Owner = this;
+                constraintGraphWindow.Show();
+            }
+        }
+
+        private async Task DisplayConstraintGraphManualConcat()
+        {
+            if (currentDisplayedNet != null)
+            {
+                var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithManualConcat());
                 await Task.Run(() => constraintGraph.GenerateGraph());
                 ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
                 constraintGraphWindow.Owner = this;
