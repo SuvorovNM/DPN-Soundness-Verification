@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Credit Bank Request [VOC only]</text>
+      </name>
+      <page id="n0">
+         <place id="p0">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>
+         <place id="p4">
+            <name>
+               <text>p4</text>
+            </name>
+         </place>
+         <place id="p5">
+            <name>
+               <text>p5</text>
+            </name>
+         </place>
+         <place id="p6">
+            <name>
+               <text>p6</text>
+            </name>
+         </place>
+         <place id="p7">
+            <name>
+               <text>p7</text>
+            </name>
+         </place>
+		 <place id="p8">
+            <name>
+               <text>p8</text>
+            </name>
+         </place>
+		 <place id="p9">
+            <name>
+               <text>p9</text>
+            </name>
+         </place>
+         <place id="p10">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>
+         <transition id="t0" guard="reqd_w &gt; 0">
+            <name>
+               <text>Credit request</text>
+            </name>
+         </transition>
+         <transition guard="ok_w == True || ok_w == False" id="t1">
+            <name>
+               <text>Verify</text>
+            </name>
+         </transition>
+         <transition id="t2" guard="ok_r == True">
+            <name>
+               <text>Prepare</text>
+            </name>
+         </transition>
+		 <transition id="t3" guard="ok_r == False">
+            <name>
+               <text>Skip</text>
+            </name>
+         </transition>
+         <transition guard="granted_w &lt;= reqd_r" id="t4">
+            <name>
+               <text>Make proposal</text>
+            </name>
+         </transition>
+         <transition guard="granted_w != reqd_r" id="t5">
+            <name>
+               <text>Refuse proposal</text>	
+            </name>
+         </transition>
+         <transition id="t6" guard="reqd_w &lt; reqd_r">
+            <name>
+               <text>Update request</text>
+            </name>
+         </transition>
+         <transition id="t7">
+            <name>
+               <text>AND split</text>
+            </name>
+         </transition>
+         <transition guard="granted_r > 10000" id="t8">
+            <name>
+               <text>Inform acceptance VIP</text>
+            </name>
+         </transition>
+         <transition id="t9" guard="ok_r == False">
+            <name>
+               <text>Inform rejection</text>
+            </name>
+         </transition>
+         <transition id="t10" guard="ok_r == True">
+            <name>
+               <text>Open credit loan</text>
+            </name>
+         </transition>
+         <transition id="t11">
+            <name>
+               <text>AND join</text>
+            </name>
+         </transition>
+         <arc id="arc0" source="p0" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc3" source="t1" target="p2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="p2" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc5" source="p2" target="t3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc6" source="t2" target="p8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc7" source="t3" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc8" source="p8" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc9" source="t4" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc10" source="p3" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc11" source="t5" target="p9">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc12" source="p9" target="t6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc13" source="t6" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc14" source="p3" target="t7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc15" source="t7" target="p4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc16" source="t7" target="p5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc17" source="p4" target="t8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc18" source="p4" target="t9">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc19" source="t8" target="p6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc20" source="t9" target="p6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc21" source="p5" target="t10">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc22" source="t10" target="p7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc23" source="p6" target="t11">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc24" source="p7" target="t11">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc25" source="t11" target="p10">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>		 
+      </page>
+      <variables>
+         <variable type="Integer">
+            <name>reqd</name>
+         </variable>
+		 <variable type="Integer">
+            <name>granted</name>
+         </variable>
+         <variable type="Boolean">
+            <name>ok</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>
