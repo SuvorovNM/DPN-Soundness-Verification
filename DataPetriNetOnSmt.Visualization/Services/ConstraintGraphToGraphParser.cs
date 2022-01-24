@@ -58,6 +58,10 @@ namespace DataPetriNetOnSmt.Visualization.Services
                     StateType.UncleanFinal => Color.Blue,
                     _ => Color.White
                 };
+                if (correctedTypedStates[state] == StateType.NoWayToFinalMarking)
+                {
+                    nodeToAdd.Attr.Color = Color.Red;
+                }
 
                 addedStates.Add(state, nodeToAdd.LabelText);
                 graph.AddNode(nodeToAdd);

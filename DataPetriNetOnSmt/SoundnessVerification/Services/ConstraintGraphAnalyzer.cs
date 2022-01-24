@@ -31,11 +31,33 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     && x.PlaceTokens.Keys.Intersect(terminalNodes).Any(y => x.PlaceTokens[y] > 0))
                 .ToList();
 
+            var statesLeadingToFinals = new List<ConstraintState>(stateDict[StateType.CleanFinal]);
+            var intermediateStates = new List<ConstraintState>(stateDict[StateType.CleanFinal]);
+            var stateIncidenceDict = graph.ConstraintArcs
+                .GroupBy(x => x.TargetState)
+                .ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
+
+            do
+            {
+                var nextStates = intermediateStates
+                    .Where(x=> stateIncidenceDict.ContainsKey(x))
+                    .SelectMany(x => stateIncidenceDict[x])
+                    .Where(x=> !statesLeadingToFinals.Contains(x))
+                    .Distinct();
+                statesLeadingToFinals.AddRange(intermediateStates);
+                intermediateStates = new List<ConstraintState>(nextStates);
+            } while (intermediateStates.Count > 0);
+
+            stateDict[StateType.NoWayToFinalMarking] = graph.ConstraintStates
+                .Except(statesLeadingToFinals)
+                .ToList();
+
             stateDict[StateType.SoundIntermediate] = graph.ConstraintStates
                 .Except(stateDict[StateType.Initial])
                 .Except(stateDict[StateType.Deadlock])
                 .Except(stateDict[StateType.UncleanFinal])
                 .Except(stateDict[StateType.CleanFinal])
+                //.Except(stateDict[StateType.NoWayToFinalMarking]) TODO: Consider removing states with no way to final marking form soundIntermediate
                 .ToList();
 
             return stateDict;

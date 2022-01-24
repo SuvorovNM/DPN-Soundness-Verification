@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Enums
 {
-    public enum StateType
+    public enum StateType // Value is priority - the higher priority, the greater is number
     {
         Initial = 0,
         SoundIntermediate = 1,
-        CleanFinal = 2,
-        UncleanFinal = 3,
-        Deadlock = 4
+        NoWayToFinalMarking = 2,
+        CleanFinal = 3,
+        UncleanFinal = 4,
+        Deadlock = 5
     }
 }
