@@ -15,13 +15,16 @@
                 <MenuItem x:Name="OpenMenuItem" Header="Open..." Click="OpenMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="Model">
-                <MenuItem x:Name="RedrawMenuItem" Header="Redraw model" Click="RedrawMenuItem_Click"/>
+                <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
+                    <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
+                    <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
+                </MenuItem>
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness">
                     <MenuItem x:Name="ManualSoundnessMenuItem" Header="Manual Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>
                     <MenuItem x:Name="QeTacticSoundnessMenuItem" Header="Qe-based Implication Implementation" Click="QeTacticSoundnessMenuItem_Click"/>
                 </MenuItem>
             </MenuItem>
         </Menu>
-        <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,31,0,0" />
+        <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,26,0,0" />
     </Grid>
 </Window>

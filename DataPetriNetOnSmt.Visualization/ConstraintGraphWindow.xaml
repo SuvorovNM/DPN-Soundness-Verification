@@ -7,6 +7,15 @@
         mc:Ignorable="d"
         Title="ConstraintGraphWindow" Height="450" Width="800">
     <Grid>
-        <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl"/>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="120"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Border BorderThickness="0,1,0,0" BorderBrush="Black" 
+            Grid.Row="1" Grid.RowSpan="1"/>
+        <wpfgraphcontrol:AutomaticGraphLayoutControl Grid.Row="0" x:Name="graphControl"/>
+        <ScrollViewer Grid.Row="1">
+            <TextBlock x:Name="logControl" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        </ScrollViewer>    
     </Grid>
 </Window>

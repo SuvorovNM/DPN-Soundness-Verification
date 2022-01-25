@@ -390,10 +390,6 @@ namespace DataPetriNetOnSmt.Tests
             stopwatch.Stop();
             var resultTime = stopwatch.Elapsed;
 
-            //var concatTime = constraintGraph.expressionService.totalTimeForConcatenation;
-            //var satisfTime = constraintGraph.expressionService.totalTimeForSatisfaction;
-            //var equalityTime = constraintGraph.expressionService.totalTimeForEqualityCheck;
-
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(69, constraintGraph.ConstraintStates.Count);
@@ -402,8 +398,9 @@ namespace DataPetriNetOnSmt.Tests
             Assert.AreEqual(1, typedStates[StateType.Initial].Count);
             Assert.AreEqual(13, typedStates[StateType.Deadlock].Count);
             Assert.AreEqual(0, typedStates[StateType.UncleanFinal].Count);
+            Assert.AreEqual(26, typedStates[StateType.NoWayToFinalMarking].Count);
             Assert.AreEqual(2, typedStates[StateType.CleanFinal].Count);
-            Assert.AreEqual(53, typedStates[StateType.SoundIntermediate].Count);
+            Assert.AreEqual(40, typedStates[StateType.SoundIntermediate].Count);
         }
     }
 }

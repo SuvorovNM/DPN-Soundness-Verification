@@ -1,5 +1,7 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification;
+﻿using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
+using DataPetriNetOnSmt.Visualization.Extensions;
 using DataPetriNetOnSmt.Visualization.Services;
 using System;
 using System.Collections.Generic;
@@ -28,18 +30,14 @@ namespace DataPetriNetOnSmt.Visualization
         public ConstraintGraphWindow(DataPetriNet dpn, ConstraintGraph constraintGraph)
         {
             InitializeComponent();
+
             constraintGraphToGraphParser = new ConstraintGraphToGraphParser();
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            if (dpn.Places.All(x=>x.Tokens == 0)) // TODO: maybe add a relative amount of tokens based on arc weights?
-            {
-                dpn.Places[0].Tokens = 1;
-            }
+            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, dpn.Places.Where(x=>x.IsFinal).ToArray());
+            graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph, typedStates);
+            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
-            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
-            var graphToVisualize = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph, typedStates);
-            graphControl.Graph = graphToVisualize;
+            logControl.FormSoundnessVerificationLog(constraintGraph, typedStates);            
         }
     }
 }

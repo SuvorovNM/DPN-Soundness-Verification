@@ -57,7 +57,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 .Except(stateDict[StateType.Deadlock])
                 .Except(stateDict[StateType.UncleanFinal])
                 .Except(stateDict[StateType.CleanFinal])
-                //.Except(stateDict[StateType.NoWayToFinalMarking]) TODO: Consider removing states with no way to final marking form soundIntermediate
+                .Except(stateDict[StateType.NoWayToFinalMarking]) //TODO: Consider removing states with no way to final marking form soundIntermediate
                 .ToList();
 
             return stateDict;

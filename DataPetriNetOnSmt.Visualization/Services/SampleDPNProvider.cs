@@ -58,7 +58,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Place
                 {
-                    Label = "o"
+                    Label = "o",
+                    IsFinal = true
                 }
             };
 
@@ -406,7 +407,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Place
                 {
-                    Label = "o"
+                    Label = "o",
+                    IsFinal = true
                 }
             };
 

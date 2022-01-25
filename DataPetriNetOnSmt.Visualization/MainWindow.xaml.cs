@@ -12,6 +12,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Xml;
 
 namespace DataPetriNetOnSmt.Visualization
@@ -35,6 +36,7 @@ namespace DataPetriNetOnSmt.Visualization
 
             currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
         }
 
         private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
@@ -52,9 +54,13 @@ namespace DataPetriNetOnSmt.Visualization
             }
         }
 
-        private void RedrawMenuItem_Click(object sender, RoutedEventArgs e)
+        private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(dpnProvider.GetVOCDataPetriNet());
+        }
+        private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(dpnProvider.GetVOVDataPetriNet());
         }
         private async void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
         {

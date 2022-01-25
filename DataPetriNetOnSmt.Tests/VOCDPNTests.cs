@@ -476,8 +476,9 @@ namespace DataPetriNetOnSmt.Tests
             Assert.AreEqual(1, typedStates[StateType.Initial].Count);
             Assert.AreEqual(4, typedStates[StateType.Deadlock].Count);
             Assert.AreEqual(0, typedStates[StateType.UncleanFinal].Count);
+            Assert.AreEqual(8, typedStates[StateType.NoWayToFinalMarking].Count);
             Assert.AreEqual(4, typedStates[StateType.CleanFinal].Count);
-            Assert.AreEqual(39, typedStates[StateType.SoundIntermediate].Count);
+            Assert.AreEqual(35, typedStates[StateType.SoundIntermediate].Count);
         }
     }
 }
