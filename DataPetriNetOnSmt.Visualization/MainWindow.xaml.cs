@@ -56,11 +56,13 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(dpnProvider.GetVOCDataPetriNet());
+            currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
         private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(dpnProvider.GetVOVDataPetriNet());
+            currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
         private async void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
         {

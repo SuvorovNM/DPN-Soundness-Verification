@@ -47,7 +47,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                     .Select(x => x.Value > 1
                         ? x.Value.ToString() + x.Key.Label
                         : x.Key.Label));
-                var nodeToAdd = new Node($"{{{tokens}}} {{{FormStringRepresentationOfBoolExpr(state.Constraints)}}}");
+                var nodeToAdd = new Node($"[{state.Id}]{{{tokens}}} {{{FormStringRepresentationOfBoolExpr(state.Constraints)}}}");
                 nodeToAdd.Attr.Shape = Shape.Box;
 
                 nodeToAdd.Attr.FillColor = correctedTypedStates[state] switch

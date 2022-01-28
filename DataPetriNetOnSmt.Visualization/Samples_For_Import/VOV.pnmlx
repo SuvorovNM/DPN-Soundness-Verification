@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net1">
       <name>
-         <text>Credit Bank Request [VOC only]</text>
+         <text>Credit Bank Request [VOV]</text>
       </name>
       <page id="n0">
          <place id="p0">

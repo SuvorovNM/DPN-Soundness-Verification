@@ -13,7 +13,6 @@ namespace DataPetriNetOnSmt
 {
     public class DataPetriNet
     {
-        private readonly Random randomGenerator;
         private readonly Context context;
 
         public string Name { get; set; }
@@ -24,7 +23,6 @@ namespace DataPetriNetOnSmt
 
         public DataPetriNet()
         {
-            randomGenerator = new Random();
             context = new Context(new Dictionary<string, string> {["proof"] = "true" });            
 
             Places = new List<Place>();
