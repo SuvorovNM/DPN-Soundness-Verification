@@ -1,8 +1,5 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
@@ -21,11 +18,11 @@ namespace DataPetriNetOnSmt.DPNElements
                 throw new ArgumentNullException(nameof(arcs));
             }
 
-            var arcsDict = arcs.ToDictionary(x => (x.Source, x.Destination), y=>y.Weight);
+            var arcsDict = arcs.ToDictionary(x => (x.Source, x.Destination), y => y.Weight);
 
             // Currently only transitions with preset places can fire - need to clarify it.
-            var canFire = arcsDict.Where(x=>x.Key.Destination == this)
-                .All(x => ((Place)x.Key.Source).Tokens >= x.Value) && 
+            var canFire = arcsDict.Where(x => x.Key.Destination == this)
+                .All(x => ((Place)x.Key.Source).Tokens >= x.Value) &&
                 Guard.Verify(variables, ctx);
 
             if (canFire)

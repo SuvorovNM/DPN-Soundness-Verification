@@ -1,6 +1,5 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SourceServices;
-using System.Collections.Generic;
 
 namespace DataPetriNetOnSmt.DPNElements
 {

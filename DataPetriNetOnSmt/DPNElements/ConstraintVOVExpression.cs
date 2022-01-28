@@ -1,11 +1,6 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
@@ -120,7 +115,7 @@ namespace DataPetriNetOnSmt.DPNElements
                 VariableType.Written => "_w"
             };
 
-            return logicalConnective + " " + ConstraintVariable.Name+ firstVariableSuffix + predicate + VariableToCompare.Name + secondVariableSuffix;
+            return logicalConnective + " " + ConstraintVariable.Name + firstVariableSuffix + predicate + VariableToCompare.Name + secondVariableSuffix;
         }
     }
 }

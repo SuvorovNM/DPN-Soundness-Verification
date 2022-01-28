@@ -2,14 +2,7 @@
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
-using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification
 {

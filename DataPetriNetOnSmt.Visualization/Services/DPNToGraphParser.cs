@@ -1,11 +1,5 @@
-﻿using Microsoft.Msagl.Core.DataStructures;
-using Microsoft.Msagl.Core.Geometry;
-using Microsoft.Msagl.Drawing;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Msagl.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Visualization.Services
 {

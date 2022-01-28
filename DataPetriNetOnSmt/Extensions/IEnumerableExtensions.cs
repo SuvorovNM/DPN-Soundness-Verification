@@ -1,11 +1,6 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Extensions
 {
@@ -22,7 +17,7 @@ namespace DataPetriNetOnSmt.Extensions
 
         public static IEnumerable<IConstraintExpression> GetExpressionsOfType(this IEnumerable<IConstraintExpression> expressions, VariableType varType)
         {
-            return expressions.Where(x=>x.ConstraintVariable.VariableType == varType);
+            return expressions.Where(x => x.ConstraintVariable.VariableType == varType);
         }
     }
 }

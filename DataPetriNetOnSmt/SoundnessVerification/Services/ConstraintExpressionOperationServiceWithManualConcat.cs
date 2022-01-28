@@ -1,24 +1,15 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DataPetriNetOnSmt.Extensions;
-using System.Diagnostics;
+using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public class ConstraintExpressionOperationServiceWithManualConcat : AbstractConstraintExpressionService
     {
-        private BoolExprImplicationService implicationService;
-        public TimeSpan totalTimeForConcatenation = new TimeSpan(0, 0, 0);
-        public TimeSpan totalTimeForSatisfaction = new TimeSpan(0, 0, 0);
-        public TimeSpan totalTimeForEqualityCheck = new TimeSpan(0, 0, 0);
+        private readonly BoolExprImplicationService implicationService;
+
         public ConstraintExpressionOperationServiceWithManualConcat()
         {
             implicationService = new BoolExprImplicationService();
@@ -38,9 +29,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             {
                 return source;
             }
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
 
             // Presume that source does not have any 'not' expressions except for inequality
             var targetConstraintsDuringEvaluation = new List<IConstraintExpression>(target);
@@ -89,9 +77,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
-
-            stopwatch.Stop();
-            totalTimeForConcatenation = totalTimeForConcatenation.Add(stopwatch.Elapsed);
 
             return andBlockExpressions.Count() == 1
                 ? andBlockExpressions[0]
@@ -435,6 +420,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return targetExprList.Count > 0
                 ? ContextProvider.Context.MkAnd(targetExprList)
                 : ContextProvider.Context.MkTrue();
-        }       
+        }
     }
 }

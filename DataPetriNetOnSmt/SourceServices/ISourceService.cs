@@ -1,5 +1,4 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
-using System.Collections.Generic;
 
 namespace DataPetriNetOnSmt.SourceServices
 {

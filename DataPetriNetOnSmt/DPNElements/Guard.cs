@@ -2,10 +2,7 @@
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
 using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
 namespace DataPetriNetOnSmt.DPNElements
 {

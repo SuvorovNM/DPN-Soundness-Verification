@@ -1,16 +1,8 @@
-﻿using DataPetriNetOnSmt.Abstractions;
-using DataPetriNetOnSmt.DPNElements;
+﻿using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DataPetriNetOnSmt.Extensions;
+using Microsoft.Z3;
 using System.Diagnostics;
-using DataPetriNetOnSmt.SoundnessVerification;
 
 namespace DataPetriNetOnSmt.Abstractions
 {
@@ -81,7 +73,7 @@ namespace DataPetriNetOnSmt.Abstractions
                          select c.Union(new List<IConstraintExpression> { i }).ToList();
 
             return combos.ToList();
-        }        
+        }
 
         public BoolExpr ShortenExpression(BoolExpr expression)
         {
@@ -171,7 +163,7 @@ namespace DataPetriNetOnSmt.Abstractions
                 return expressionList;
             }
 
-            return new List<BoolExpr[]>() { new BoolExpr[]{ source } };
+            return new List<BoolExpr[]>() { new BoolExpr[] { source } };
         }
     }
 }

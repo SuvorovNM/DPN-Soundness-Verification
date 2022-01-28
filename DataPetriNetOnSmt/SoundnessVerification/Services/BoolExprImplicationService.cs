@@ -1,13 +1,5 @@
-﻿using DataPetriNetOnSmt.Abstractions;
-using DataPetriNetOnSmt.DPNElements;
-using DataPetriNetOnSmt.Enums;
-using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.Z3;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {

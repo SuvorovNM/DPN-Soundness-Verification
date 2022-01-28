@@ -1,15 +1,7 @@
 ﻿using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
-using Microsoft.Msagl.Drawing;
 using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,9 +15,9 @@ namespace DataPetriNetOnSmt.Visualization
     public partial class MainWindow : Window
     {
         private DataPetriNet currentDisplayedNet;
-        private DPNToGraphParser dpnParser;
-        private PnmlParser pnmlParser;
-        private SampleDPNProvider dpnProvider;
+        private readonly DPNToGraphParser dpnParser;
+        private readonly PnmlParser pnmlParser;
+        private readonly SampleDPNProvider dpnProvider;
 
         public MainWindow()
         {
@@ -45,7 +37,7 @@ namespace DataPetriNetOnSmt.Visualization
             ofd.Filter = "Model files (*.pnmlx) | *.pnmlx";
             if (ofd.ShowDialog() == true)
             {
-                XmlDocument xDoc = new XmlDocument();                
+                XmlDocument xDoc = new XmlDocument();
                 xDoc.Load(ofd.FileName);
 
                 currentDisplayedNet = pnmlParser.DeserializeDpn(xDoc);

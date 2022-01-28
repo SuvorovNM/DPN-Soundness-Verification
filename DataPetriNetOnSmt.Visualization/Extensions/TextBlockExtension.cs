@@ -4,8 +4,6 @@ using EnumsNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -38,8 +36,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.Inlines.Clear();
 
             textBlock.Inlines.Add(new Bold(isSound
-                ? new Run(FormSoundLine()) {Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine()) {Foreground = Brushes.DarkRed }));
+                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
             textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
         }

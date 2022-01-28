@@ -1,7 +1,6 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
-using System;
 using System.Globalization;
 
 namespace DataPetriNetOnSmt.DPNElements
@@ -69,7 +68,7 @@ namespace DataPetriNetOnSmt.DPNElements
             };
 
             var variable = ctx.MkConst(ctx.MkSymbol(ConstraintVariable.Name + (ConstraintVariable.VariableType == VariableType.Read ? "_r" : "_w")), sort);
-            
+
             return Predicate switch
             {
                 BinaryPredicate.Equal => ctx.MkEq(variable, constToCompare),

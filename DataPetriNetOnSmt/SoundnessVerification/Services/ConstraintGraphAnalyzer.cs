@@ -1,10 +1,5 @@
 ﻿using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
@@ -40,9 +35,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             do
             {
                 var nextStates = intermediateStates
-                    .Where(x=> stateIncidenceDict.ContainsKey(x))
+                    .Where(x => stateIncidenceDict.ContainsKey(x))
                     .SelectMany(x => stateIncidenceDict[x])
-                    .Where(x=> !statesLeadingToFinals.Contains(x))
+                    .Where(x => !statesLeadingToFinals.Contains(x))
                     .Distinct();
                 statesLeadingToFinals.AddRange(intermediateStates);
                 intermediateStates = new List<ConstraintState>(nextStates);

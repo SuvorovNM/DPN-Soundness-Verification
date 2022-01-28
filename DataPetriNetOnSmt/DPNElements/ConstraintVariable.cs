@@ -1,5 +1,4 @@
 ﻿using DataPetriNetOnSmt.Enums;
-using System;
 
 namespace DataPetriNetOnSmt.DPNElements
 {

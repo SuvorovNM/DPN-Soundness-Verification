@@ -4,8 +4,6 @@ using DataPetriNetOnSmt.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace DataPetriNetOnSmt.Visualization.Services
@@ -113,7 +111,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (placeNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        place.Label = (placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) + 
+                        place.Label = (placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) +
                             $"[{place.Id}]";
                         break;
                     case "graphics":
@@ -168,7 +166,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (transitionNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        transition.Label = (transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) + 
+                        transition.Label = (transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) +
                             $"[{transition.Id}]";
                         break;
                     case "graphics":

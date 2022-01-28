@@ -4,10 +4,6 @@ using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
 using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 
 namespace DataPetriNetOnSmt
 {
@@ -23,7 +19,7 @@ namespace DataPetriNetOnSmt
 
         public DataPetriNet()
         {
-            context = new Context(new Dictionary<string, string> {["proof"] = "true" });            
+            context = new Context(new Dictionary<string, string> { ["proof"] = "true" });
 
             Places = new List<Place>();
             Transitions = new List<Transition>();
