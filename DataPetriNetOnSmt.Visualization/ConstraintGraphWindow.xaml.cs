@@ -24,7 +24,7 @@ namespace DataPetriNetOnSmt.Visualization
             graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph, typedStates);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
-            logControl.FormSoundnessVerificationLog(constraintGraph, typedStates);
+            logControl.FormSoundnessVerificationLog(dpn, constraintGraph, typedStates);
         }
     }
 }

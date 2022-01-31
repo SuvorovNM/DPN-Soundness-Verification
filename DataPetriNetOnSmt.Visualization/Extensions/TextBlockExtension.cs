@@ -12,7 +12,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraph graph, Dictionary<StateType, List<ConstraintState>> analysisResult)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<ConstraintState>> analysisResult)
         {
             if (textBlock == null)
             {
@@ -29,9 +29,15 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 
             textBlock.FontSize = 14;
 
+            var deadTransitions = dpn.Transitions
+                    .Select(x => x.Id)
+                    .Except(graph.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
+                    .ToList();
+
             var isSound = !analysisResult[StateType.NoWayToFinalMarking].Any()
                 && !analysisResult[StateType.UncleanFinal].Any()
-                && !analysisResult[StateType.Deadlock].Any();
+                && !analysisResult[StateType.Deadlock].Any()
+                && deadTransitions.Count == 0;
 
             textBlock.Inlines.Clear();
 
@@ -40,6 +46,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
             textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
+            textBlock.Inlines.Add(FormDeadTransitionsLine(deadTransitions));
         }
 
         private static string FormSoundLine()
@@ -68,6 +75,14 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             }
 
             return stateInfoLines;
+        }
+
+        private static string FormDeadTransitionsLine(IList<string> deadTransitions)
+        {
+            var resultString = $"\nDead transitions count: {deadTransitions.Count}\n";
+            return deadTransitions.Count > 0
+                ? resultString + $"Dead transitions list: {string.Join(", ", deadTransitions)}"
+                : resultString;
         }
     }
 }
