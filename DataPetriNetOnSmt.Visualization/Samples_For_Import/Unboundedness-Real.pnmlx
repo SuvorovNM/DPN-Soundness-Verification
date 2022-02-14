@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Credit Bank Request [VOC only]</text>
+      </name>
+      <page id="n0">
+         <place id="p0">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>         
+         <place id="p1">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>
+         <transition id="t0" guard="a_w &gt; b_r">
+            <name>
+               <text>Credit request</text>
+            </name>
+         </transition>
+         <transition guard="b_w &gt; a_r" id="t1">
+            <name>
+               <text>Verify</text>
+            </name>
+         </transition>         
+         <arc id="arc0" source="p0" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc3" source="t1" target="p0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>		 
+      </page>
+      <variables>
+         <variable type="Real">
+            <name>a</name>
+         </variable>
+		 <variable type="Real">
+            <name>b</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>
