@@ -62,29 +62,73 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         ApplyResult a = tac.Apply(g);
 
                         var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
+                        var tacticToCnf = ContextProvider.Context.MkTactic("tseitin-cnf");
+                        var tacticToDnf = ContextProvider.Context.AndThen(
+                            tacticToCnf, 
+                            ContextProvider.Context.Repeat(ContextProvider.Context.OrElse(ContextProvider.Context.MkTactic("split-clause"), ContextProvider.Context.Skip())));
+
+
+                        g = ContextProvider.Context.MkGoal(true, true, false);
+                        g.Assert(expressionWithRemovedOverwrittenVars);
+                        var result = tacticToDnf.Apply(g);
+
+                        var dnfFormatExpressionArray = new BoolExpr[result.Subgoals.Length];
+                        var i = 0;
+                        foreach (var block in result.Subgoals)
+                        {
+                            dnfFormatExpressionArray[i++] = block.AsBoolExpr();
+                        }
+
+                        var dnfFormatExpression = ContextProvider.Context.MkOr(dnfFormatExpressionArray);
 
                         foreach (var keyValuePair in overwrittenVarNames)
                         {
                             var sourceVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
                             var targetVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
 
-                            expressionWithRemovedOverwrittenVars = (BoolExpr)expressionWithRemovedOverwrittenVars.Substitute(sourceVar, targetVar);
+                            dnfFormatExpression = (BoolExpr)dnfFormatExpression.Substitute(sourceVar, targetVar);
                         }
-                        resultBlockExpression = expressionWithRemovedOverwrittenVars;
+                        resultBlockExpression = dnfFormatExpression;
                     }
 
                     if (removeRedundantBlocks)
-                    {
-                        var solver = ContextProvider.Context.MkSimpleSolver();
-                        solver.Add(resultBlockExpression);
-                        if (solver.Check() == Status.SATISFIABLE)
+                    {                        
+                        if (resultBlockExpression.IsOr)
+                        {                           
+                            foreach (var block in resultBlockExpression.Args)
+                            {
+                                var solver = ContextProvider.Context.MkSimpleSolver();
+                                solver.Add((BoolExpr)block);
+                                if (solver.Check() == Status.SATISFIABLE)
+                                {
+                                    andBlockExpressions.Add((BoolExpr)block);
+                                }
+                            }
+                        }
+                        else
                         {
-                            andBlockExpressions.Add(resultBlockExpression);
+                            var solver = ContextProvider.Context.MkSimpleSolver();
+                            solver.Add(resultBlockExpression);
+                            if (solver.Check() == Status.SATISFIABLE)
+                            {
+                                andBlockExpressions.Add(resultBlockExpression);
+                            }
                         }
                     }
                     else
                     {
-                        andBlockExpressions.Add(resultBlockExpression);
+                        if (resultBlockExpression.IsOr)
+                        {
+                            foreach (var block in resultBlockExpression.Args)
+                            {
+                                andBlockExpressions.Add((BoolExpr)block);
+                            }
+                        }
+                        else
+                        {
+                            andBlockExpressions.Add(resultBlockExpression);
+                        }
+
                     }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);

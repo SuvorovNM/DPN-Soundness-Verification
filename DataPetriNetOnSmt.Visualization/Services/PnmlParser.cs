@@ -111,8 +111,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (placeNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        place.Label = (placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) +
-                            $"[{place.Id}]";
+                        place.Label = (placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty);
                         break;
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
@@ -166,8 +165,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (transitionNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        transition.Label = (transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty) +
-                            $"[{transition.Id}]";
+                        transition.Label = (transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty);
                         break;
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
