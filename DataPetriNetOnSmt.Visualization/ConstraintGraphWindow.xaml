@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataPetriNetOnSmt.Visualization" xmlns:wpfgraphcontrol="http://mlsagl"
         mc:Ignorable="d"
-        Title="ConstraintGraphWindow" Height="450" Width="800">
+        Title="Constraint Graph Visualization" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>

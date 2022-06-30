@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 
 namespace DataPetriNetOnSmt.Tests
@@ -460,13 +461,15 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat());
+            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithManualConcat());
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             constraintGraph.GenerateGraph();
             stopwatch.Stop();
             var resultTime = stopwatch.Elapsed;
+
+            File.WriteAllText("VOC_man.txt", resultTime.ToString());
 
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 

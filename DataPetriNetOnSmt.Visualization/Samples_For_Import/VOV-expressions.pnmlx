@@ -2,117 +2,125 @@
 <pnml>
    <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
-         <text>Credit Bank Request [VOC only]</text>
+         <text>Credit Bank Request</text>
       </name>
       <page id="n0">
-         <place id="i">
+         <place id="p0">
             <name>
                <text>i</text>
             </name>
             <initialMarking>
                <text>1</text>
             </initialMarking>
-         </place>   
-		 <place id="p1">
+         </place>
+         <place id="p1">
             <name>
                <text>p1</text>
             </name>
-         </place> 	
-		 <place id="p2">
+         </place>
+         <place id="p2">
             <name>
                <text>p2</text>
             </name>
-         </place> 	 
-         <place id="o">
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>         
+         <place id="p4">
             <name>
                <text>o</text>
             </name>
 			<finalMarking>
                <text>1</text>
             </finalMarking>
-         </place>
-         <transition id="t1" guard="a_w &gt;= b_r">
+         </place>		 
+         <transition id="t0" guard="amount_w &gt; 0">
             <name>
-               <text>t1</text>
+               <text>Credit Request</text>
             </name>
          </transition>
-         <transition guard="b_w &gt;= a_r" id="t2">
+         <transition guard="ok_w == True || ok_w == False" id="t1">
             <name>
-               <text>t2</text>
+               <text>Verify</text>
             </name>
-         </transition>        
-		<transition guard="a_r &gt;= b_r" id="t3">
+         </transition>
+         <transition id="t2" guard="ok_r == False">
             <name>
-               <text>t3</text>
+               <text>Reject Request</text>
             </name>
-         </transition>  	
-		<transition id="t4">
+         </transition>
+         <transition guard="ok_r == True &amp;&amp; amount_r &gt; 5000 &amp;&amp; proposed_w &gt;= amount_r" id="t3">
             <name>
-               <text>t4</text>
+               <text>Make Proposition</text>
             </name>
-         </transition> 	
-		<transition id="t5">
+         </transition>
+         <transition guard="amount_w &gt;= amount_r &amp;&amp; amount_w &lt;= proposed_r" id="t4">
             <name>
-               <text>t5</text>
+               <text>Finalize Request</text>	
             </name>
-         </transition> 		 
-         <arc id="arc0" source="i" target="t1">
-            <name>
-               <text>1</text>
-            </name>
-         </arc>
-		 <arc id="arc1" source="t1" target="p1">
+         </transition>         
+         <arc id="arc0" source="p0" target="t0">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 <arc id="arc2" source="p1" target="t2">
+		 <arc id="arc1" source="t0" target="p1">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 <arc id="arc3" source="t2" target="p2">
+		 <arc id="arc2" source="p1" target="t1">
             <name>
                <text>1</text>
             </name>
          </arc>
-		<arc id="arc4" source="p2" target="t3">
+		 <arc id="arc3" source="t1" target="p2">
             <name>
                <text>1</text>
             </name>
-         </arc>		
-		 <arc id="arc5" source="t3" target="o">
+         </arc>
+		 <arc id="arc4" source="p2" target="t2">
             <name>
                <text>1</text>
             </name>
-         </arc>	
-		 <arc id="arc6" source="p2" target="t4">
+         </arc>
+		 <arc id="arc5" source="p2" target="t3">
             <name>
                <text>1</text>
             </name>
-         </arc>	
-		 <arc id="arc7" source="p2" target="t5">
+         </arc>
+		 <arc id="arc6" source="t3" target="p3">
             <name>
                <text>1</text>
             </name>
-         </arc>	
-		 <arc id="arc8" source="t4" target="i">
+         </arc>
+		 <arc id="arc5" source="p3" target="t4">
             <name>
                <text>1</text>
             </name>
-         </arc>	
-		 <arc id="arc9" source="t5" target="o">
+         </arc>
+		 <arc id="arc6" source="t4" target="p4">
             <name>
                <text>1</text>
             </name>
-         </arc>			 
+         </arc>
+		 <arc id="arc6" source="t2" target="p4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>		 
       </page>
       <variables>
          <variable type="Real">
-            <name>a</name>
+            <name>amount</name>
          </variable>
 		 <variable type="Real">
-            <name>b</name>
+            <name>proposed</name>
+         </variable>
+         <variable type="Boolean">
+            <name>ok</name>
          </variable>
       </variables>
    </net>

@@ -89,8 +89,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var expressionsUpdated = false;
             var finalImplications = new List<BoolExpr>();
 
-            finalImplications.AddRange(expressionGroupWithImplications
-                .Except(concatenatedExpressionGroup)
+            finalImplications.AddRange(expressionGroupWithImplications.Skip(concatenatedExpressionGroup.Count())
+                //.Except(concatenatedExpressionGroup)
                 .Where(x => x.Args.Any(y => !overwrittenVarNames.Contains(y.ToString()))));
 
             foreach (var implication in finalImplications)

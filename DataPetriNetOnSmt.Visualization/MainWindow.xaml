@@ -19,6 +19,8 @@
                     <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
                     <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
                 </MenuItem>
+                <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
+
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness">
                     <MenuItem x:Name="ManualSoundnessMenuItem" Header="Manual Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>
                     <MenuItem x:Name="QeTacticSoundnessMenuItem" Header="Qe-based Implication Implementation" Click="QeTacticSoundnessMenuItem_Click"/>

@@ -10,6 +10,12 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             Guard = new Guard();
         }
+        public Transition(string label)
+        {
+            Guard = new Guard();
+            Label = label;
+            Id = label;
+        }
 
         public bool TryFire(VariablesStore variables, IEnumerable<Arc> arcs, Context ctx)
         {

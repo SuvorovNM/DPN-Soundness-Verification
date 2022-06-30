@@ -45,12 +45,12 @@ namespace DataPetriNetOnSmt.Visualization.Services
                     .Select(x => x.Value > 1
                         ? x.Value.ToString() + x.Key.Label
                         : x.Key.Label));
-                var nodeToAdd = new Node($"[{state.Id}]{{{tokens}}} {{{FormStringRepresentationOfBoolExpr(state.Constraints)}}}");
+                var nodeToAdd = new Node($"[{tokens}] ({FormStringRepresentationOfBoolExpr(state.Constraints)})");
                 nodeToAdd.Attr.Shape = Shape.Box;
 
                 nodeToAdd.Attr.FillColor = correctedTypedStates[state] switch
                 {
-                    StateType.Initial => Color.Gray,
+                    StateType.Initial => Color.LightGray,
                     StateType.Deadlock => Color.Pink,
                     StateType.CleanFinal => Color.LightGreen,
                     StateType.UncleanFinal => Color.Blue,
@@ -60,7 +60,6 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 {
                     nodeToAdd.Attr.Color = Color.Red;
                 }
-
                 addedStates.Add(state, nodeToAdd.LabelText);
                 graph.AddNode(nodeToAdd);
             }

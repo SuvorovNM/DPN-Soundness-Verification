@@ -1,0 +1,21 @@
+﻿<Window x:Class="DataPetriNetOnSmt.Visualization.ModelGenerationPropertiesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:DataPetriNetOnSmt.Visualization"
+        mc:Ignorable="d"
+        Title="Model Generation Properties" Height="200" Width="303">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="82*"/>
+            <RowDefinition Height="103*"/>
+        </Grid.RowDefinitions>
+        <Label Content="Number of Places:" HorizontalAlignment="Left" Margin="11,8,0,0" VerticalAlignment="Top"/>
+        <Label Content="Number of Transitions:" HorizontalAlignment="Left" Margin="11,39,0,0" VerticalAlignment="Top"/>
+        <Button Content="Generate" HorizontalAlignment="Left" Margin="202,25,0,0" VerticalAlignment="Top" Height="26" Width="64" Click="Button_Click" Grid.Row="1"/>
+        <TextBox Name="tbPlacesCount" HorizontalAlignment="Left" Margin="150,12,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="48"/>
+        <TextBox Name="tbTransitionsCount" HorizontalAlignment="Left" Margin="150,43,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="48"/>
+    </Grid>
+</Window>

@@ -11,6 +11,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         {
             IsSilent = isSilent;
             Label = transition.Label;
+            Id = transition.Id;
         }
     }
 }

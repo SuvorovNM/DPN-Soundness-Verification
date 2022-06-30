@@ -74,6 +74,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                         var dnfFormatExpressionArray = new BoolExpr[result.Subgoals.Length];
                         var i = 0;
+
                         foreach (var block in result.Subgoals)
                         {
                             dnfFormatExpressionArray[i++] = block.AsBoolExpr();

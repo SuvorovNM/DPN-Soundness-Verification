@@ -12,9 +12,11 @@
     <PackageReference Include="AutomaticGraphLayout.Drawing" Version="1.1.12" />
     <PackageReference Include="AutomaticGraphLayout.WpfGraphControl" Version="1.1.12" />
     <PackageReference Include="Enums.NET" Version="4.0.0" />
+    <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataPetriNetGeneration\DataPetriNetGeneration.csproj" />
     <ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
   </ItemGroup>
 

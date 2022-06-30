@@ -8,10 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace DataPetriNetOnSmt.Tests
 {
@@ -382,7 +384,7 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat());
+            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithManualConcat());
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -390,6 +392,7 @@ namespace DataPetriNetOnSmt.Tests
             stopwatch.Stop();
             var resultTime = stopwatch.Elapsed;
 
+            File.WriteAllText("VOV_man.txt", resultTime.ToString());
             var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(69, constraintGraph.ConstraintStates.Count);
@@ -401,6 +404,31 @@ namespace DataPetriNetOnSmt.Tests
             Assert.AreEqual(26, typedStates[StateType.NoWayToFinalMarking].Count);
             Assert.AreEqual(2, typedStates[StateType.CleanFinal].Count);
             Assert.AreEqual(40, typedStates[StateType.SoundIntermediate].Count);
+        }
+
+        [TestMethod]
+        public void BuildConstraintGraphForNewBanking()
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var pnmlParser = new PnmlParser();
+            XmlDocument xDoc = new XmlDocument();
+            xDoc.Load("VOV-expressions.pnmlx");
+
+            var dpn = pnmlParser.DeserializeDpn(xDoc);
+
+            var constraintGraph = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithManualConcat());
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            constraintGraph.GenerateGraph();
+            stopwatch.Stop();
+            var resultTime = stopwatch.Elapsed;
+
+            File.WriteAllText("VOV_new_man.txt", resultTime.ToString());
+
+            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
         }
     }
 }

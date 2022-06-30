@@ -13,6 +13,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
         public List<ConstraintArc> ConstraintArcs { get; set; }
+        public bool IsFullGraph { get; set; }
 
         public Stack<ConstraintState> StatesToConsider { get; set; }
 
@@ -29,12 +30,16 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             ConstraintArcs = new List<ConstraintArc>();
 
+            IsFullGraph = false;
+
             StatesToConsider = new Stack<ConstraintState>();
             StatesToConsider.Push(InitialState);
         }
 
-        public bool GenerateGraph()
+        public void GenerateGraph()
         {
+            IsFullGraph = false;
+
             while (StatesToConsider.Count > 0)
             {
                 var currentState = StatesToConsider.Pop();
@@ -53,9 +58,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                         {
                             var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
 
-                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires))
+                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
                             {
-                                return false; // The net is unbound
+                                return; // The net is unbound
                             }
 
                             AddNewState(currentState, new ConstraintTransition(transition), updatedMarking, constraintsIfTransitionFires);
@@ -73,13 +78,18 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
+                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(currentState.PlaceTokens, constraintsIfSilentTransitionFires, currentState))
+                            {
+                                return; // The net is unbound
+                            }
+
                             AddNewState(currentState, new ConstraintTransition(transition, true), currentState.PlaceTokens, constraintsIfSilentTransitionFires);
                         }
                     }
                 }
             }
 
-            return true;
+            IsFullGraph = true;
         }
 
 
@@ -126,10 +136,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             if (equalStateInGraph != null)
             {
                 ConstraintArcs.Add(new ConstraintArc(currentState, transition, equalStateInGraph));
+                equalStateInGraph.ParentStates = equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
+                equalStateInGraph.ParentStates.Add(currentState);
             }
             else
             {
-                var stateIfTransitionFires = new ConstraintState(marking, constraintsIfFires);
+                var stateIfTransitionFires = new ConstraintState(marking, constraintsIfFires, currentState);
                 ConstraintArcs.Add(new ConstraintArc(currentState, transition, stateIfTransitionFires));
                 ConstraintStates.Add(stateIfTransitionFires);
                 StatesToConsider.Push(stateIfTransitionFires);
@@ -155,12 +167,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             return transitionsWhichCanFire;
         }
 
-        private bool IsMonotonicallyIncreasedWithUnchangedConstraints(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires)
+        private bool IsMonotonicallyIncreasedWithUnchangedConstraints(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires, ConstraintState parentNode)
         {
-            foreach (var stateInGraph in ConstraintStates)
+            foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode })) 
             {
                 var isConsideredStateTokensGreaterOrEqual = stateInGraph.PlaceTokens.Values.Sum() > tokens.Values.Sum() &&
-                    tokens.Keys.All(key => tokens[key] >= stateInGraph.PlaceTokens[key]);
+                    tokens.Keys.All(key => tokens[key] <= stateInGraph.PlaceTokens[key]);
 
                 if (isConsideredStateTokensGreaterOrEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
                 {

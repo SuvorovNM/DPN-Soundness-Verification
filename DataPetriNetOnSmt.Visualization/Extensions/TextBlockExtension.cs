@@ -44,9 +44,28 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.Inlines.Add(new Bold(isSound
                 ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
                 : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
+
+            textBlock.Inlines.Add(new Bold(graph.IsFullGraph
+                ? new Run(FormBoundedLine())
+                : new Run(FormUnboundedLine())));
+
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
-            textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
-            textBlock.Inlines.Add(FormDeadTransitionsLine(deadTransitions));
+
+            if (graph.IsFullGraph)
+            {
+                textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
+                textBlock.Inlines.Add(FormDeadTransitionsLine(deadTransitions));
+            }
+        }
+
+        private static string FormBoundedLine()
+        {
+            return "Process model is bounded. Full constraint graph is constructed.\n";
+        }
+
+        private static string FormUnboundedLine()
+        {
+            return "Process model is unbounded. Only fragment of the constraint graph is constructed.\n";
         }
 
         private static string FormSoundLine()
@@ -61,17 +80,17 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 
         private static string FormGraphInfoLines(ConstraintGraph graph)
         {
-            return $"Constraint states: {graph.ConstraintStates.Count} \nConstraint arcs: {graph.ConstraintArcs.Count}\n";
+            return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
         }
 
         private static string FormStatesInfoLines(Dictionary<StateType, List<ConstraintState>> analysisResult)
         {
-            var stateInfoLines = "\n";
+            var stateInfoLines = string.Empty;
             foreach (var stateType in analysisResult.Keys)
             {
                 var description = stateType.AsString(EnumFormat.Description);
 
-                stateInfoLines += $"{description} count: {analysisResult[stateType].Count}\n";
+                stateInfoLines += $"{description}s: {analysisResult[stateType].Count}. ";
             }
 
             return stateInfoLines;

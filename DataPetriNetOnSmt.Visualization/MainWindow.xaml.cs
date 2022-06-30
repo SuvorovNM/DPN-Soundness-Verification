@@ -1,4 +1,5 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification;
+﻿using DataPetriNetGeneration;
+using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
 using Microsoft.Win32;
@@ -44,6 +45,16 @@ namespace DataPetriNetOnSmt.Visualization
 
                 graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
             }
+        }
+
+        private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
+        {
+            ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
+            modelGenerationPropertiesWindow.ShowDialog();
+
+            var dpnBackboneGenerator = new DPNBackboneGenerator();
+            currentDisplayedNet = dpnBackboneGenerator.Generate(modelGenerationPropertiesWindow.PlacesCount, modelGenerationPropertiesWindow.TransitionCount);
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 
         private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
