@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt;
+using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 
@@ -9,7 +10,50 @@ namespace DataPetriNetGeneration
         private int minTransitionPerPlace = 1;
         private Random random = new Random();
 
-        public DataPetriNet Generate(int placesCount, int transitionsCount)
+        // To async?
+        public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int additionalArcsCount)
+            // Is there any maximum for additionalArcsCount?
+        {
+            var dpn = GenerateSoundBackbone(placesCount, transitionsCount);
+
+            var arcsRemained = additionalArcsCount;
+
+            // We need additional Transition -> Place and Place -> Transition arcs
+            while (arcsRemained > 0)
+            {
+                var arcTypeChosen = (ArcType)random.Next(0, 1);
+                var placeChosen = dpn.Places[random.Next(0, dpn.Places.Count)];
+                var transitionChosen = dpn.Transitions[random.Next(0, dpn.Transitions.Count)];
+
+                if (arcTypeChosen == ArcType.PlaceTransition)
+                {
+                    AddArc(dpn, placeChosen, transitionChosen);
+                }
+                else
+                {
+                    AddArc(dpn, transitionChosen, placeChosen);
+                }
+
+                arcsRemained--;
+            }
+
+            return dpn;
+        }
+
+        private void AddArc(DataPetriNet dpn, Node source, Node target)
+        {
+            var existentArc = dpn.Arcs.FirstOrDefault(x=> x.Source == source && x.Destination == target);
+            if (existentArc != null)
+            {
+                existentArc.Weight++;
+            }
+            else
+            {
+                dpn.Arcs.Add(new Arc(source, target));
+            }
+        }
+
+        public DataPetriNet GenerateSoundBackbone(int placesCount, int transitionsCount)
         {
             if (placesCount < 2)
             {
@@ -26,7 +70,7 @@ namespace DataPetriNetGeneration
 
             var dpn = new DataPetriNet();
 
-            var initialPlace = new Place("i", PlaceType.Initial);
+            var initialPlace = new Place("i", PlaceType.Initial); // TODO: Maybe add inheritance instead of PlaceType enum
             dpn.Places.Add(initialPlace);
             placesRemained -= 1;
 

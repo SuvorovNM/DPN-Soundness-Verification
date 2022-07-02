@@ -12,7 +12,7 @@ namespace DataPetriNetGeneration.Tests
             var transitionsCount = 10;
 
             var dpnBackboneGenerator = new DPNBackboneGenerator();
-            var dpn = dpnBackboneGenerator.Generate(placesCount, transitionsCount);
+            var dpn = dpnBackboneGenerator.GenerateSoundBackbone(placesCount, transitionsCount);
 
             Assert.AreEqual(placesCount, dpn.Places.Count);
             Assert.AreEqual(transitionsCount, dpn.Transitions.Count);

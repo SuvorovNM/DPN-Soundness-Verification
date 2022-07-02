@@ -20,7 +20,10 @@ namespace DataPetriNetOnSmt.Visualization.Services
         {
             foreach (var arc in dpn.Arcs)
             {
-                graph.AddEdge(arc.Source.Label, arc.Destination.Label);
+                if (arc.Weight == 1)
+                    graph.AddEdge(arc.Source.Label, arc.Destination.Label);
+                else
+                    graph.AddEdge(arc.Source.Label, arc.Weight.ToString(), arc.Destination.Label);
             }
         }
 

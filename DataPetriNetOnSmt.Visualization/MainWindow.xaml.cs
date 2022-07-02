@@ -53,7 +53,10 @@ namespace DataPetriNetOnSmt.Visualization
             modelGenerationPropertiesWindow.ShowDialog();
 
             var dpnBackboneGenerator = new DPNBackboneGenerator();
-            currentDisplayedNet = dpnBackboneGenerator.Generate(modelGenerationPropertiesWindow.PlacesCount, modelGenerationPropertiesWindow.TransitionCount);
+            currentDisplayedNet = dpnBackboneGenerator.GenerateBackbone(
+                modelGenerationPropertiesWindow.PlacesCount, 
+                modelGenerationPropertiesWindow.TransitionCount,
+                modelGenerationPropertiesWindow.ExtraArcsCount);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 

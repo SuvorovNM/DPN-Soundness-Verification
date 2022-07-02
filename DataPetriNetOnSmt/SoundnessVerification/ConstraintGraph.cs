@@ -171,8 +171,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         {
             foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode })) 
             {
-                var isConsideredStateTokensGreaterOrEqual = stateInGraph.PlaceTokens.Values.Sum() > tokens.Values.Sum() &&
-                    tokens.Keys.All(key => tokens[key] <= stateInGraph.PlaceTokens[key]);
+                var isConsideredStateTokensGreaterOrEqual = stateInGraph.PlaceTokens.Values.Sum() < tokens.Values.Sum() &&
+                    tokens.Keys.All(key => tokens[key] >= stateInGraph.PlaceTokens[key]);
 
                 if (isConsideredStateTokensGreaterOrEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
                 {

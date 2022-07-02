@@ -21,6 +21,7 @@ namespace DataPetriNetOnSmt.Visualization
     {
         public int TransitionCount { get; private set; }
         public int PlacesCount { get; private set; }
+        public int ExtraArcsCount { get; private set; }
         public ModelGenerationPropertiesWindow()
         {
             InitializeComponent();
@@ -28,10 +29,13 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (Int32.TryParse(tbTransitionsCount.Text, out var transitionCount) && Int32.TryParse(tbPlacesCount.Text, out var placesCount))
+            if (Int32.TryParse(tbTransitionsCount.Text, out var transitionCount) 
+                && Int32.TryParse(tbPlacesCount.Text, out var placesCount)
+                && Int32.TryParse(tbExtraArcsCount.Text, out var extraArcsCount))
             {
                 TransitionCount = transitionCount;
                 PlacesCount = placesCount;
+                ExtraArcsCount = extraArcsCount;
                 Close();
             }
             else
