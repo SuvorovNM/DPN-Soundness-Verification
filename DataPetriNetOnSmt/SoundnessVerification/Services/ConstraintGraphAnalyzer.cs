@@ -19,8 +19,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             if (graph.IsFullGraph)
             {
                 FillDeadlocks(graph, terminalNodes, stateDict);
-                FillUncleanFinals(graph, terminalNodes, stateDict);
                 FillCleanFinals(graph, terminalNodes, stateDict);
+                FillUncleanFinals(graph, terminalNodes, stateDict);
                 FillNoWayToFinalMarking(graph, stateDict);
             }
 
@@ -38,10 +38,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             static void FillUncleanFinals(ConstraintGraph graph, IEnumerable<Place> terminalNodes, Dictionary<StateType, List<ConstraintState>> stateDict)
             {
-                stateDict[StateType.UncleanFinal] = graph.ConstraintStates
+                /*stateDict[StateType.UncleanFinal] = graph.ConstraintStates
                                 .Where(x => x.PlaceTokens.Keys.Except(terminalNodes).Any(y => x.PlaceTokens[y] > 0)
                                     && x.PlaceTokens.Keys.Intersect(terminalNodes).Any(y => x.PlaceTokens[y] > 0))
-                                .ToList();
+                                .ToList();*/
+                stateDict[StateType.UncleanFinal] = graph.ConstraintStates
+                    .Where(x => x.PlaceTokens.Keys.Intersect(terminalNodes).All(y => x.PlaceTokens[y] > 0)
+                        && (x.PlaceTokens.Keys.Any(y => x.PlaceTokens[y] > 1) || x.PlaceTokens.Keys.Except(terminalNodes).Any(y => x.PlaceTokens[y] > 0)))
+                    .ToList();
             }
 
             static void FillCleanFinals(ConstraintGraph graph, IEnumerable<Place> terminalNodes, Dictionary<StateType, List<ConstraintState>> stateDict)

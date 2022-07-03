@@ -50,14 +50,17 @@ namespace DataPetriNetOnSmt.Visualization
         private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
         {
             ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
-            modelGenerationPropertiesWindow.ShowDialog();
-
-            var dpnBackboneGenerator = new DPNBackboneGenerator();
-            currentDisplayedNet = dpnBackboneGenerator.GenerateBackbone(
-                modelGenerationPropertiesWindow.PlacesCount, 
-                modelGenerationPropertiesWindow.TransitionCount,
-                modelGenerationPropertiesWindow.ExtraArcsCount);
-            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+            if (modelGenerationPropertiesWindow.ShowDialog() == true)
+            {
+                var dpnGenerator = new DPNGenerator();
+                currentDisplayedNet = dpnGenerator.Generate(
+                    modelGenerationPropertiesWindow.PlacesCount,
+                    modelGenerationPropertiesWindow.TransitionCount,
+                    modelGenerationPropertiesWindow.ExtraArcsCount,
+                    modelGenerationPropertiesWindow.VarsCount,
+                    modelGenerationPropertiesWindow.ConditionsCount);
+                graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+            }
         }
 
         private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)

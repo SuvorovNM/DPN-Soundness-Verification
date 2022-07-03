@@ -53,7 +53,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                     StateType.Initial => Color.LightGray,
                     StateType.Deadlock => Color.Pink,
                     StateType.CleanFinal => Color.LightGreen,
-                    StateType.UncleanFinal => Color.Blue,
+                    StateType.UncleanFinal => Color.LightBlue,
                     _ => Color.White
                 };
                 if (correctedTypedStates[state] == StateType.NoWayToFinalMarking)

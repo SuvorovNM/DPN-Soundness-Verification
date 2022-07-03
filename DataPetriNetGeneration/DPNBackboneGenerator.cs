@@ -7,8 +7,8 @@ namespace DataPetriNetGeneration
 {
     public class DPNBackboneGenerator
     {
-        private int minTransitionPerPlace = 1;
-        private Random random = new Random();
+        private readonly int minTransitionPerPlace = 1;
+        private readonly Random random = new Random();
 
         // To async?
         public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int additionalArcsCount)

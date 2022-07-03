@@ -103,7 +103,7 @@ namespace DataPetriNetOnSmt.DPNElements
             }
         }
 
-        private void AssertGuardConstraints(Context ctx, Goal goal)
+        private void AssertGuardConstraints(Context ctx, Goal goal) // INCORRECT
         {
             BoolExpr constraintExpression = ConstraintExpressions[0].GetSmtExpression(ctx);
             foreach (var constraint in ConstraintExpressions.Skip(1))
