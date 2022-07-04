@@ -87,8 +87,6 @@ namespace DataPetriNetOnSmt.Abstractions
 
         public bool CanBeSatisfied(BoolExpr expression)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
             if (expression is null)
             {
                 throw new ArgumentNullException(nameof(expression));
@@ -98,7 +96,6 @@ namespace DataPetriNetOnSmt.Abstractions
             s.Assert(expression);
 
             var result = s.Check() == Status.SATISFIABLE;
-            stopwatch.Stop();
 
             return result;
         }
@@ -157,7 +154,14 @@ namespace DataPetriNetOnSmt.Abstractions
                 var expressionList = new List<BoolExpr[]>();
                 foreach (var expression in source.Args)
                 {
-                    expressionList.Add(expression.Args.Select(x => (BoolExpr)x).ToArray());
+                    if (expression.Args.Any(x => x as BoolExpr == null))
+                    {
+                        expressionList.Add(new BoolExpr[] { (BoolExpr)expression });
+                    }
+                    else
+                    {
+                        expressionList.Add(expression.Args.Select(x => (BoolExpr)x).ToArray());
+                    }
                 }
 
                 return expressionList;

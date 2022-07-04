@@ -13,7 +13,14 @@ using System.Diagnostics;
 using System.Globalization;
 
 const int RecordsPerConfig = 10;
-const int MaxParameterValue = 3;
+const int MaxParameterValue = 5;
+
+using (var writer = new StreamWriter("results.csv", false))
+using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+{
+    csv.WriteHeader<VerificationOutput>();
+    csv.NextRecord();
+}
 
 var transitionsCount = 1;
 var baseTransitionsCount = 1;
