@@ -1,6 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using Microsoft.Z3;
 using System.Collections.Generic;
 
 namespace DataPetriNetOnSmt.Visualization.Services
@@ -355,7 +356,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 new Arc(transitionList[11], placesList[10]),
             };
 
-            return new DataPetriNet
+            return new DataPetriNet(new Context())
             {
                 Places = placesList,
                 Transitions = transitionList,
@@ -784,7 +785,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 new Arc(transitionList[11], placesList[8]),
             };
 
-            return new DataPetriNet
+            return new DataPetriNet(new Context())
             {
                 Places = placesList,
                 Transitions = transitionList,

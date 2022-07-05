@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -15,7 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DataPetriNetGeneration\DataPetriNetGeneration.csproj" />
     <ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
-    <ProjectReference Include="..\DataPetriNetVerificationForGivenParameters\DataPetriNetVerificationForGivenParameters.csproj" />
   </ItemGroup>
 
 </Project>
