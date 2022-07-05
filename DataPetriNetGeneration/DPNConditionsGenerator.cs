@@ -11,11 +11,16 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNConditionsGenerator
+    public class DPNConditionsGenerator : IDisposable
     {
         private const int VOC = 0;
         private readonly Random random = new Random();
-        private readonly Context context = new Context();
+        public Context Context { get; private set; }
+
+        public DPNConditionsGenerator(Context context)
+        {
+            Context = context;
+        }
         public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount)
         {
             if ((varsCount < 0) || (conditionsCount < 0))
@@ -129,14 +134,14 @@ namespace DataPetriNetGeneration
             }
 
             var conjunctedConditions = new List<BoolExpr>();
-            conjunctedConditions.Add(conditions[0].GetSmtExpression(context));
+            conjunctedConditions.Add(conditions[0].GetSmtExpression(Context));
             var j = 0;
             foreach (var condition in conditions.Skip(1))
             {
-                var expr = condition.GetSmtExpression(context);
+                var expr = condition.GetSmtExpression(Context);
                 if (condition.LogicalConnective == LogicalConnective.And)
                 {
-                    conjunctedConditions[j] = context.MkAnd(conjunctedConditions[j], expr);
+                    conjunctedConditions[j] = Context.MkAnd(conjunctedConditions[j], expr);
                 }
                 else
                 {
@@ -144,8 +149,8 @@ namespace DataPetriNetGeneration
                     j++;
                 }
             }
-            var guardExpression = context.MkOr(conjunctedConditions);
-            var solver = context.MkSimpleSolver();
+            var guardExpression = Context.MkOr(conjunctedConditions);
+            var solver = Context.MkSimpleSolver();
             var result = solver.Check(guardExpression); // Assert?
             return result;
         }
@@ -248,6 +253,11 @@ namespace DataPetriNetGeneration
             }
 
             return varsPool;
+        }
+
+        public void Dispose()
+        {
+            Context.Dispose();
         }
     }
 }

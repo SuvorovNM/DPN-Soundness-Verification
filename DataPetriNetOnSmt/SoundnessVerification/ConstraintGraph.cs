@@ -8,7 +8,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 {
     public class ConstraintGraph // TODO: insert Ids
     {
-        public AbstractConstraintExpressionService expressionService;
+        public Context Context { get; private set; }
+        private AbstractConstraintExpressionService expressionService;
         public DataPetriNet DataPetriNet { get; set; }
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
@@ -20,6 +21,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         public ConstraintGraph(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
         {
             expressionService = abstractConstraintExpressionService;
+            Context = dataPetriNet.Context;
             //expressionService = new ConstraintExpressionOperationServiceWithManualConcat();
 
             DataPetriNet = dataPetriNet;
@@ -52,7 +54,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
                     {
                         var constraintsIfTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, true);
+                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, false);
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
@@ -73,7 +75,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     if (negatedGuardExpressions.Count > 0)
                     {
                         var constraintsIfSilentTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, true);
+                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, false);
 
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))

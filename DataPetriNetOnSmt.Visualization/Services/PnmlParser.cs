@@ -1,6 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 throw new ArgumentNullException(nameof(document));
             }
 
-            var dpn = new DataPetriNet();
+            var dpn = new DataPetriNet(new Context());
             var varTypeDict = new Dictionary<string, DomainType>();
             if (document.LastChild?.Name == "pnml")
             {

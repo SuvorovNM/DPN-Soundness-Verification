@@ -2,11 +2,17 @@
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
 using Microsoft.Z3;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public class ConstraintExpressionOperationServiceWithEqTacticConcat : AbstractConstraintExpressionService
     {
+        public ConstraintExpressionOperationServiceWithEqTacticConcat(Context context) : base(context)
+        {
+        }
+
         public override BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
         {
             if (source is null)
@@ -41,8 +47,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 {
                     // All source constraints + read constraints from target ones
                     var concatenatedExpressionGroup = sourceExpressionGroup
-                        .Union(currentTargetBlock.Select(x => x.GetSmtExpression(ContextProvider.Context)));
-                    var andExpression = ContextProvider.Context.MkAnd(concatenatedExpressionGroup);
+                        .Union(currentTargetBlock.Select(x => x.GetSmtExpression(Context)));
+                    var andExpression = Context.MkAnd(concatenatedExpressionGroup);
                     BoolExpr resultBlockExpression = andExpression;
 
                     if (overwrittenVarNames.Count > 0)
@@ -54,33 +60,53 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             variablesToOverwrite[currentArrayIndex++] = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
                         }
 
-                        var existsExpression = ContextProvider.Context.MkExists(variablesToOverwrite, andExpression);
+                        var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
 
-                        Goal g = ContextProvider.Context.MkGoal(true, true, false);
+                        Goal g = Context.MkGoal(true, true, false);
                         g.Assert((BoolExpr)existsExpression);
-                        Tactic tac = ContextProvider.Context.AndThen(ContextProvider.Context.MkTactic("qe"), ContextProvider.Context.MkTactic("simplify"));
+                        Tactic tac = Context.MkTactic("qe");
+                        //Tactic tac = ContextProvider.Context.AndThen(ContextProvider.Context.MkTactic("qe"), ContextProvider.Context.MkTactic("simplify"));
                         ApplyResult a = tac.Apply(g);
 
+                        BoolExpr dnfFormatExpression = null;
                         var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
-                        var tacticToCnf = ContextProvider.Context.MkTactic("tseitin-cnf");
-                        var tacticToDnf = ContextProvider.Context.AndThen(
-                            tacticToCnf, 
-                            ContextProvider.Context.Repeat(ContextProvider.Context.OrElse(ContextProvider.Context.MkTactic("split-clause"), ContextProvider.Context.Skip())));
-
-
-                        g = ContextProvider.Context.MkGoal(true, true, false);
-                        g.Assert(expressionWithRemovedOverwrittenVars);
-                        var result = tacticToDnf.Apply(g);
-
-                        var dnfFormatExpressionArray = new BoolExpr[result.Subgoals.Length];
-                        var i = 0;
-
-                        foreach (var block in result.Subgoals)
+                        if (expressionWithRemovedOverwrittenVars.ToString().Contains("or"))
                         {
-                            dnfFormatExpressionArray[i++] = block.AsBoolExpr();
-                        }
+                            var tacticToCnf = Context.MkTactic("tseitin-cnf");
+                            var tacticToDnf = Context.AndThen(
+                                tacticToCnf,
+                                Context.Repeat(Context.OrElse(Context.MkTactic("split-clause"), Context.Skip())));
 
-                        var dnfFormatExpression = ContextProvider.Context.MkOr(dnfFormatExpressionArray);
+
+                            g = Context.MkGoal(true, true, false);
+                            g.Assert(expressionWithRemovedOverwrittenVars);
+
+                            var convertToDnfTask = new Task<ApplyResult>(() => tacticToDnf.Apply(g));
+                            convertToDnfTask.Start();                         
+
+                            if (!convertToDnfTask.Wait(15000))//stopwatch.Elapsed > new TimeSpan(0,0,15)
+                            {
+                                throw new Exception("Z3 requires too much time on conversion to DNF, try manual implementation.\n");/* +
+                                    $"Source: {source}\n" +
+                                    $"Target: {string.Concat(target.Select(x => x.ToString()))}");*/
+                            }
+
+                            var result = convertToDnfTask.GetAwaiter().GetResult();
+
+                            var dnfFormatExpressionArray = new BoolExpr[result.Subgoals.Length];
+                            var i = 0;
+
+                            foreach (var block in result.Subgoals)
+                            {
+                                dnfFormatExpressionArray[i++] = block.AsBoolExpr();
+                            }
+
+                            dnfFormatExpression = Context.MkOr(dnfFormatExpressionArray);
+                        }
+                        else
+                        {
+                            dnfFormatExpression = expressionWithRemovedOverwrittenVars;
+                        }
 
                         foreach (var keyValuePair in overwrittenVarNames)
                         {
@@ -98,7 +124,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         {                           
                             foreach (var block in resultBlockExpression.Args)
                             {
-                                var solver = ContextProvider.Context.MkSimpleSolver();
+                                var solver = Context.MkSimpleSolver();
                                 solver.Add((BoolExpr)block);
                                 if (solver.Check() == Status.SATISFIABLE)
                                 {
@@ -108,7 +134,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         }
                         else
                         {
-                            var solver = ContextProvider.Context.MkSimpleSolver();
+                            var solver = Context.MkSimpleSolver();
                             solver.Add(resultBlockExpression);
                             if (solver.Check() == Status.SATISFIABLE)
                             {
@@ -129,14 +155,17 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         {
                             andBlockExpressions.Add(resultBlockExpression);
                         }
-
+                    }
+                    if (andBlockExpressions.Count > 5000)
+                    {
+                        throw new Exception("Z3 requires too much time on conversion to DNF, try manual implementation.\n");
                     }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
 
             return andBlockExpressions.Count() == 1
                 ? andBlockExpressions[0]
-                : ContextProvider.Context.MkOr(andBlockExpressions);
+                : Context.MkOr(andBlockExpressions);
         }
 
         private Expr GenerateExpression(string variableName, DomainType domain, VariableType varType)
@@ -147,9 +176,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             return domain switch
             {
-                DomainType.Integer => ContextProvider.Context.MkIntConst(variableName + nameSuffix),
-                DomainType.Real => ContextProvider.Context.MkRealConst(variableName + nameSuffix),
-                DomainType.Boolean => ContextProvider.Context.MkBoolConst(variableName + nameSuffix),
+                DomainType.Integer => Context.MkIntConst(variableName + nameSuffix),
+                DomainType.Real => Context.MkRealConst(variableName + nameSuffix),
+                DomainType.Boolean => Context.MkBoolConst(variableName + nameSuffix),
                 _ => throw new NotImplementedException("Domain type is not supported yet"),
             };
         }

@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt;
+using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,15 +8,20 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNGenerator
+    public class DPNGenerator : IDisposable
     {
         private readonly DPNBackboneGenerator backboneGenerator;
         private readonly DPNConditionsGenerator conditionsGenerator;
 
-        public DPNGenerator()
+        public DPNGenerator(Context context)
         {
-            backboneGenerator = new DPNBackboneGenerator();
-            conditionsGenerator = new DPNConditionsGenerator();
+            backboneGenerator = new DPNBackboneGenerator(context);
+            conditionsGenerator = new DPNConditionsGenerator(context);
+        }
+
+        public void Dispose()
+        {
+            conditionsGenerator.Dispose();
         }
 
         public DataPetriNet Generate(int placesCount, int transitionsCount, int additionalArcsCount, int varsCount, int conditionsCount)

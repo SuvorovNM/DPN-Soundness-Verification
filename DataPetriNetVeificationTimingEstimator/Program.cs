@@ -4,16 +4,18 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 using DataPetriNetGeneration;
+using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetVeificationTimingEstimator;
 using DataPetriNetVeificationTimingEstimator.Enums;
+using Microsoft.Z3;
 using System.Diagnostics;
 using System.Globalization;
 
 const int RecordsPerConfig = 10;
-const int MaxParameterValue = 5;
+const int MaxParameterValue = 20;
 
 using (var writer = new StreamWriter("results.csv", false))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
@@ -22,30 +24,41 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     csv.NextRecord();
 }
 
-var transitionsCount = 1;
-var baseTransitionsCount = 1;
-var placesCount = 2;
-var basePlacesCount = 2;
-var extraArcsCount = 0;
-var baseExtraArcsCount = 0;
-var variablesCount = 1;
-var baseVariablesCount = 1;
-var conditionsCount = 0;
-var baseConditionsCount = 0;
+var transitionsCount = 3;
+var baseTransitionsCount = 3;
+var placesCount = 4;
+var basePlacesCount = 4;
+var extraArcsCount = 2;
+var baseExtraArcsCount = 2;
+var variablesCount = 3;
+var baseVariablesCount = 3;
+var conditionsCount = 1;
+var baseConditionsCount = 1;
 
-var parameterToConsider = DpnParameterToConsider.TransitionsCount;
+var parameterToConsider = DpnParameterToConsider.ConditionsCount;
 var overallIncreaseCount = 0;
+
 do
 {
+    Console.WriteLine($"Starting to execute at PlacesCount={placesCount},TransitionsCount={transitionsCount},ArcsCount={extraArcsCount},VarsCount={variablesCount},ConditionsCount={conditionsCount}");
     var records = new List<VerificationOutput>();
     for (int i = 0; i < RecordsPerConfig; i++)
     {
-        var dpnGenerator = new DPNGenerator();
+        var dpnGenerator = new DPNGenerator(new Context());
         var dpn = dpnGenerator.Generate(placesCount, transitionsCount, extraArcsCount, variablesCount, conditionsCount);
-        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat());
+        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
         var timer = new Stopwatch();
         timer.Start();
-        cg.GenerateGraph();
+        try
+        {
+            cg.GenerateGraph();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{i}: " + ex.ToString());
+            timer.Stop();
+            continue;
+        }
         var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
 
         var deadTransitions = dpn.Transitions
@@ -77,8 +90,10 @@ do
         };
 
         records.Add(outputRow);
+        Console.Write($"{i}... ");
+        dpnGenerator.Dispose();
     }
-
+    //GC.Collect();
     using (var writer = new StreamWriter("results.csv", true))
     using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     {
@@ -92,63 +107,84 @@ do
     switch (parameterToConsider)
     {
         case DpnParameterToConsider.TransitionsCount:
-            transitionsCount++;
-            if (transitionsCount > MaxParameterValue)
+            if (transitionsCount >= MaxParameterValue)
             {
                 transitionsCount = baseTransitionsCount;
                 parameterToConsider = DpnParameterToConsider.PlacesCount;
                 placesCount++;
             }
+            else
+            {
+                transitionsCount++;
+            }
             break;
         case DpnParameterToConsider.PlacesCount:
-            placesCount++;
-            if (placesCount > MaxParameterValue)
+            if (placesCount >= MaxParameterValue)
             {
                 placesCount = basePlacesCount;
                 parameterToConsider = DpnParameterToConsider.ArcsCount;
                 extraArcsCount++;
             }
+            else
+            {
+                placesCount++;
+            }
             break;
         case DpnParameterToConsider.ArcsCount:
-            extraArcsCount++;
-            if (extraArcsCount > MaxParameterValue)
+            if (extraArcsCount >= MaxParameterValue)
             {
                 extraArcsCount = baseExtraArcsCount;
                 parameterToConsider = DpnParameterToConsider.VariablesCount;
                 variablesCount++;
             }
+            else
+            {
+                extraArcsCount++;
+            }
             break;
         case DpnParameterToConsider.VariablesCount:
-            variablesCount++;
-            if (variablesCount > MaxParameterValue)
+            if (variablesCount >= MaxParameterValue)
             {
                 variablesCount = baseVariablesCount;
                 parameterToConsider = DpnParameterToConsider.ConditionsCount;
                 conditionsCount++;
             }
+            else
+            {
+                variablesCount++;
+            }
             break;
         case DpnParameterToConsider.ConditionsCount:
-            conditionsCount++;
-            if (conditionsCount > MaxParameterValue)
+            if (conditionsCount >= MaxParameterValue)
             {
                 conditionsCount = baseConditionsCount;
                 parameterToConsider = DpnParameterToConsider.AllCount;
-                baseTransitionsCount++;
-                basePlacesCount++;
-                baseExtraArcsCount++;
-                baseVariablesCount++;
-                baseConditionsCount++;
-                transitionsCount = baseTransitionsCount;
-                placesCount = basePlacesCount;
-                extraArcsCount = baseExtraArcsCount;
-                variablesCount = baseVariablesCount;
-                conditionsCount = baseConditionsCount;
                 overallIncreaseCount++;
+            }
+            else
+            {
+                conditionsCount++;
             }
             break;
         case DpnParameterToConsider.AllCount:
             parameterToConsider = DpnParameterToConsider.TransitionsCount;
+            baseTransitionsCount++;
+            basePlacesCount++;
+            baseExtraArcsCount++;
+            baseVariablesCount++;
+            baseConditionsCount++;
+            transitionsCount = baseTransitionsCount;
+            placesCount = basePlacesCount;
+            extraArcsCount = baseExtraArcsCount;
+            variablesCount = baseVariablesCount;
+            conditionsCount = baseConditionsCount;
             break;
     }
-    
-} while (overallIncreaseCount <= MaxParameterValue); 
+    Console.Write("Success!\n");
+} while (overallIncreaseCount <= MaxParameterValue);
+/* && 
+    placesCount <= MaxParameterValue && 
+    transitionsCount <= MaxParameterValue &&
+    extraArcsCount <= MaxParameterValue &&
+    variablesCount <= MaxParameterValue &&
+    conditionsCount <= MaxParameterValue*/

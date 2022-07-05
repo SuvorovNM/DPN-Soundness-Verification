@@ -7,9 +7,9 @@ using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt
 {
-    public class DataPetriNet
+    public class DataPetriNet : IDisposable
     {
-        private readonly Context context;
+        public Context Context { get; private set; }
 
         public string Name { get; set; }
         public List<Place> Places { get; set; }
@@ -17,9 +17,9 @@ namespace DataPetriNetOnSmt
         public List<Arc> Arcs { get; set; }
         public VariablesStore Variables { get; set; }
 
-        public DataPetriNet()
+        public DataPetriNet(Context context)
         {
-            context = new Context(new Dictionary<string, string> { ["proof"] = "true" });
+            Context = context;
 
             Places = new List<Place>();
             Transitions = new List<Transition>();
@@ -33,7 +33,7 @@ namespace DataPetriNetOnSmt
             var canMakeStep = false; // TODO: Find a more quicker way to get random elements?
             foreach (var transition in Transitions)//.OrderBy(x => randomGenerator.Next())
             {
-                canMakeStep = transition.TryFire(Variables, Arcs, context);
+                canMakeStep = transition.TryFire(Variables, Arcs, Context);
                 if (canMakeStep)
                 {
                     return canMakeStep;
@@ -45,10 +45,10 @@ namespace DataPetriNetOnSmt
 
         public ConstraintState GenerateInitialConstraintState()
         {
-            var state = new ConstraintState();
+            var state = new ConstraintState(Context);
             Places.ForEach(x => state.PlaceTokens.Add(x, x.Tokens));
             //state.Constraints, 
-            state.Constraints = ContextProvider.Context.MkAnd(
+            state.Constraints = Context.MkAnd(
                 AddTypedExpressions<string>(DomainType.String)
                 .Union(AddTypedExpressions<bool>(DomainType.Boolean))
                 .Union(AddTypedExpressions<long>(DomainType.Integer))
@@ -56,7 +56,7 @@ namespace DataPetriNetOnSmt
 
             if (state.Constraints.Args.Length == 0)
             {
-                state.Constraints = ContextProvider.Context.MkTrue();
+                state.Constraints = Context.MkTrue();
             }
             return state;
         }
@@ -73,14 +73,19 @@ namespace DataPetriNetOnSmt
 
                 expressionList.Add(domain switch
                 {
-                    DomainType.Real => ContextProvider.Context.MkEq(ContextProvider.Context.MkRealConst(varKey + "_r"), ContextProvider.Context.MkReal(variable.Value.ToString())),
-                    DomainType.Integer => ContextProvider.Context.MkEq(ContextProvider.Context.MkIntConst(varKey + "_r"), ContextProvider.Context.MkInt(variable.Value.ToString())),
-                    DomainType.Boolean => ContextProvider.Context.MkEq(ContextProvider.Context.MkBoolConst(varKey + "_r"), ContextProvider.Context.MkBool(variable.Value as bool? == true)),
+                    DomainType.Real => Context.MkEq(Context.MkRealConst(varKey + "_r"), Context.MkReal(variable.Value.ToString())),
+                    DomainType.Integer => Context.MkEq(Context.MkIntConst(varKey + "_r"), Context.MkInt(variable.Value.ToString())),
+                    DomainType.Boolean => Context.MkEq(Context.MkBoolConst(varKey + "_r"), Context.MkBool(variable.Value as bool? == true)),
                     _ => throw new NotImplementedException("The domain type is not supported")
                 });
             }
 
             return expressionList;
+        }
+
+        public void Dispose()
+        {
+            Context.Dispose();
         }
     }
 }

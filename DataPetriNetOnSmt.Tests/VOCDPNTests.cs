@@ -4,6 +4,7 @@ using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Z3;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -437,7 +438,7 @@ namespace DataPetriNetOnSmt.Tests
                 new Arc(transitionList[11], placesList[8]),
             };
 
-            dataPetriNet = new DataPetriNet
+            dataPetriNet = new DataPetriNet(new Context())
             {
                 Places = placesList,
                 Transitions = transitionList,
@@ -462,7 +463,7 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat());
+            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();

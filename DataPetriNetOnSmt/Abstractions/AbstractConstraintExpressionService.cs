@@ -8,6 +8,11 @@ namespace DataPetriNetOnSmt.Abstractions
 {
     public abstract class AbstractConstraintExpressionService
     {
+        public Context Context { get; private set; }
+        public AbstractConstraintExpressionService(Context context)
+        {
+            Context = context;
+        }
         public List<IConstraintExpression> GetInvertedReadExpression(List<IConstraintExpression> sourceExpression)
         {
             if (sourceExpression is null)
@@ -92,7 +97,7 @@ namespace DataPetriNetOnSmt.Abstractions
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            Solver s = ContextProvider.Context.MkSimpleSolver();
+            Solver s = Context.MkSimpleSolver();
             s.Assert(expression);
 
             var result = s.Check() == Status.SATISFIABLE;
@@ -112,11 +117,11 @@ namespace DataPetriNetOnSmt.Abstractions
             }
 
             // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
-            var exprWithSourceNegated = ContextProvider.Context.MkAnd(ContextProvider.Context.MkNot(expressionSource), expressionTarget);
-            var exprWithTargetNegated = ContextProvider.Context.MkAnd(expressionSource, ContextProvider.Context.MkNot(expressionTarget));
-            var expressionToCheck = ContextProvider.Context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
+            var exprWithSourceNegated = Context.MkAnd(Context.MkNot(expressionSource), expressionTarget);
+            var exprWithTargetNegated = Context.MkAnd(expressionSource, Context.MkNot(expressionTarget));
+            var expressionToCheck = Context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
 
-            Solver s = ContextProvider.Context.MkSimpleSolver();
+            Solver s = Context.MkSimpleSolver();
             s.Assert(expressionToCheck);
 
             var result = s.Check() == Status.UNSATISFIABLE;

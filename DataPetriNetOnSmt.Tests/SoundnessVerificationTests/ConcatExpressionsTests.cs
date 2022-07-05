@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
-{
+{/*
     [TestClass]
     public class ConcatExpressionsTests
     {
@@ -1218,4 +1218,5 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
             };
         }
     }
+*/
 }

@@ -10,6 +10,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         private const double realMax = 99999999999999;
         private const double realMin = -99999999999999;
 
+        public Context Context { get; private set; }
+
+        public BoolExprImplicationService(Context context)
+        {
+            Context = context;
+        }
+
         public BoolExpr GetImplicationOfGreaterExpression(
             IEnumerable<BoolExpr> concatenatedExpressionGroup,
             bool includeEquality,
@@ -52,10 +59,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     || relaxedMinVarValue.IsIntNum && relaxedMinVarValue.ToString() != integerMin.ToString())
                     {
                         return includeEquality && canBeEquality
-                            ? ContextProvider.Context.MkGe((ArithExpr)secondVar, (ArithExpr)relaxedMinVarValue)
-                            : ContextProvider.Context.MkGt((ArithExpr)secondVar, (ArithExpr)relaxedMinVarValue);
+                            ? Context.MkGe((ArithExpr)secondVar, (ArithExpr)relaxedMinVarValue)
+                            : Context.MkGt((ArithExpr)secondVar, (ArithExpr)relaxedMinVarValue);
                     }
-                    return ContextProvider.Context.MkTrue();
+                    return Context.MkTrue();
                 }
             }
             else
@@ -73,20 +80,20 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         || minVarValue.IsIntNum && minVarValue.ToString() != integerMin.ToString())
                     {
                         return includeEquality
-                            ? ContextProvider.Context.MkGe((ArithExpr)secondVar, (ArithExpr)minVarValue)
-                            : ContextProvider.Context.MkGt((ArithExpr)secondVar, (ArithExpr)minVarValue);
+                            ? Context.MkGe((ArithExpr)secondVar, (ArithExpr)minVarValue)
+                            : Context.MkGt((ArithExpr)secondVar, (ArithExpr)minVarValue);
                     }
 
                     // If no value restrictions return true
-                    return ContextProvider.Context.MkTrue();
+                    return Context.MkTrue();
                 }
             }            
 
             // If expressionGroup is unsatisfiable, false is returned
-            return ContextProvider.Context.MkFalse();
+            return Context.MkFalse();
         }
 
-        private static List<BoolExpr> FormRelaxedExpressionList(IEnumerable<BoolExpr> concatenatedExpressionGroup)
+        private List<BoolExpr> FormRelaxedExpressionList(IEnumerable<BoolExpr> concatenatedExpressionGroup)
         {
             List<BoolExpr> expressionsToExamine = new List<BoolExpr>();
             foreach (var expression in concatenatedExpressionGroup)
@@ -97,12 +104,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
                 if (expression.IsGT)
                 {
-                    var relaxedExpression = ContextProvider.Context.MkGe((ArithExpr)expression.Args[0], (ArithExpr)expression.Args[1]);
+                    var relaxedExpression = Context.MkGe((ArithExpr)expression.Args[0], (ArithExpr)expression.Args[1]);
                     expressionsToExamine.Add(relaxedExpression);
                 }
                 if (expression.IsLT)
                 {
-                    var relaxedExpression = ContextProvider.Context.MkLe((ArithExpr)expression.Args[0], (ArithExpr)expression.Args[1]);
+                    var relaxedExpression = Context.MkLe((ArithExpr)expression.Args[0], (ArithExpr)expression.Args[1]);
                     expressionsToExamine.Add(relaxedExpression);
                 }
             }
@@ -151,10 +158,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     if (relaxedMaxVarValue.IsRatNum && relaxedMaxVarValue.ToString() != realMax.ToString())
                     {
                         return includeEquality && canBeEquality
-                            ? ContextProvider.Context.MkLe((ArithExpr)secondVar, (ArithExpr)relaxedMaxVarValue)
-                            : ContextProvider.Context.MkLt((ArithExpr)secondVar, (ArithExpr)relaxedMaxVarValue);
+                            ? Context.MkLe((ArithExpr)secondVar, (ArithExpr)relaxedMaxVarValue)
+                            : Context.MkLt((ArithExpr)secondVar, (ArithExpr)relaxedMaxVarValue);
                     }
-                    return ContextProvider.Context.MkTrue();
+                    return Context.MkTrue();
                 }
             }
             else
@@ -171,17 +178,17 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     if (maxVarValue.IsIntNum && maxVarValue.ToString() != integerMax.ToString())
                     {
                         return includeEquality
-                            ? ContextProvider.Context.MkLe((ArithExpr)secondVar, (ArithExpr)maxVarValue)
-                            : ContextProvider.Context.MkLt((ArithExpr)secondVar, (ArithExpr)maxVarValue);
+                            ? Context.MkLe((ArithExpr)secondVar, (ArithExpr)maxVarValue)
+                            : Context.MkLt((ArithExpr)secondVar, (ArithExpr)maxVarValue);
                     }
 
                     // If no value restrictions return true
-                    return ContextProvider.Context.MkTrue();
+                    return Context.MkTrue();
                 }
             }
 
             // If expressionGroup is unsatisfiable, false is returned
-            return ContextProvider.Context.MkFalse();
+            return Context.MkFalse();
         }
 
         public BoolExpr? GetImplicationOfInequalityExpression(
@@ -202,7 +209,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 throw new ArgumentNullException(nameof(secondVar));
             }
 
-            var solver = ContextProvider.Context.MkSimpleSolver();
+            var solver = Context.MkSimpleSolver();
             solver.Assert(concatenatedExpressionGroup.ToArray());
 
             if (solver.Check() == Status.SATISFIABLE)
@@ -215,15 +222,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     return null;
                 }
 
-                solver = ContextProvider.Context.MkSimpleSolver();
+                solver = Context.MkSimpleSolver();
                 solver.Assert(concatenatedExpressionGroup.ToArray());
 
-                var expressionToAdd = ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(varToOverwrite, firstValue));
+                var expressionToAdd = Context.MkNot(Context.MkEq(varToOverwrite, firstValue));
                 solver.Assert(expressionToAdd);
 
                 if (solver.Check() == Status.UNSATISFIABLE)
                 {
-                    return ContextProvider.Context.MkNot(ContextProvider.Context.MkEq(secondVar, firstValue));
+                    return Context.MkNot(Context.MkEq(secondVar, firstValue));
                 }
             }
 
@@ -252,36 +259,36 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             BoolExpr newExpression = null;
             if (expressionToInspect.IsEq)
             {
-                newExpression = ContextProvider.Context.MkEq(replacementVar, oldValue);
+                newExpression = Context.MkEq(replacementVar, oldValue);
             }
             if (expressionToInspect.IsGT)
             {
                 newExpression = expressionToInspect.Args[0] == oldValue
-                    ? ContextProvider.Context.MkGt((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                    : ContextProvider.Context.MkGt((ArithExpr)replacementVar, (ArithExpr)oldValue);
+                    ? Context.MkGt((ArithExpr)oldValue, (ArithExpr)replacementVar)
+                    : Context.MkGt((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsGE)
             {
                 newExpression = expressionToInspect.Args[0] == oldValue
-                   ? ContextProvider.Context.MkGe((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                   : ContextProvider.Context.MkGe((ArithExpr)replacementVar, (ArithExpr)oldValue);
+                   ? Context.MkGe((ArithExpr)oldValue, (ArithExpr)replacementVar)
+                   : Context.MkGe((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsLE)
             {
                 newExpression = expressionToInspect.Args[0] == oldValue
-                   ? ContextProvider.Context.MkLe((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                   : ContextProvider.Context.MkLe((ArithExpr)replacementVar, (ArithExpr)oldValue);
+                   ? Context.MkLe((ArithExpr)oldValue, (ArithExpr)replacementVar)
+                   : Context.MkLe((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
             if (expressionToInspect.IsLT)
             {
                 newExpression = expressionToInspect.Args[0] == oldValue
-                    ? ContextProvider.Context.MkLt((ArithExpr)oldValue, (ArithExpr)replacementVar)
-                    : ContextProvider.Context.MkLt((ArithExpr)replacementVar, (ArithExpr)oldValue);
+                    ? Context.MkLt((ArithExpr)oldValue, (ArithExpr)replacementVar)
+                    : Context.MkLt((ArithExpr)replacementVar, (ArithExpr)oldValue);
             }
 
             if (addNegation)
             {
-                newExpression = ContextProvider.Context.MkNot(newExpression);
+                newExpression = Context.MkNot(newExpression);
             }
 
             return newExpression;
@@ -289,21 +296,21 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         private Optimize SetOptimizer(IEnumerable<BoolExpr> concatenatedExpressionGroup, Expr? varToOverwrite)
         {
-            var optimizer = ContextProvider.Context.MkOptimize();
+            var optimizer = Context.MkOptimize();
             foreach (var expression in concatenatedExpressionGroup)
             {
                 optimizer.Assert(expression);
             }
             ArithExpr minimalPossibleValue = varToOverwrite.IsReal
-                ? ContextProvider.Context.MkReal(realMin.ToString(CultureInfo.InvariantCulture))
-                : ContextProvider.Context.MkInt(integerMin.ToString());
+                ? Context.MkReal(realMin.ToString(CultureInfo.InvariantCulture))
+                : Context.MkInt(integerMin.ToString());
 
             ArithExpr maximalPossibleValue = varToOverwrite.IsReal
-                ? ContextProvider.Context.MkReal(realMax.ToString(CultureInfo.InvariantCulture))
-                : ContextProvider.Context.MkInt(integerMax.ToString());
+                ? Context.MkReal(realMax.ToString(CultureInfo.InvariantCulture))
+                : Context.MkInt(integerMax.ToString());
 
-            optimizer.Assert(ContextProvider.Context.MkGe((ArithExpr)varToOverwrite, minimalPossibleValue));
-            optimizer.Assert(ContextProvider.Context.MkLe((ArithExpr)varToOverwrite, maximalPossibleValue));
+            optimizer.Assert(Context.MkGe((ArithExpr)varToOverwrite, minimalPossibleValue));
+            optimizer.Assert(Context.MkLe((ArithExpr)varToOverwrite, maximalPossibleValue));
 
             return optimizer;
         }

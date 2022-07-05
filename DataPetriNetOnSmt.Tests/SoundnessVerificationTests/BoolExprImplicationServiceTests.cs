@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
-{
+{/*
     [TestClass]
     public class BoolExprImplicationServiceTests
     {
@@ -492,4 +492,5 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
             return ContextProvider.Context.MkEq(varToOverwrite, insideValueExpr);
         }
     }
+    */
 }

@@ -10,9 +10,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
     {
         private readonly BoolExprImplicationService implicationService;
 
-        public ConstraintExpressionOperationServiceWithManualConcat()
+        public ConstraintExpressionOperationServiceWithManualConcat(Context context) : base(context)
         {
-            implicationService = new BoolExprImplicationService();
+            implicationService = new BoolExprImplicationService(context);
         }
 
         public override BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
@@ -49,7 +49,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     // All source constraints + read constraints from target ones
                     var concatenatedExpressionGroup = sourceExpressionGroup
                         .Union(currentTargetBlock.Except(expressionsWithOverwrite)
-                        .Select(x => x.GetSmtExpression(ContextProvider.Context)));
+                        .Select(x => x.GetSmtExpression(Context)));
 
                     var expressionGroupWithImplications = new List<BoolExpr>(concatenatedExpressionGroup);
                     var bothOverwrittenExpressions = expressionsWithOverwrite.GetVOVExpressionsWithBothVarsOverwrittenByTransitionFiring();
@@ -64,7 +64,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     if (removeRedundantBlocks)
                     {
-                        var solver = ContextProvider.Context.MkSimpleSolver();
+                        var solver = Context.MkSimpleSolver();
                         solver.Add(andBlockExpression);
                         if (solver.Check() == Status.SATISFIABLE)
                         {
@@ -80,7 +80,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             return andBlockExpressions.Count() == 1
                 ? andBlockExpressions[0]
-                : ContextProvider.Context.MkOr(andBlockExpressions);
+                : Context.MkOr(andBlockExpressions);
         }
 
         private void UpdateImplicationsBasedOnReadExpressions(IEnumerable<string> overwrittenVarNames, IEnumerable<BoolExpr> concatenatedExpressionGroup, List<BoolExpr> expressionGroupWithImplications)
@@ -167,7 +167,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             {
                 var overwriteExpressionWithReadVars = overwriteExpr
                     .CloneAsReadExpression()
-                    .GetSmtExpression(ContextProvider.Context);
+                    .GetSmtExpression(Context);
 
                 if (overwriteExpr.Predicate == BinaryPredicate.Equal)
                 {
@@ -408,18 +408,18 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             }
         }
 
-        private static BoolExpr GenerateAndBlockExpression(IEnumerable<IConstraintExpression> expressionsWithOverwrite, IEnumerable<BoolExpr> updatedExpression)
+        private BoolExpr GenerateAndBlockExpression(IEnumerable<IConstraintExpression> expressionsWithOverwrite, IEnumerable<BoolExpr> updatedExpression)
         {
             var targetExprList = new List<BoolExpr>(updatedExpression);
             foreach (var targetExpr in expressionsWithOverwrite)
             {
                 // Write vars must become read ones
-                targetExprList.Add(targetExpr.CloneAsReadExpression().GetSmtExpression(ContextProvider.Context));
+                targetExprList.Add(targetExpr.CloneAsReadExpression().GetSmtExpression(Context));
             }
 
             return targetExprList.Count > 0
-                ? ContextProvider.Context.MkAnd(targetExprList)
-                : ContextProvider.Context.MkTrue();
+                ? Context.MkAnd(targetExprList)
+                : Context.MkTrue();
         }
     }
 }

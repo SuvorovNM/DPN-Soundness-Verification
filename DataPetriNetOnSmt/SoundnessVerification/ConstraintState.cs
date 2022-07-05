@@ -11,10 +11,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         public HashSet<ConstraintState> ParentStates { get; set; }
         public int Id { get; }
 
-        public ConstraintState()
+        public ConstraintState(Context context)
         {
             PlaceTokens = new Dictionary<Node, int>();
-            Constraints = ContextProvider.Context.MkTrue();
+            Constraints = context.MkTrue();
             ParentStates = new HashSet<ConstraintState>();
             Id = Interlocked.Increment(ref stateCounter);
         }

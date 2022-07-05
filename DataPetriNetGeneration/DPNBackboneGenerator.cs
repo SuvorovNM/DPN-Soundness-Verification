@@ -2,11 +2,18 @@
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
     public class DPNBackboneGenerator
     {
+        public Context Context { get; private set; }
+        public DPNBackboneGenerator(Context context)
+        {
+            Context = context;
+        }
+
         private readonly int minTransitionPerPlace = 1;
         private readonly Random random = new Random();
 
@@ -68,7 +75,7 @@ namespace DataPetriNetGeneration
             var transitionsRemained = transitionsCount;
             var placesRemained = placesCount;
 
-            var dpn = new DataPetriNet();
+            var dpn = new DataPetriNet(Context);
 
             var initialPlace = new Place("i", PlaceType.Initial); // TODO: Maybe add inheritance instead of PlaceType enum
             dpn.Places.Add(initialPlace);
