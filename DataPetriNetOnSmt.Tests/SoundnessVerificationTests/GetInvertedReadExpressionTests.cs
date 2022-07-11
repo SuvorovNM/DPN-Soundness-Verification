@@ -19,7 +19,7 @@ namespace DataPetriNetOnSmt.Tests.SoundnessVerificationTests
         [TestInitialize]
         public void Initialize()
         {
-            constraintExpressionOperationService = new ConstraintExpressionOperationServiceWithManualConcat();
+            constraintExpressionOperationService = new ConstraintExpressionOperationServiceWithManualConcat(new Microsoft.Z3.Context());
         }
 
 

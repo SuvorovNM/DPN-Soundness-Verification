@@ -20,19 +20,19 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     csv.NextRecord();
 }
 
-var transitionsCount = 115;
-var baseTransitionsCount = 115;
-var placesCount = 138;
-var basePlacesCount = 138;
-var extraArcsCount = 57;
-var baseExtraArcsCount = 57;
-var variablesCount = 57;
-var baseVariablesCount = 57;
-var conditionsCount = 115;
-var baseConditionsCount = 115;
+var transitionsCount = 35;
+var baseTransitionsCount = 5;
+var placesCount = 42;
+var basePlacesCount = 6;
+var extraArcsCount = 17;
+var baseExtraArcsCount = 3;
+var variablesCount = 17;
+var baseVariablesCount = 3;
+var conditionsCount = 35;
+var baseConditionsCount = 5;
 
 var parameterToConsider = DpnParameterToConsider.TransitionsCount;
-var overallIncreaseCount = 115;
+var overallIncreaseCount = 35;
 var counter = 0;
 
 do
@@ -47,6 +47,7 @@ do
         VarsCount = variablesCount,
         ConditionsCount = conditionsCount,
         Protocol = 2,
+        VerificationType = (int)VerificationType.OwnImplementation,
         NumberOfRecords = RecordsPerConfig
     };
 
@@ -74,6 +75,7 @@ do
         {
             proc.Kill();
         }
+        //proc.WaitForExit();
     }
     catch (Exception ex)
     {

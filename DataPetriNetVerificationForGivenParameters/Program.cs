@@ -53,7 +53,7 @@ void Protocol2() {
     {
         var dpnGenerator = new DPNGenerator(new Context());
         var dpn = dpnGenerator.Generate(props.PlacesCount, props.TransitionsCount, props.ExtraArcsCount, props.VarsCount, props.ConditionsCount);
-        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
+        var cg = new ConstraintGraph(dpn, props.VerificationType == 1 ? new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context) : new ConstraintExpressionOperationServiceWithManualConcat(dpn.Context));
         var timer = new Stopwatch();
         timer.Start();
         try
@@ -114,7 +114,7 @@ void Protocol1()
     {
         var dpnGenerator = new DPNGenerator(new Context());
         var dpn = dpnGenerator.Generate(props.PlacesCount, props.TransitionsCount, props.ExtraArcsCount, props.VarsCount, props.ConditionsCount);
-        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
+        var cg = new ConstraintGraph(dpn, props.VerificationType == 1 ? new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context) : new ConstraintExpressionOperationServiceWithManualConcat(dpn.Context));
         var timer = new Stopwatch();
         timer.Start();
         try
