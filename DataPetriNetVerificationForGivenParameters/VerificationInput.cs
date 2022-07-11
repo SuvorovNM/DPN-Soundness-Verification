@@ -14,5 +14,6 @@ namespace DataPetriNetVerificationForGivenParameters
         public int ExtraArcsCount { get; set; }
         public int VarsCount { get; set; }
         public int ConditionsCount { get; set; }
+        public int Protocol { get; set; }
     }
 }

@@ -156,7 +156,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             andBlockExpressions.Add(resultBlockExpression);
                         }
                     }
-                    if (andBlockExpressions.Count > 5000)
+                    if (andBlockExpressions.Count > 75000)
                     {
                         throw new Exception("Z3 requires too much time on conversion to DNF, try manual implementation.\n");
                     }

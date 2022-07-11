@@ -21,58 +21,21 @@ using (JsonReader reader = new JsonTextReader(sw))
 }
 
 var records = new List<VerificationOutput>();
-for (int i = 0; i < props.NumberOfRecords; i++)
+
+if (props.Protocol == 1)
 {
-    var dpnGenerator = new DPNGenerator(new Context());
-    var dpn = dpnGenerator.Generate(props.PlacesCount, props.TransitionsCount, props.ExtraArcsCount, props.VarsCount, props.ConditionsCount);
-    var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
-    var timer = new Stopwatch();
-    timer.Start();
-    try
-    {
-        cg.GenerateGraph();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"{i}: " + ex.ToString());
-        timer.Stop();
-        continue;
-    }
-    var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
-
-    var deadTransitions = dpn.Transitions
-                    .Select(x => x.Id)
-                    .Except(cg.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
-                    .ToList();
-
-    var isSound = !typedStates[StateType.NoWayToFinalMarking].Any()
-        && !typedStates[StateType.UncleanFinal].Any()
-        && !typedStates[StateType.Deadlock].Any()
-        && deadTransitions.Count == 0;
-
-    timer.Stop();
-
-    var outputRow = new VerificationOutput
-    {
-        PlacesCount = props.PlacesCount,
-        TransitionsCount = props.TransitionsCount,
-        ArcsCount = dpn.Arcs.Count,
-        VarsCount = props.VarsCount,
-        ConditionsCount = props.ConditionsCount,
-        Boundedness = cg.IsFullGraph,
-        ConstraintStates = cg.ConstraintStates.Count,
-        ConstraintArcs = cg.ConstraintArcs.Count,
-        DeadTransitions = deadTransitions.Count,
-        Deadlocks = typedStates[StateType.Deadlock].Count > 0,
-        Soundness = isSound,
-        Milliseconds = timer.ElapsedMilliseconds
-    };
-
-    records.Add(outputRow);
-    Console.Write($"{i}... ");
-    dpnGenerator.Dispose();
+    Protocol1();
 }
-//GC.Collect();
+else if (props.Protocol == 2)
+{
+    Protocol2();
+}
+else
+{
+    throw new ArgumentException($"No protocol with value {props.Protocol}");
+}
+
+
 using (var writer = new StreamWriter("results.csv", true))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
 {
@@ -80,5 +43,122 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     {
         csv.WriteRecord(record);
         csv.NextRecord();
+    }
+}
+
+void Protocol2() {
+
+    var dpnSatisifiesConditions = false;
+    do
+    {
+        var dpnGenerator = new DPNGenerator(new Context());
+        var dpn = dpnGenerator.Generate(props.PlacesCount, props.TransitionsCount, props.ExtraArcsCount, props.VarsCount, props.ConditionsCount);
+        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
+        var timer = new Stopwatch();
+        timer.Start();
+        try
+        {
+            cg.GenerateGraph();
+        }
+        catch (Exception ex)
+        {
+            Console.Write($"{DateTime.Now.ToLongTimeString()}: Fail! ");
+            timer.Stop();
+            continue;
+        }
+        var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+
+        var deadTransitions = dpn.Transitions
+                        .Select(x => x.Id)
+                        .Except(cg.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
+                        .ToList();
+
+        var isSound = !typedStates[StateType.NoWayToFinalMarking].Any()
+            && !typedStates[StateType.UncleanFinal].Any()
+            && !typedStates[StateType.Deadlock].Any()
+            && deadTransitions.Count == 0;
+
+        timer.Stop();
+
+        dpnSatisifiesConditions = deadTransitions.Count < 0.6 * props.TransitionsCount;
+
+        if (dpnSatisifiesConditions)
+        {
+            var outputRow = new VerificationOutput
+            {
+                PlacesCount = props.PlacesCount,
+                TransitionsCount = props.TransitionsCount,
+                ArcsCount = dpn.Arcs.Count,
+                VarsCount = props.VarsCount,
+                ConditionsCount = props.ConditionsCount,
+                Boundedness = cg.IsFullGraph,
+                ConstraintStates = cg.ConstraintStates.Count,
+                ConstraintArcs = cg.ConstraintArcs.Count,
+                DeadTransitions = deadTransitions.Count,
+                Deadlocks = typedStates[StateType.Deadlock].Count > 0,
+                Soundness = isSound,
+                Milliseconds = timer.ElapsedMilliseconds
+            };
+
+            records.Add(outputRow);
+            Console.Write($"{DateTime.Now.ToLongTimeString()}: Success! ");
+        }
+        dpnGenerator.Dispose();
+
+    } while (!dpnSatisifiesConditions);
+}
+
+void Protocol1()
+{
+    for (int i = 0; i < props.NumberOfRecords; i++)
+    {
+        var dpnGenerator = new DPNGenerator(new Context());
+        var dpn = dpnGenerator.Generate(props.PlacesCount, props.TransitionsCount, props.ExtraArcsCount, props.VarsCount, props.ConditionsCount);
+        var cg = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
+        var timer = new Stopwatch();
+        timer.Start();
+        try
+        {
+            cg.GenerateGraph();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{i}: " + ex.ToString());
+            timer.Stop();
+            continue;
+        }
+        var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+
+        var deadTransitions = dpn.Transitions
+                        .Select(x => x.Id)
+                        .Except(cg.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
+                        .ToList();
+
+        var isSound = !typedStates[StateType.NoWayToFinalMarking].Any()
+            && !typedStates[StateType.UncleanFinal].Any()
+            && !typedStates[StateType.Deadlock].Any()
+            && deadTransitions.Count == 0;
+
+        timer.Stop();
+
+        var outputRow = new VerificationOutput
+        {
+            PlacesCount = props.PlacesCount,
+            TransitionsCount = props.TransitionsCount,
+            ArcsCount = dpn.Arcs.Count,
+            VarsCount = props.VarsCount,
+            ConditionsCount = props.ConditionsCount,
+            Boundedness = cg.IsFullGraph,
+            ConstraintStates = cg.ConstraintStates.Count,
+            ConstraintArcs = cg.ConstraintArcs.Count,
+            DeadTransitions = deadTransitions.Count,
+            Deadlocks = typedStates[StateType.Deadlock].Count > 0,
+            Soundness = isSound,
+            Milliseconds = timer.ElapsedMilliseconds
+        };
+
+        records.Add(outputRow);
+        Console.Write($"{i}... ");
+        dpnGenerator.Dispose();
     }
 }

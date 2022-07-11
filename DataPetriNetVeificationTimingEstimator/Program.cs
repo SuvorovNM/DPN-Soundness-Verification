@@ -9,8 +9,9 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Globalization;
 
-const int RecordsPerConfig = 10;
-const int MaxParameterValue = 5;
+const int RecordsPerConfig = 1;
+const int MaxParameterValue = 250;
+const int IncrementAmount = 5;
 
 using (var writer = new StreamWriter("results.csv", false))
 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
@@ -19,19 +20,20 @@ using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     csv.NextRecord();
 }
 
-var transitionsCount = 3;
-var baseTransitionsCount = 3;
-var placesCount = 4;
-var basePlacesCount = 4;
-var extraArcsCount = 2;
-var baseExtraArcsCount = 2;
-var variablesCount = 3;
-var baseVariablesCount = 3;
-var conditionsCount = 1;
-var baseConditionsCount = 1;
+var transitionsCount = 115;
+var baseTransitionsCount = 115;
+var placesCount = 138;
+var basePlacesCount = 138;
+var extraArcsCount = 57;
+var baseExtraArcsCount = 57;
+var variablesCount = 57;
+var baseVariablesCount = 57;
+var conditionsCount = 115;
+var baseConditionsCount = 115;
 
-var parameterToConsider = DpnParameterToConsider.ConditionsCount;
-var overallIncreaseCount = 0;
+var parameterToConsider = DpnParameterToConsider.TransitionsCount;
+var overallIncreaseCount = 115;
+var counter = 0;
 
 do
 {
@@ -44,6 +46,7 @@ do
         ExtraArcsCount = extraArcsCount,
         VarsCount = variablesCount,
         ConditionsCount = conditionsCount,
+        Protocol = 2,
         NumberOfRecords = RecordsPerConfig
     };
 
@@ -66,7 +69,7 @@ do
         processInfo.ErrorDialog = true;
 
         var proc = Process.Start(processInfo);
-        successInTime = proc.WaitForExit(720000);
+        successInTime = proc.WaitForExit((3600000 / (MaxParameterValue * MaxParameterValue)) * overallIncreaseCount * overallIncreaseCount + 40000);
         if (!successInTime)
         {
             proc.Kill();
@@ -79,92 +82,109 @@ do
 
     if (successInTime)
     {
-        switch (parameterToConsider)
-        {
-            case DpnParameterToConsider.TransitionsCount:
-                if (transitionsCount >= MaxParameterValue)
-                {
-                    transitionsCount = baseTransitionsCount;
-                    parameterToConsider = DpnParameterToConsider.PlacesCount;
-                    placesCount++;
-                }
-                else
-                {
-                    transitionsCount++;
-                }
-                break;
-            case DpnParameterToConsider.PlacesCount:
-                if (placesCount >= MaxParameterValue)
-                {
-                    placesCount = basePlacesCount;
-                    parameterToConsider = DpnParameterToConsider.ArcsCount;
-                    extraArcsCount++;
-                }
-                else
-                {
-                    placesCount++;
-                }
-                break;
-            case DpnParameterToConsider.ArcsCount:
-                if (extraArcsCount >= MaxParameterValue)
-                {
-                    extraArcsCount = baseExtraArcsCount;
-                    parameterToConsider = DpnParameterToConsider.VariablesCount;
-                    variablesCount++;
-                }
-                else
-                {
-                    extraArcsCount++;
-                }
-                break;
-            case DpnParameterToConsider.VariablesCount:
-                if (variablesCount >= MaxParameterValue)
-                {
-                    variablesCount = baseVariablesCount;
-                    parameterToConsider = DpnParameterToConsider.ConditionsCount;
-                    conditionsCount++;
-                }
-                else
-                {
-                    variablesCount++;
-                }
-                break;
-            case DpnParameterToConsider.ConditionsCount:
-                if (conditionsCount >= MaxParameterValue)
-                {
-                    conditionsCount = baseConditionsCount;
-                    parameterToConsider = DpnParameterToConsider.AllCount;
-                    overallIncreaseCount++;
-                }
-                else
-                {
-                    conditionsCount++;
-                }
-                break;
-            case DpnParameterToConsider.AllCount:
-                parameterToConsider = DpnParameterToConsider.TransitionsCount;
-                baseTransitionsCount++;
-                basePlacesCount++;
-                baseExtraArcsCount++;
-                baseVariablesCount++;
-                baseConditionsCount++;
-                transitionsCount = baseTransitionsCount;
-                placesCount = basePlacesCount;
-                extraArcsCount = baseExtraArcsCount;
-                variablesCount = baseVariablesCount;
-                conditionsCount = baseConditionsCount;
-                break;
-        }
-        Console.Write("Success!\n");
+        Protocol2();
     }
     else
     {
         Console.Write("Failed waiting, trying again!\n");
     }
 } while (overallIncreaseCount <= MaxParameterValue);
-/* && 
-    placesCount <= MaxParameterValue && 
-    transitionsCount <= MaxParameterValue &&
-    extraArcsCount <= MaxParameterValue &&
-    variablesCount <= MaxParameterValue &&
-    conditionsCount <= MaxParameterValue*/
+
+void Protocol2()
+{
+    if (counter < 2)
+    {
+        counter++;
+    }
+    else
+    {
+        transitionsCount += IncrementAmount;
+        placesCount = (int)(transitionsCount * 1.2);
+        extraArcsCount = (int)(transitionsCount * 0.5);
+        variablesCount = (int)(transitionsCount * 0.5);
+        conditionsCount = transitionsCount;
+        overallIncreaseCount = transitionsCount;
+        counter = 0;
+    }
+}
+
+void Protocol1()
+{
+    switch (parameterToConsider)
+    {
+        case DpnParameterToConsider.TransitionsCount:
+            if (transitionsCount >= MaxParameterValue)
+            {
+                transitionsCount = baseTransitionsCount;
+                parameterToConsider = DpnParameterToConsider.PlacesCount;
+                placesCount += IncrementAmount;
+            }
+            else
+            {
+                transitionsCount += IncrementAmount;
+            }
+            break;
+        case DpnParameterToConsider.PlacesCount:
+            if (placesCount >= MaxParameterValue)
+            {
+                placesCount = basePlacesCount;
+                parameterToConsider = DpnParameterToConsider.ArcsCount;
+                extraArcsCount += IncrementAmount;
+            }
+            else
+            {
+                placesCount += IncrementAmount;
+            }
+            break;
+        case DpnParameterToConsider.ArcsCount:
+            if (extraArcsCount >= MaxParameterValue)
+            {
+                extraArcsCount = baseExtraArcsCount;
+                parameterToConsider = DpnParameterToConsider.VariablesCount;
+                variablesCount += IncrementAmount;
+            }
+            else
+            {
+                extraArcsCount += IncrementAmount;
+            }
+            break;
+        case DpnParameterToConsider.VariablesCount:
+            if (variablesCount >= MaxParameterValue)
+            {
+                variablesCount = baseVariablesCount;
+                parameterToConsider = DpnParameterToConsider.ConditionsCount;
+                conditionsCount += IncrementAmount;
+            }
+            else
+            {
+                variablesCount += IncrementAmount;
+            }
+            break;
+        case DpnParameterToConsider.ConditionsCount:
+            if (conditionsCount >= 145)
+            {
+                conditionsCount = baseConditionsCount;
+                parameterToConsider = DpnParameterToConsider.AllCount;
+                overallIncreaseCount += IncrementAmount;
+            }
+            else
+            {
+                conditionsCount += IncrementAmount;
+            }
+            break;
+        case DpnParameterToConsider.AllCount:
+            parameterToConsider = DpnParameterToConsider.TransitionsCount;
+            baseTransitionsCount += IncrementAmount;
+            basePlacesCount += IncrementAmount;
+            baseExtraArcsCount += IncrementAmount;
+            baseVariablesCount += IncrementAmount;
+            baseConditionsCount += IncrementAmount;
+            transitionsCount = baseTransitionsCount;
+            placesCount = basePlacesCount;
+            extraArcsCount = baseExtraArcsCount;
+            variablesCount = baseVariablesCount;
+            conditionsCount = baseConditionsCount;
+            break;
+    }
+    Console.Write($"{DateTime.Now.ToLongTimeString()}: Success!\n");
+}
