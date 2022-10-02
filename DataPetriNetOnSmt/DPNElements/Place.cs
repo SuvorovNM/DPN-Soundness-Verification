@@ -3,7 +3,7 @@ using DataPetriNetOnSmt.Enums;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
-    public class Place : Node
+    public class Place : Node, ICloneable
     {
         public int Tokens { get; set; }
         public bool IsFinal { get; set; }
@@ -19,6 +19,17 @@ namespace DataPetriNetOnSmt.DPNElements
             Id = label;
             IsFinal = placeType == PlaceType.Final;
             Tokens = placeType == PlaceType.Initial ? 1 : 0;
+        }
+
+        public object Clone()
+        {
+            return new Place
+            {
+                Label = this.Label,
+                Id = this.Id,
+                Tokens = this.Tokens,
+                IsFinal = this.IsFinal,
+            };
         }
     }
 }

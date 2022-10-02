@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
+using DataPetriNetTransformation;
 using Microsoft.Win32;
 using Microsoft.Z3;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace DataPetriNetOnSmt.Visualization
         private readonly DPNToGraphParser dpnParser;
         private readonly PnmlParser pnmlParser;
         private readonly SampleDPNProvider dpnProvider;
+        private readonly ITransformation dpnTransformation;
         private Context context;
 
         public MainWindow()
@@ -28,6 +30,7 @@ namespace DataPetriNetOnSmt.Visualization
             dpnParser = new DPNToGraphParser();
             dpnProvider = new SampleDPNProvider();
             pnmlParser = new PnmlParser();
+            dpnTransformation = new TransformationToAtomicConstraints();
             context = new Context();
 
             currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
@@ -90,7 +93,7 @@ namespace DataPetriNetOnSmt.Visualization
             if (currentDisplayedNet != null)
             {
                 var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
-                await Task.Run(() => constraintGraph.GenerateGraph());
+                await Task.Run(() => constraintGraph.GenerateGraph(true));
                 ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
                 constraintGraphWindow.Owner = this;
                 constraintGraphWindow.Show();
@@ -102,11 +105,18 @@ namespace DataPetriNetOnSmt.Visualization
             if (currentDisplayedNet != null)
             {
                 var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
-                await Task.Run(() => constraintGraph.GenerateGraph());
+                await Task.Run(() => constraintGraph.GenerateGraph(true));
                 ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
                 constraintGraphWindow.Owner = this;
                 constraintGraphWindow.Show();
             }
+        }
+
+        private void TransformModelItem_Click(object sender, RoutedEventArgs e)
+        {
+            //currentDisplayedNet
+            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
     }
 }

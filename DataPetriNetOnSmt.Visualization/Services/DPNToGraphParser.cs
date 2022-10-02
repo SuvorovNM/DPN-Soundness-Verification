@@ -55,7 +55,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 var nodeToAdd = new Node(place.Label);
                 nodeToAdd.Attr.Shape = Shape.Circle;
 
-                if (place == dpn.Places[0] || place == dpn.Places[^1])
+                if (place.Tokens > 0 || place.IsFinal)
                 {
                     nodeToAdd.Attr.FillColor = Color.LightGray;
                     nodeToAdd.Attr.LineWidth = 3;

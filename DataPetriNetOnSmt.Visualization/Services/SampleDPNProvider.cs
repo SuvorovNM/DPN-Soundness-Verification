@@ -12,52 +12,17 @@ namespace DataPetriNetOnSmt.Visualization.Services
         {
             var placesList = new List<Place>
             {
-                new Place
-                {
-                    Label = "i",
-                    Tokens = 1
-                },
-                new Place
-                {
-                    Label = "p1"
-                },
-                new Place
-                {
-                    Label = "p2"
-                },
-                new Place
-                {
-                    Label = "p3"
-                },
-                new Place
-                {
-                    Label = "p4"
-                },
-                new Place
-                {
-                    Label = "p5"
-                },
-                new Place
-                {
-                    Label = "p6"
-                },
-                new Place
-                {
-                    Label = "p7"
-                },
-                new Place
-                {
-                    Label = "p8"
-                },
-                new Place
-                {
-                    Label = "p9"
-                },
-                new Place
-                {
-                    Label = "o",
-                    IsFinal = true
-                }
+                new Place("i", PlaceType.Initial),
+                new Place("p1", PlaceType.Intermediary),
+                new Place("p2", PlaceType.Intermediary),
+                new Place("p3", PlaceType.Intermediary),
+                new Place("p4", PlaceType.Intermediary),
+                new Place("p5", PlaceType.Intermediary),
+                new Place("p6", PlaceType.Intermediary),
+                new Place("p7", PlaceType.Intermediary),
+                new Place("p8", PlaceType.Intermediary),
+                new Place("p9", PlaceType.Intermediary),
+                new Place("o", PlaceType.Final)
             };
 
             var variables = new VariablesStore();
@@ -69,6 +34,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
             {
                 new Transition
                 {
+                    Id = "Credit request",
                     Label = "Credit request",
                     Guard = new Guard
                     {
@@ -91,6 +57,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Verify",
                     Label = "Verify",
                     Guard = new Guard
                     {
@@ -125,6 +92,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Prepare",
                     Label = "Prepare",
                     Guard = new Guard
                     {
@@ -147,6 +115,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Skip",
                     Label = "Skip",
                     Guard = new Guard
                     {
@@ -169,6 +138,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Make proposal",
                     Label = "Make proposal",
                     Guard = new Guard
                     {
@@ -196,6 +166,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Refuse proposal",
                     Label = "Refuse proposal",
                     Guard = new Guard
                     {
@@ -223,6 +194,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Update request",
                     Label = "Update request",
                     Guard = new Guard
                     {
@@ -250,11 +222,13 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "AND split",
                     Label = "AND split",
                     Guard = new Guard()
                 },
                 new Transition
                 {
+                    Id = "Inform acceptance VIP",
                     Label = "Inform acceptance VIP",
                     Guard = new Guard
                     {
@@ -277,6 +251,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Inform rejection",
                     Label = "Inform rejection",
                     Guard = new Guard
                     {
@@ -299,6 +274,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Open credit loan",
                     Label = "Open credit loan",
                     Guard = new Guard
                     {
@@ -321,6 +297,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "AND join",
                     Label = "AND join",
                     Guard = new Guard()
                 }
@@ -369,44 +346,15 @@ namespace DataPetriNetOnSmt.Visualization.Services
         {
             var placesList = new List<Place>
             {
-                new Place
-                {
-                    Label = "i",
-                    Tokens = 1
-                },
-                new Place
-                {
-                    Label = "p1"
-                },
-                new Place
-                {
-                    Label = "p2"
-                },
-                new Place
-                {
-                    Label = "p3"
-                },
-                new Place
-                {
-                    Label = "p4"
-                },
-                new Place
-                {
-                    Label = "p5"
-                },
-                new Place
-                {
-                    Label = "p6"
-                },
-                new Place
-                {
-                    Label = "p7"
-                },
-                new Place
-                {
-                    Label = "o",
-                    IsFinal = true
-                }
+                new Place("i", PlaceType.Initial),
+                new Place("p1", PlaceType.Intermediary),
+                new Place("p2", PlaceType.Intermediary),
+                new Place("p3", PlaceType.Intermediary),
+                new Place("p4", PlaceType.Intermediary),
+                new Place("p5", PlaceType.Intermediary),
+                new Place("p6", PlaceType.Intermediary),
+                new Place("p7", PlaceType.Intermediary),
+                new Place("o", PlaceType.Final)
             };
 
             var variables = new VariablesStore();
@@ -417,6 +365,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
             {
                 new Transition
                 {
+                    Id = "Credit request",
                     Label = "Credit request",
                     Guard = new Guard
                     {
@@ -439,6 +388,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Verify",
                     Label = "Verify",
                     Guard = new Guard
                     {
@@ -473,6 +423,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Skip assessment",
                     Label = "Skip assessment",
                     Guard = new Guard
                     {
@@ -495,6 +446,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Simple assessment",
                     Label = "Simple assessment",
                     Guard = new Guard
                     {
@@ -541,6 +493,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Advanced assessment",
                     Label = "Advanced assessment",
                     Guard = new Guard
                     {
@@ -587,6 +540,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Renegotiate request",
                     Label = "Renegotiate request",
                     Guard = new Guard
                     {
@@ -621,11 +575,13 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "AND split",
                     Label = "AND split",
                     Guard = new Guard()
                 },
                 new Transition
                 {
+                    Id = "Inform acceptance customer normal",
                     Label = "Inform acceptance customer normal",
                     Guard = new Guard
                     {
@@ -660,6 +616,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Inform acceptance customer VIP",
                     Label = "Inform acceptance customer VIP",
                     Guard = new Guard
                     {
@@ -694,6 +651,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Inform rejection customer VIP",
                     Label = "Inform rejection customer VIP",
                     Guard = new Guard
                     {
@@ -728,6 +686,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
+                    Id = "Open credit loan",
                     Label = "Open credit loan",
                     Guard = new Guard
                     {
@@ -750,7 +709,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 },
                 new Transition
                 {
-                    Label = "AND split",
+                    Id = "AND join",
+                    Label = "AND join",
                     Guard = new Guard()
                 }
             };

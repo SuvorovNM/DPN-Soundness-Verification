@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
-    public class Guard
+    public class Guard : ICloneable
     {
         private readonly VariablesStore localVariables;
 
@@ -163,6 +163,15 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             IsSatisfied = false;
             localVariables.Clear();
+        }
+
+        public object Clone()
+        {
+            return new Guard
+            {
+                ConstraintExpressions = this.ConstraintExpressions.Select(x => x.Clone()).ToList(),
+                IsSatisfied = this.IsSatisfied
+            };
         }
     }
 }

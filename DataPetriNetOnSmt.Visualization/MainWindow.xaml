@@ -20,6 +20,7 @@
                     <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
                 </MenuItem>
                 <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
+                <MenuItem x:Name="TransformModelItem" Header="Transform model" Click="TransformModelItem_Click"/>
 
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness">
                     <MenuItem x:Name="ManualSoundnessMenuItem" Header="Manual Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>

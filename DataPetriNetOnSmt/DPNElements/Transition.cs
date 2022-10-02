@@ -3,7 +3,7 @@ using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
-    public class Transition : Node
+    public class Transition : Node, ICloneable
     {
         public Guard Guard { get; set; }
         public Transition()
@@ -71,6 +71,16 @@ namespace DataPetriNetOnSmt.DPNElements
             }
 
             return updatedMarking;
+        }
+
+        public object Clone()
+        {
+            return new Transition
+            {
+                Guard = (Guard)Guard.Clone(),
+                Id = this.Id,
+                Label = this.Label
+            };
         }
     }
 }

@@ -18,12 +18,12 @@ namespace DataPetriNetGeneration
         private readonly Random random = new Random();
 
         // To async?
-        public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int additionalArcsCount)
+        public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int extraArcsCount)
             // Is there any maximum for additionalArcsCount?
         {
             var dpn = GenerateSoundBackbone(placesCount, transitionsCount);
 
-            var arcsRemained = additionalArcsCount;
+            var arcsRemained = extraArcsCount;
 
             // We need additional Transition -> Place and Place -> Transition arcs
             while (arcsRemained > 0)
@@ -87,7 +87,7 @@ namespace DataPetriNetGeneration
 
             while (placesRemained > 1)
             {
-                GenerateIntermediaryPlace(placesCount - placesRemained + 1, dpn);
+                GenerateIntermediaryPlace(placesCount - placesRemained, dpn);
                 placesRemained -= 1;
 
                 GenerateIntermediaryTransitions(dpn.Places.Last(), transitionsCount - transitionsRemained, dpn, maxTransitionPerPlace, out chosenTransitionsNumber);

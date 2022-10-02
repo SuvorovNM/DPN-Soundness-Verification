@@ -155,7 +155,12 @@ namespace DataPetriNetGeneration
             return result;
         }
 
-        private ConstraintVOVExpression GenerateVOVExpression(List<string> varsPool, VariableType firstVariableType, LogicalConnective logicalConnectiveType, string variableName, BinaryPredicate predicate)
+        private ConstraintVOVExpression GenerateVOVExpression(
+            List<string> varsPool, 
+            VariableType firstVariableType, 
+            LogicalConnective logicalConnectiveType, 
+            string variableName, 
+            BinaryPredicate predicate)
         {
             var secondVariableName = varsPool[random.Next(0, varsPool.Count)];
 
@@ -179,7 +184,12 @@ namespace DataPetriNetGeneration
             return vovExpression;
         }
 
-        private ConstraintVOCExpression<double> GenerateVOCExpression(List<int> constantsPool, VariableType firstVariableType, LogicalConnective logicalConnectiveType, string variableName, BinaryPredicate predicate)
+        private ConstraintVOCExpression<double> GenerateVOCExpression(
+            List<int> constantsPool, 
+            VariableType firstVariableType, 
+            LogicalConnective logicalConnectiveType, 
+            string variableName, 
+            BinaryPredicate predicate)
         {
             var constant = constantsPool[random.Next(0, constantsPool.Count)];
 

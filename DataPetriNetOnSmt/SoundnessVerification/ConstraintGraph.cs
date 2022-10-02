@@ -38,7 +38,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
             StatesToConsider.Push(InitialState);
         }
 
-        public void GenerateGraph()
+        public void GenerateGraph(bool removeRedundantBlocks = false)
         {
             IsFullGraph = false;
 
@@ -51,10 +51,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     // Considering classical transition
                     var readOnlyExpressions = GetReadExpressions(transition.Guard.ConstraintExpressions);
 
-                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions)))
+                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions, removeRedundantBlocks)))
                     {
                         var constraintsIfTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, false);
+                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, removeRedundantBlocks);
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
@@ -75,7 +75,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     if (negatedGuardExpressions.Count > 0)
                     {
                         var constraintsIfSilentTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, false);
+                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, removeRedundantBlocks);
 
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))

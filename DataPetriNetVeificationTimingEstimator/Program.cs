@@ -11,28 +11,21 @@ using System.Globalization;
 
 const int RecordsPerConfig = 1;
 const int MaxParameterValue = 250;
-const int IncrementAmount = 5;
+const int IncrementAmount = -5;
 
-using (var writer = new StreamWriter("results.csv", false))
-using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-{
-    csv.WriteHeader<VerificationOutput>();
-    csv.NextRecord();
-}
-
-var transitionsCount = 35;
+var transitionsCount = 110;
 var baseTransitionsCount = 5;
-var placesCount = 42;
+var placesCount = 132;
 var basePlacesCount = 6;
-var extraArcsCount = 17;
+var extraArcsCount = 55;
 var baseExtraArcsCount = 3;
-var variablesCount = 17;
+var variablesCount = 55;
 var baseVariablesCount = 3;
-var conditionsCount = 35;
+var conditionsCount = 110;
 var baseConditionsCount = 5;
 
 var parameterToConsider = DpnParameterToConsider.TransitionsCount;
-var overallIncreaseCount = 35;
+var overallIncreaseCount = 80;
 var counter = 0;
 
 do
@@ -70,7 +63,7 @@ do
         processInfo.ErrorDialog = true;
 
         var proc = Process.Start(processInfo);
-        successInTime = proc.WaitForExit((3600000 / (MaxParameterValue * MaxParameterValue)) * overallIncreaseCount * overallIncreaseCount + 40000);
+        successInTime = proc.WaitForExit((3600000 / (MaxParameterValue * MaxParameterValue)) * overallIncreaseCount * overallIncreaseCount + 400000);
         if (!successInTime)
         {
             proc.Kill();
