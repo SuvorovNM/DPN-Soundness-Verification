@@ -51,7 +51,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     // Considering classical transition
                     var readOnlyExpressions = GetReadExpressions(transition.Guard.ConstraintExpressions);
 
-                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions, removeRedundantBlocks)))
+                    if (readOnlyExpressions.Count == 0 || 
+                            expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readOnlyExpressions, removeRedundantBlocks)))
                     {
                         var constraintsIfTransitionFires = expressionService
                             .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, removeRedundantBlocks);
@@ -97,6 +98,32 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
         private List<IConstraintExpression> GetReadExpressions(List<IConstraintExpression> constraints) // TODO: Check for correctness
         {
+            // Костыль, необходима проверка на то, что минимум в каждом OR-блоке есть readExpression
+            // Иначе ReadExpressions тождественно равен True
+            var lastOrIdx = -1;
+            var lastReadIdx = -2;
+
+            for (int i = 0; i < constraints.Count; i++)
+            {
+                if (constraints[i].ConstraintVariable.VariableType == VariableType.Read)
+                {
+                    lastReadIdx = i;
+                }
+                if (constraints[i].LogicalConnective == LogicalConnective.Or)
+                {
+                    if (lastReadIdx < lastOrIdx)
+                    {
+                        return new List<IConstraintExpression>();
+                    }
+                    lastOrIdx = i;
+                }
+            }
+
+            if (lastReadIdx == int.MaxValue || lastReadIdx < lastOrIdx)
+            {
+                return new List<IConstraintExpression>();
+            }
+
             var expressionList = constraints
                 .GetExpressionsOfType(VariableType.Read)
                 .ToList();

@@ -348,19 +348,68 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var implications = new List<BoolExpr>();
 
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
-                .Where(x => x.Args[0] == varToRemove);
+                .Where(x => !x.IsNot && x.Args[0] == varToRemove ||
+                    x.IsNot && x.Args[0].Args[0] == varToRemove);
 
             foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
             {
-                implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                if (expr.IsGT)
+                {
+                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                }
+                if (expr.IsGE)
+                {
+                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                }
+                if (expr.IsLT)
+                {
+                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                }
+                if (expr.IsLE)
+                {
+                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                }
+                if (expr.IsEq)
+                {
+                    implications.Add(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
+                }
+                if (expr.IsNot)
+                {
+                    implications.Add(Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[1])));
+                }
             }
 
 
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
-                .Where(x => x.Args[1] == varToRemove);
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
+                .Where(x => !x.IsNot && x.Args[1] == varToRemove ||
+                    x.IsNot && x.Args[0].Args[1] == varToRemove);
+
+            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
             {
-                implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                if (expr.IsGT)
+                {
+                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                }
+                if (expr.IsGE)
+                {
+                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                }
+                if (expr.IsLT)
+                {
+                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                }
+                if (expr.IsLE)
+                {
+                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                }
+                if (expr.IsEq)
+                {
+                    implications.Add(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                }
+                if (expr.IsNot)
+                {
+                    implications.Add(Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[0])));
+                }
             }
 
             return implications;
