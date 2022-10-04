@@ -43,122 +43,74 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     .Distinct()
                     .ToDictionary(x => x.Name, y => y.Domain);
 
-                foreach (var sourceExpressionGroup in SplitSourceExpressionByOrDelimiter(source))
+                var andExpression = Context.MkAnd(source, 
+                    Context.MkAnd(currentTargetBlock.Select(x => x.GetSmtExpression(Context))));
+                BoolExpr resultBlockExpression = andExpression;
+
+                if (overwrittenVarNames.Count > 0)
                 {
-                    // All source constraints + read constraints from target ones
-                    var concatenatedExpressionGroup = sourceExpressionGroup
-                        .Union(currentTargetBlock.Select(x => x.GetSmtExpression(Context)));
-                    var andExpression = Context.MkAnd(concatenatedExpressionGroup);
-                    BoolExpr resultBlockExpression = andExpression;
-
-                    if (overwrittenVarNames.Count > 0)
+                    var variablesToOverwrite = new Expr[overwrittenVarNames.Count];
+                    var currentArrayIndex = 0;
+                    foreach (var keyValuePair in overwrittenVarNames)
                     {
-                        var variablesToOverwrite = new Expr[overwrittenVarNames.Count];
-                        var currentArrayIndex = 0;
-                        foreach (var keyValuePair in overwrittenVarNames)
-                        {
-                            variablesToOverwrite[currentArrayIndex++] = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
-                        }
-
-                        var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
-
-                        Goal g = Context.MkGoal(true, true, false);
-                        g.Assert((BoolExpr)existsExpression);
-                        Tactic tac = Context.MkTactic("qe");
-                        //Tactic tac = ContextProvider.Context.AndThen(ContextProvider.Context.MkTactic("qe"), ContextProvider.Context.MkTactic("simplify"));
-                        ApplyResult a = tac.Apply(g);
-
-                        BoolExpr dnfFormatExpression = null;
-                        var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
-                        if (expressionWithRemovedOverwrittenVars.ToString().Contains("or"))
-                        {
-                            var tacticToCnf = Context.MkTactic("tseitin-cnf");
-                            var tacticToDnf = Context.AndThen(
-                                tacticToCnf,
-                                Context.Repeat(Context.OrElse(Context.MkTactic("split-clause"), Context.Skip())));
-
-
-                            g = Context.MkGoal(true, true, false);
-                            g.Assert(expressionWithRemovedOverwrittenVars);
-
-                            var convertToDnfTask = new Task<ApplyResult>(() => tacticToDnf.Apply(g));
-                            convertToDnfTask.Start();                         
-
-                            if (!convertToDnfTask.Wait(15000))//stopwatch.Elapsed > new TimeSpan(0,0,15)
-                            {
-                                throw new Exception("Z3 requires too much time on conversion to DNF, try manual implementation.\n");/* +
-                                    $"Source: {source}\n" +
-                                    $"Target: {string.Concat(target.Select(x => x.ToString()))}");*/
-                            }
-
-                            var result = convertToDnfTask.GetAwaiter().GetResult();
-
-                            var dnfFormatExpressionArray = new BoolExpr[result.Subgoals.Length];
-                            var i = 0;
-
-                            foreach (var block in result.Subgoals)
-                            {
-                                dnfFormatExpressionArray[i++] = block.AsBoolExpr();
-                            }
-
-                            dnfFormatExpression = Context.MkOr(dnfFormatExpressionArray);
-                        }
-                        else
-                        {
-                            dnfFormatExpression = expressionWithRemovedOverwrittenVars;
-                        }
-
-                        foreach (var keyValuePair in overwrittenVarNames)
-                        {
-                            var sourceVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
-                            var targetVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
-
-                            dnfFormatExpression = (BoolExpr)dnfFormatExpression.Substitute(sourceVar, targetVar);
-                        }
-                        resultBlockExpression = dnfFormatExpression;
+                        variablesToOverwrite[currentArrayIndex++] = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
                     }
 
-                    if (removeRedundantBlocks)
-                    {                        
-                        if (resultBlockExpression.IsOr)
-                        {                           
-                            foreach (var block in resultBlockExpression.Args)
-                            {
-                                var solver = Context.MkSimpleSolver();
-                                solver.Add((BoolExpr)block);
-                                if (solver.Check() == Status.SATISFIABLE)
-                                {
-                                    andBlockExpressions.Add((BoolExpr)block);
-                                }
-                            }
-                        }
-                        else
+                    var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
+
+                    Goal g = Context.MkGoal(true, true, false);
+                    g.Assert((BoolExpr)existsExpression);
+                    Tactic tac = Context.MkTactic("qe");
+                    ApplyResult a = tac.Apply(g);
+                    var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
+            
+
+                    foreach (var keyValuePair in overwrittenVarNames)
+                    {
+                        var sourceVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+                        var targetVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+
+                        expressionWithRemovedOverwrittenVars = (BoolExpr)expressionWithRemovedOverwrittenVars.Substitute(sourceVar, targetVar);
+                    }
+                    resultBlockExpression = expressionWithRemovedOverwrittenVars;
+                }
+
+                if (removeRedundantBlocks)
+                {
+                    if (resultBlockExpression.IsOr)
+                    {
+                        foreach (var block in resultBlockExpression.Args)
                         {
                             var solver = Context.MkSimpleSolver();
-                            solver.Add(resultBlockExpression);
+                            solver.Add((BoolExpr)block);
                             if (solver.Check() == Status.SATISFIABLE)
                             {
-                                andBlockExpressions.Add(resultBlockExpression);
+                                andBlockExpressions.Add((BoolExpr)block);
                             }
                         }
                     }
                     else
                     {
-                        if (resultBlockExpression.IsOr)
-                        {
-                            foreach (var block in resultBlockExpression.Args)
-                            {
-                                andBlockExpressions.Add((BoolExpr)block);
-                            }
-                        }
-                        else
+                        var solver = Context.MkSimpleSolver();
+                        solver.Add(resultBlockExpression);
+                        if (solver.Check() == Status.SATISFIABLE)
                         {
                             andBlockExpressions.Add(resultBlockExpression);
                         }
                     }
-                    if (andBlockExpressions.Count > 75000)
+                }
+                else
+                {
+                    if (resultBlockExpression.IsOr)
                     {
-                        throw new Exception("Z3 requires too much time on conversion to DNF, try manual implementation.\n");
+                        foreach (var block in resultBlockExpression.Args)
+                        {
+                            andBlockExpressions.Add((BoolExpr)block);
+                        }
+                    }
+                    else
+                    {
+                        andBlockExpressions.Add(resultBlockExpression);
                     }
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
