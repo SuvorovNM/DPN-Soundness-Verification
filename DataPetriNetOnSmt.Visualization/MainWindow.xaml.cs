@@ -104,7 +104,10 @@ namespace DataPetriNetOnSmt.Visualization
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
+                var constraintGraph = new ConstraintGraph(
+                    currentDisplayedNet, 
+                    new ConstraintExpressionServiceForRealsWithManualConcat(currentDisplayedNet.Context));
+                //new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
                 await Task.Run(() => constraintGraph.GenerateGraph(true));
                 ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
                 constraintGraphWindow.Owner = this;
