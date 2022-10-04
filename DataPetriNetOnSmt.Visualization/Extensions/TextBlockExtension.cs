@@ -34,7 +34,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                     .Except(graph.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
                     .ToList();
 
-            var isSound = !analysisResult[StateType.NoWayToFinalMarking].Any()
+            var isSound = graph.IsFullGraph
+                && !analysisResult[StateType.NoWayToFinalMarking].Any()
                 && !analysisResult[StateType.UncleanFinal].Any()
                 && !analysisResult[StateType.Deadlock].Any()
                 && deadTransitions.Count == 0;

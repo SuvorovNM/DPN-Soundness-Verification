@@ -111,7 +111,7 @@ namespace DataPetriNetTransformation
                                         currentIndex == expressionList.Count - 1;
 
                     var newTransition =
-                        new Transition(transitionInfo.Transition.Id + overallTransitionIndex++.ToString());
+                        new Transition(transitionInfo.Transition.Id +"_" + overallTransitionIndex++.ToString());
 
                     newTransition.Guard = new Guard
                     {
