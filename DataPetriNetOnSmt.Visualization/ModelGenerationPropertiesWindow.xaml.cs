@@ -47,7 +47,7 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void UpdateDefaultsWithTextboxes()
         {
-            transitionsCount = tbConditionsCount.Text;
+            transitionsCount = tbTransitionsCount.Text;
             placesCount = tbPlacesCount.Text;
             extraArcsCount = tbExtraArcsCount.Text;
             varsCount = tbVarsCount.Text;
