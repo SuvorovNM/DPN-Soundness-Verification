@@ -246,7 +246,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     if (expressionToInspect.Args.Any(x => x.ToString() == overwriteVarName))
                     {
-                        var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteVarName != x.ToString());
+                        // Can be the same var (a^w = a^r)
+                        var oldValue = expressionToInspect.Args.FirstOrDefault(x => overwriteVarName != x.ToString()) 
+                            ?? expressionToInspect.Args.FirstOrDefault(x => overwriteVarName == x.ToString());
 
                         if (oldValue.ToString() != overwriteExpressionWithReadVars.Args[0].ToString())
                         {
@@ -277,6 +279,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
 
+            if (varToOverwrite == null || secondVar == null)
+            {
+                return;
+            }
+
             var newExpression = sourceExpression.Args[0] == secondVar
                 ? implicationService.GetImplicationOfGreaterExpression(
                 concatenatedExpressionGroup,
@@ -302,6 +309,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var varToOverwrite = sourceExpression.Args[0].Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args[0].Args.FirstOrDefault(x => x != varToOverwrite);
 
+            if (varToOverwrite == null || secondVar == null)
+            {
+                return;
+            }
+
             var newExpression = implicationService.GetImplicationOfInequalityExpression(
                 concatenatedExpressionGroup,
                 varToOverwrite,
@@ -321,6 +333,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         {
             var varToOverwrite = sourceExpression.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = sourceExpression.Args.FirstOrDefault(x => !overwrittenVarNames.Contains(x.ToString()));
+
+            if (varToOverwrite == null || secondVar == null)
+            {
+                return;
+            }
 
             var newExpression = sourceExpression.Args[0] == secondVar
                 ? implicationService.GetImplicationOfLessExpression(
@@ -348,6 +365,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         {
             var varToOverwrite = expressionToInspect.Args.FirstOrDefault(x => overwrittenVarNames.Contains(x.ToString()));
             var secondVar = expressionToInspect.Args.FirstOrDefault(x => x != varToOverwrite);
+
+            if (varToOverwrite == null || secondVar == null)
+            {
+                return;
+            }
 
             UpdateExpressionsByEqualityForGivenVars(overwrittenVarNames, concatenatedExpressionGroup, updatedExpression, sourceExpression, varToOverwrite, secondVar, finalImplications);
 
