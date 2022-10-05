@@ -45,7 +45,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                     .Select(x => x.Value > 1
                         ? x.Value.ToString() + x.Key.Label
                         : x.Key.Label));
-                var nodeToAdd = new Node($"[{tokens}] ({FormStringRepresentationOfBoolExpr(state.Constraints)})");
+
+                var formulaString = state.Constraints.ToString();
+
+                var constraintFormula = formulaString.Length > 500
+                    ? formulaString.Substring(0, 200) + "..."
+                    : formulaString;
+
+                var nodeToAdd = new Node($"[{tokens}] ({constraintFormula})");// FormStringRepresentationOfBoolExpr(state.Constraints)
                 nodeToAdd.Attr.Shape = Shape.Box;
 
                 nodeToAdd.Attr.FillColor = correctedTypedStates[state] switch
