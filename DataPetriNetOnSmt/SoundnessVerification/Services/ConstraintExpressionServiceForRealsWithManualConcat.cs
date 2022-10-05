@@ -61,32 +61,26 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     var concatenatedExpressionGroup = sourceExpressionGroup
                         .Union(currentTargetBlock.Select(x => x.GetSmtExpression(Context)));
 
-                    var expressionGroupWithImplications = GenerateAllImplications(
-                        concatenatedExpressionGroup,
-                        variablesToOverwrite);
-
-                    var expressionGroupWithoutOverwrittenVars = GetConstraintsWithoutOverwrittenVars(
-                        expressionGroupWithImplications,
-                        variablesToOverwrite);
-
-                    var andBlockExpression = GetAndBlockExpression(expressionGroupWithoutOverwrittenVars);
-
-                    andBlockExpression = SubstituteWriteVarsWithReadVars(andBlockExpression, overwrittenVarNames);
-
-
-                    if (removeRedundantBlocks)
+                    // Verify that current expression is satisfiable
+                    var solver = Context.MkSimpleSolver();
+                    solver.Add(concatenatedExpressionGroup);
+                    if (solver.Check() == Status.SATISFIABLE)
                     {
-                        var solver = Context.MkSimpleSolver();
-                        solver.Add(andBlockExpression);
-                        if (solver.Check() == Status.SATISFIABLE)
-                        {
-                            andBlockExpressions.Add(andBlockExpression);
-                        }
-                    }
-                    else
-                    {
+
+                        var expressionGroupWithImplications = GenerateAllImplications(
+                            concatenatedExpressionGroup,
+                            variablesToOverwrite);
+
+                        var expressionGroupWithoutOverwrittenVars = GetConstraintsWithoutOverwrittenVars(
+                            expressionGroupWithImplications,
+                            variablesToOverwrite);
+
+                        var andBlockExpression = GetAndBlockExpression(expressionGroupWithoutOverwrittenVars);
+
+                        andBlockExpression = SubstituteWriteVarsWithReadVars(andBlockExpression, overwrittenVarNames);
                         andBlockExpressions.Add(andBlockExpression);
                     }
+
                 }
             } while (targetConstraintsDuringEvaluation.Count > 0);
 
@@ -114,7 +108,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 previousExpressionCount = expressionsWithImplications.Count;
 
                 // We avoid expressions with both overwritten vars
-                var baseExpressionsForImplications = expressionsWithImplications
+                 var baseExpressionsForImplications = expressionsWithImplications
                     .Where(x => (x.IsNot && 
                         !x.Args[0].Args.Any(x=>x.IsNumeral) &&
                         x.Args[0].Args.Any(y => overwrittenVarNames.Contains(y)) &&
@@ -124,6 +118,24 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         x.Args.Any(y => overwrittenVarNames.Contains(y)) &&
                         x.Args.Any(y => !overwrittenVarNames.Contains(y))))
                     .ToArray();
+
+                var addedBaseExpressions = baseExpressionsForImplications
+                    .Where(x => x.IsGE && baseExpressionsForImplications
+                        .Contains(Context.MkLe((ArithExpr)x.Args[0], (ArithExpr)x.Args[1])) ||
+                            x.IsGE && baseExpressionsForImplications
+                        .Contains(Context.MkGe((ArithExpr)x.Args[1], (ArithExpr)x.Args[0])))
+                    .Select(y => Context.MkEq((ArithExpr)y.Args[0], (ArithExpr)y.Args[1]));
+
+                if (addedBaseExpressions.Count() > 0)
+                {
+
+                }
+
+                baseExpressionsForImplications = baseExpressionsForImplications
+                    .Union(addedBaseExpressions)
+                    .ToArray();
+
+                // Replace a>=b and a<=b with a = b
 
                 foreach (var baseExpression in baseExpressionsForImplications)
                 {
@@ -388,19 +400,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             {
                 if (expr.IsGT)
                 {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
                 }
                 if (expr.IsGE)
                 {
-                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
                 }
                 if (expr.IsLT)
                 {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
                 }
                 if (expr.IsLE)
                 {
-                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
+                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
                 }
                 if (expr.IsEq)
                 {
