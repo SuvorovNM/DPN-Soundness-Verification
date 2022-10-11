@@ -105,10 +105,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             for (int i = 0; i < constraints.Count; i++)
             {
-                if (constraints[i].ConstraintVariable.VariableType == VariableType.Read)
-                {
-                    lastReadIdx = i;
-                }
                 if (constraints[i].LogicalConnective == LogicalConnective.Or)
                 {
                     if (lastReadIdx < lastOrIdx)
@@ -117,9 +113,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
                     }
                     lastOrIdx = i;
                 }
+                if (constraints[i].ConstraintVariable.VariableType == VariableType.Read)
+                {
+                    lastReadIdx = i;
+                }                
             }
 
-            if (lastReadIdx == int.MaxValue || lastReadIdx < lastOrIdx)
+            if (lastReadIdx == -2 || lastReadIdx < lastOrIdx)
             {
                 return new List<IConstraintExpression>();
             }

@@ -8,9 +8,9 @@ namespace DataPetriNetTransformation
     internal class TransitionInfo
     {
         public Transition Transition { get; set; }
-        public List<Place> Preset { get; set; }
-        public List<Place> Postset { get; set; }
-        public TransitionInfo(Transition transition, List<Place> preset, List<Place> postset)
+        public List<(Place place, int weight)> Preset { get; set; }
+        public List<(Place place, int weight)> Postset { get; set; }
+        public TransitionInfo(Transition transition, List<(Place place, int weight)> preset, List<(Place place, int weight)> postset)
         {
             Transition = transition;
             Preset = preset;
@@ -43,23 +43,23 @@ namespace DataPetriNetTransformation
             var newDPN = (DataPetriNet)sourceDpn.Clone();
             var dpnTransitionsToConsider = newDPN.Transitions.ToArray();
 
-            var transitionsPreset = new Dictionary<Transition, List<Place>>();
-            var transitionsPostset = new Dictionary<Transition, List<Place>>();
+            var transitionsPreset = new Dictionary<Transition, List<(Place place, int weight)>>();
+            var transitionsPostset = new Dictionary<Transition, List<(Place place, int weight)>>();
             foreach(var transition in newDPN.Transitions)
             {
-                transitionsPreset.Add(transition, new List<Place>());
-                transitionsPostset.Add(transition, new List<Place>());
+                transitionsPreset.Add(transition, new List<(Place place, int weight)>());
+                transitionsPostset.Add(transition, new List<(Place place, int weight)>());
             }
 
             foreach(var arc in newDPN.Arcs)
             {
                 if (arc.Type == ArcType.PlaceTransition)
                 {
-                    transitionsPreset[(Transition)arc.Destination].Add((Place)arc.Source);
+                    transitionsPreset[(Transition)arc.Destination].Add(((Place)arc.Source, arc.Weight));
                 }
                 else
                 {
-                    transitionsPostset[(Transition)arc.Source].Add((Place)arc.Destination);
+                    transitionsPostset[(Transition)arc.Source].Add(((Place)arc.Destination, arc.Weight));
                 }
             }
 
@@ -96,6 +96,8 @@ namespace DataPetriNetTransformation
                 return;
             }
 
+            var intermediaryArcWeight = transitionInfo.Preset.Sum(x => x.weight);
+
             // Отсортировать конъюнкты так, чтобы операции записи были в конце
 
             var sortedExpressions = GetSortedExpressions(transitionConstraint);
@@ -123,19 +125,19 @@ namespace DataPetriNetTransformation
                     {
                         foreach (var presetPlace in transitionInfo.Preset)
                         {
-                            dpn.Arcs.Add(new Arc(presetPlace, newTransition));
+                            dpn.Arcs.Add(new Arc(presetPlace.place, newTransition, presetPlace.weight));
                         }
                     }
                     else
                     {
-                        dpn.Arcs.Add(new Arc(dpn.Places.Last(), newTransition));
+                        dpn.Arcs.Add(new Arc(dpn.Places.Last(), newTransition, intermediaryArcWeight));
                     }
 
                     if (needPostset)
                     {
                         foreach (var postsetPlace in transitionInfo.Postset)
                         {
-                            dpn.Arcs.Add(new Arc(newTransition, postsetPlace));
+                            dpn.Arcs.Add(new Arc(newTransition, postsetPlace.place, postsetPlace.weight));
                         }
                         lastExpression = true;
                     }
