@@ -12,6 +12,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public bool IsSatisfied { get; private set; }
         public List<IConstraintExpression> ConstraintExpressions { get; set; }
+
         public Guard()
         {
             ConstraintExpressions = new List<IConstraintExpression>();
@@ -103,15 +104,28 @@ namespace DataPetriNetOnSmt.DPNElements
             }
         }
 
-        private void AssertGuardConstraints(Context ctx, Goal goal) // INCORRECT
+        private void AssertGuardConstraints(Context ctx, Goal goal)
         {
-            BoolExpr constraintExpression = ConstraintExpressions[0].GetSmtExpression(ctx);
-            foreach (var constraint in ConstraintExpressions.Skip(1))
+            List<BoolExpr> disjuncts = new List<BoolExpr>();
+            var currentIndex = 0;
+            //disjuncts[currentIndex] = ConstraintExpressions[0].GetSmtExpression(ctx);
+            foreach (var constraint in ConstraintExpressions)
             {
-                constraintExpression = constraint.LogicalConnective == LogicalConnective.And
-                    ? ctx.MkAnd(constraintExpression, constraint.GetSmtExpression(ctx))
-                    : ctx.MkOr(constraintExpression, constraint.GetSmtExpression(ctx));
+                if (constraint.LogicalConnective == LogicalConnective.And)
+                {
+                    disjuncts[currentIndex] = ctx.MkAnd(disjuncts[currentIndex], constraint.GetSmtExpression(ctx));
+                }
+                else
+                {
+                    disjuncts.Add(constraint.GetSmtExpression(ctx));
+                    currentIndex++;
+                }
             }
+
+            var constraintExpression = disjuncts.Count > 1
+                ? ctx.MkOr(disjuncts)
+                : disjuncts[0];
+
             goal.Assert(constraintExpression);
         }
 

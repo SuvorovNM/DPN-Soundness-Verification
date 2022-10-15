@@ -1,4 +1,5 @@
-﻿using DataPetriNetOnSmt.Abstractions;
+﻿using DataPetriNetOnSmt;
+using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
@@ -6,11 +7,98 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 
-namespace DataPetriNetOnSmt.Visualization.Services
+namespace DataPetriNetParsers
 {
     public class PnmlParser
     {
+        public XDocument SerializeDpn(DataPetriNet dpn)
+        {
+            ArgumentNullException.ThrowIfNull(dpn);
+
+            XElement variablesElement = new XElement("variables");
+            XElement dpnStructureElement = new XElement("page");
+
+            foreach (var domainType in Enum.GetValues<DomainType>())
+            {
+                foreach (var variable in dpn.Variables[domainType].GetKeys())
+                {
+                    var variableElement = new XElement("variable",
+                        new XElement("name", variable));
+                    variableElement.SetAttributeValue("type", domainType.ToString());
+                    variablesElement.Add(variableElement);
+                }
+            }
+
+            foreach (var place in dpn.Places)
+            {
+                var placeElement = new XElement("place",
+                    new XElement("name",
+                        new XElement("text", place.Label)));
+
+                placeElement.SetAttributeValue("id", place.Id);
+
+                if (place.Tokens > 0)
+                {
+                    var initialMarking = new XElement("initialMarking",
+                        new XElement("text", place.Tokens));
+                    placeElement.Add(initialMarking);
+                }
+                if (place.IsFinal)
+                {
+                    var finalMarking = new XElement("finalMarking",
+                        new XElement("text", 1));
+                    placeElement.Add(finalMarking);
+                }
+                dpnStructureElement.Add(placeElement);
+            }
+
+            foreach (var transition in dpn.Transitions)
+            {
+                var transitionElement = new XElement("transition",
+                    new XElement("name",
+                        new XElement("text", transition.Label)));
+                transitionElement.SetAttributeValue("id", transition.Id);
+
+                if (transition.Guard.ConstraintExpressions.Count > 0)
+                {
+                    var resultExpression = string.Join(" ", transition.Guard.ConstraintExpressions.Select(x => x.ToString()));
+                    resultExpression = resultExpression.Replace("∧", "&&");
+                    resultExpression = resultExpression.Replace("∨", "||");
+
+                    transitionElement.SetAttributeValue("guard", resultExpression);
+                }
+                dpnStructureElement.Add(transitionElement);
+            }
+
+            int arcCounter = 0;
+            foreach (var arc in dpn.Arcs)
+            {
+                var arcElement = new XElement("arc",
+                   new XElement("weight",
+                       new XElement("text", arc.Weight)));
+
+                arcElement.SetAttributeValue("id", arcCounter++);
+                arcElement.SetAttributeValue("source", arc.Source.Id);
+                arcElement.SetAttributeValue("target", arc.Destination.Id);
+
+                dpnStructureElement.Add(arcElement);
+            }
+
+
+            var srcTree = new XElement("pnml",
+                new XElement("net",
+                    new XElement("name",
+                        new XElement("text", dpn.Name)),
+                    dpnStructureElement,
+                    variablesElement));
+
+            var document = new XDocument(srcTree);
+
+            return document;
+        }
+
         public DataPetriNet DeserializeDpn(XmlDocument document)
         {
             if (document == null)
@@ -112,7 +200,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (placeNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        place.Label = (placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty);
+                        place.Label = placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty;
                         break;
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
@@ -166,7 +254,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 switch (transitionNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        transition.Label = (transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty);
+                        transition.Label = transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty;
                         break;
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
@@ -196,7 +284,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
             var weight = 1;
             for (var i = 0; i < arcNode.ChildNodes.Count; i++)
             {
-                if (arcNode.ChildNodes[i]?.Name == "name")
+                if (arcNode.ChildNodes[i]?.Name == "name" || arcNode.ChildNodes[i]?.Name == "weight") // for backward compatibility
                 {
                     weight = int.Parse(arcNode.ChildNodes[i]?.FirstChild?.InnerText ?? "1");
                 }

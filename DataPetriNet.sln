@@ -15,7 +15,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetIterativeVerifi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetVerificationForGivenParameters", "DataPetriNetVerificationForGivenParameters\DataPetriNetVerificationForGivenParameters.csproj", "{0FFDB513-2DFF-466A-9FA7-8D62F643398B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetTransformation", "DataPetriNetTransformation\DataPetriNetTransformation.csproj", "{9B3F44D6-5C91-461C-8354-9C9665E1C1F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetTransformation", "DataPetriNetTransformation\DataPetriNetTransformation.csproj", "{9B3F44D6-5C91-461C-8354-9C9665E1C1F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetIterativeVerificationApplication", "DataPetriNetIterativeVerificationApplication\DataPetriNetIterativeVerificationApplication.csproj", "{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetParsers", "ToGraphParser\DataPetriNetParsers.csproj", "{3405D568-157D-47B7-B592-F3D59AE1EB6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetVerificationApplication", "DataPetriNetVerificationApplication\DataPetriNetVerificationApplication.csproj", "{5C7B2000-3119-4A16-811D-433FAED64C0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataPetriNetVerificationDomain", "DataPetriNetVerificationDomain\DataPetriNetVerificationDomain.csproj", "{428C3071-124C-4A23-B986-D2ABFEE257BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +89,38 @@ Global
 		{9B3F44D6-5C91-461C-8354-9C9665E1C1F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B3F44D6-5C91-461C-8354-9C9665E1C1F5}.Release|x64.ActiveCfg = Release|Any CPU
 		{9B3F44D6-5C91-461C-8354-9C9665E1C1F5}.Release|x64.Build.0 = Release|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|x64.Build.0 = Debug|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Release|x64.ActiveCfg = Release|Any CPU
+		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Release|x64.Build.0 = Release|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Debug|x64.Build.0 = Debug|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Release|x64.ActiveCfg = Release|Any CPU
+		{3405D568-157D-47B7-B592-F3D59AE1EB6A}.Release|x64.Build.0 = Release|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C7B2000-3119-4A16-811D-433FAED64C0A}.Release|x64.Build.0 = Release|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Debug|x64.Build.0 = Debug|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Release|x64.ActiveCfg = Release|Any CPU
+		{428C3071-124C-4A23-B986-D2ABFEE257BC}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

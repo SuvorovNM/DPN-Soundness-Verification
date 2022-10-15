@@ -25,6 +25,15 @@ namespace DataPetriNetOnSmt.DPNElements
             }
         }
 
+        public List<string> GetAllVariables()
+        {
+            return variableSources[DomainType.Boolean].GetKeys()
+                .Union(variableSources[DomainType.Integer].GetKeys())
+                .Union(variableSources[DomainType.Real].GetKeys())
+                .Union(variableSources[DomainType.String].GetKeys())
+                .ToList();
+        }
+
         public void Clear()
         {
             foreach (var variableService in variableSources.Values)

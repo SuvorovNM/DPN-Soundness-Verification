@@ -1,5 +1,6 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using EnumsNET;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,29 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
+        {
+            ArgumentNullException.ThrowIfNull(graph);
+
+            textBlock.FontSize = 14;
+            textBlock.Inlines.Clear();
+
+            textBlock.Inlines.Add(new Bold(graph.IsSound
+                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
+
+            textBlock.Inlines.Add(new Bold(graph.IsBounded
+                ? new Run(FormBoundedLine())
+                : new Run(FormUnboundedLine())));
+
+            textBlock.Inlines.Add(FormGraphInfoLines(graph));
+
+            if (graph.IsBounded)
+            {
+                textBlock.Inlines.Add(FormStatesInfoLines(graph.ConstraintStates));
+                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
+            }
+        }
         public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<ConstraintState>> analysisResult)
         {
             if (textBlock == null)
@@ -25,9 +49,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             if (analysisResult == null)
             {
                 throw new ArgumentNullException(nameof(analysisResult));
-            }
-
-            textBlock.FontSize = 14;
+            }            
 
             var deadTransitions = dpn.Transitions
                     .Select(x => x.Id)
@@ -40,6 +62,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 && !analysisResult[StateType.Deadlock].Any()
                 && deadTransitions.Count == 0;
 
+            textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
             textBlock.Inlines.Add(new Bold(isSound
@@ -79,9 +102,44 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             return "Process model is UNSOUND: \n\n";
         }
 
+        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
+        {
+            return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
+        }
+
         private static string FormGraphInfoLines(ConstraintGraph graph)
         {
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
+        }
+
+        private static string FormStatesInfoLines(List<ConstraintStateToVisualize> states)
+        {
+            var stateTypes = new Dictionary<ConstraintStateType, int>();
+            foreach(var stateType in Enum.GetValues<ConstraintStateType>())
+            {
+                stateTypes.Add(stateType, 0);
+            }
+
+            foreach (var state in states)
+            {
+                foreach (var stateType in Enum.GetValues<ConstraintStateType>())
+                {
+                    if (state.StateType.HasFlag(stateType))
+                    {
+                        stateTypes[stateType]++;
+                    }
+                }
+            }
+
+            var stateInfoLines = string.Empty;
+            foreach (var stateType in stateTypes)
+            {
+                var description = stateType.Key.AsString(EnumFormat.Description);
+
+                stateInfoLines += $"{description}s: {stateType.Value}. ";
+            }
+
+            return stateInfoLines;
         }
 
         private static string FormStatesInfoLines(Dictionary<StateType, List<ConstraintState>> analysisResult)

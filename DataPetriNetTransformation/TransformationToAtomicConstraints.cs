@@ -32,6 +32,7 @@ namespace DataPetriNetTransformation
     public class TransformationToAtomicConstraints : ITransformation
     {
         private int overallPlaceIndex = 0;
+        private Place lockingPlace = null;
 
         public DataPetriNet Transform(DataPetriNet sourceDpn)
         {
@@ -63,6 +64,15 @@ namespace DataPetriNetTransformation
                 }
             }
 
+            lockingPlace = new Place
+            {
+                Label = "locker",
+                Id = "locker",
+                IsFinal = true,
+                Tokens = 1
+            };
+            newDPN.Places.Add(lockingPlace);
+
             foreach (var sourceTransition in dpnTransitionsToConsider)
             {
                 var transitionInfo = new TransitionInfo(
@@ -93,6 +103,8 @@ namespace DataPetriNetTransformation
 
             if (transitionConstraint.Count <= 1)
             {
+                dpn.Arcs.Add(new Arc(lockingPlace, transitionInfo.Transition));
+                dpn.Arcs.Add(new Arc(transitionInfo.Transition, lockingPlace));
                 return;
             }
 
@@ -127,6 +139,7 @@ namespace DataPetriNetTransformation
                         {
                             dpn.Arcs.Add(new Arc(presetPlace.place, newTransition, presetPlace.weight));
                         }
+                        dpn.Arcs.Add(new Arc(lockingPlace, newTransition));
                     }
                     else
                     {
@@ -139,6 +152,7 @@ namespace DataPetriNetTransformation
                         {
                             dpn.Arcs.Add(new Arc(newTransition, postsetPlace.place, postsetPlace.weight));
                         }
+                        dpn.Arcs.Add(new Arc(newTransition, lockingPlace));
                         lastExpression = true;
                     }
                     else

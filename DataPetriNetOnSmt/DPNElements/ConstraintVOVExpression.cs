@@ -91,12 +91,12 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             var predicate = Predicate switch
             {
-                BinaryPredicate.GreaterThan => ">",
-                BinaryPredicate.LessThan => "<",
-                BinaryPredicate.LessThanOrEqual => "<=",
-                BinaryPredicate.GreaterThanOrEqual => ">=",
-                BinaryPredicate.Equal => "=",
-                BinaryPredicate.Unequal => "!="
+                BinaryPredicate.GreaterThan => " > ",
+                BinaryPredicate.LessThan => " < ",
+                BinaryPredicate.LessThanOrEqual => " <= ",
+                BinaryPredicate.GreaterThanOrEqual => " >= ",
+                BinaryPredicate.Equal => " == ",
+                BinaryPredicate.Unequal => " != "
             };
             var logicalConnective = LogicalConnective switch
             {

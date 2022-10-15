@@ -8,15 +8,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 {
     public class ConstraintGraph // TODO: insert Ids
     {
-        public Context Context { get; private set; }
+        public Context Context { get; init; }
         private AbstractConstraintExpressionService expressionService;
-        public DataPetriNet DataPetriNet { get; set; }
+        private DataPetriNet DataPetriNet { get; init; }
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
         public List<ConstraintArc> ConstraintArcs { get; set; }
         public bool IsFullGraph { get; set; }
 
-        public Stack<ConstraintState> StatesToConsider { get; set; }
+        private Stack<ConstraintState> StatesToConsider { get; set; }
 
         public ConstraintGraph(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
         {
@@ -36,6 +36,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
 
             StatesToConsider = new Stack<ConstraintState>();
             StatesToConsider.Push(InitialState);
+        }
+
+        public ConstraintGraph()
+        {
+            ConstraintArcs = new List<ConstraintArc>();
+            ConstraintStates = new List<ConstraintState>();
+            StatesToConsider = new Stack<ConstraintState>();
         }
 
         public void GenerateGraph(bool removeRedundantBlocks = false)

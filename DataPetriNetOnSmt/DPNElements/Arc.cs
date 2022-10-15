@@ -19,5 +19,10 @@ namespace DataPetriNetOnSmt.DPNElements
             Weight = weight;
             Type = (source as Place) != null ? ArcType.PlaceTransition : ArcType.TransitionPlace;
         }
+
+        public Arc()
+        {
+
+        }
     }
 }

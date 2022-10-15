@@ -11,21 +11,21 @@ using System.Globalization;
 
 const int RecordsPerConfig = 1;
 const int MaxParameterValue = 250;
-const int IncrementAmount = -5;
+const int IncrementAmount = 5;
 
-var transitionsCount = 110;
-var baseTransitionsCount = 5;
-var placesCount = 132;
-var basePlacesCount = 6;
-var extraArcsCount = 55;
-var baseExtraArcsCount = 3;
-var variablesCount = 55;
-var baseVariablesCount = 3;
-var conditionsCount = 110;
-var baseConditionsCount = 5;
+var transitionsCount = 75;
+var baseTransitionsCount = 75;
+var placesCount = 60;
+var basePlacesCount = 60;
+var extraArcsCount = 37;
+var baseExtraArcsCount = 37;
+var variablesCount = 37;
+var baseVariablesCount = 37;
+var conditionsCount = 75;
+var baseConditionsCount = 75;
 
 var parameterToConsider = DpnParameterToConsider.TransitionsCount;
-var overallIncreaseCount = 80;
+var overallIncreaseCount = 5;
 var counter = 0;
 
 do
@@ -39,7 +39,7 @@ do
         ExtraArcsCount = extraArcsCount,
         VarsCount = variablesCount,
         ConditionsCount = conditionsCount,
-        Protocol = 2,
+        Protocol = 3,
         VerificationType = (int)VerificationType.OwnImplementation,
         NumberOfRecords = RecordsPerConfig
     };
@@ -63,11 +63,12 @@ do
         processInfo.ErrorDialog = true;
 
         var proc = Process.Start(processInfo);
-        successInTime = proc.WaitForExit((3600000 / (MaxParameterValue * MaxParameterValue)) * overallIncreaseCount * overallIncreaseCount + 400000);
+        proc.WaitForExit();
+        /*successInTime = proc.WaitForExit(3500000);
         if (!successInTime)
         {
             proc.Kill();
-        }
+        }*/
         //proc.WaitForExit();
     }
     catch (Exception ex)
@@ -93,8 +94,8 @@ void Protocol2()
     }
     else
     {
-        transitionsCount += IncrementAmount;
-        placesCount = (int)(transitionsCount * 1.2);
+        transitionsCount += IncrementAmount; 
+        placesCount = (int)(transitionsCount * 0.8);
         extraArcsCount = (int)(transitionsCount * 0.5);
         variablesCount = (int)(transitionsCount * 0.5);
         conditionsCount = transitionsCount;

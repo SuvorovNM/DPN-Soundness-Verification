@@ -2,7 +2,7 @@
 using DataPetriNetOnSmt.SoundnessVerification;
 using System.Collections.Generic;
 
-namespace DataPetriNetOnSmt.Visualization.Extensions
+namespace ToGraphParser.Extensions
 {
     public static class DictionaryExtension
     {

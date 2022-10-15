@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Stop.png" />
+    <None Remove="Resources\Stop_img.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutomaticGraphLayout" Version="1.1.12" />
+    <PackageReference Include="AutomaticGraphLayout.Drawing" Version="1.1.12" />
+    <PackageReference Include="AutomaticGraphLayout.WpfGraphControl" Version="1.1.12" />
+    <PackageReference Include="Enums.NET" Version="4.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataPetriNetGeneration\DataPetriNetGeneration.csproj" />
+    <ProjectReference Include="..\DataPetriNetVerificationDomain\DataPetriNetVerificationDomain.csproj" />
+    <ProjectReference Include="..\ToGraphParser\DataPetriNetParsers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Stop_img.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Configuration.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

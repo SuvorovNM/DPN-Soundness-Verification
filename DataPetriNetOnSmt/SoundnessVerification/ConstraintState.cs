@@ -11,6 +11,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification
         public HashSet<ConstraintState> ParentStates { get; set; }
         public int Id { get; }
 
+        public ConstraintState(int id, Dictionary<Node, int> tokens, BoolExpr constraint)
+        {
+            Id = id;
+            Constraints = constraint;
+            PlaceTokens = tokens;
+        }
+
         public ConstraintState(Context context)
         {
             PlaceTokens = new Dictionary<Node, int>();

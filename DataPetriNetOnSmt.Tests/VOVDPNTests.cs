@@ -385,7 +385,9 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            var constraintGraph = new ConstraintGraph(dataPetriNet, 
+                new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            //ConstraintExpressionServiceForRealsWithManualConcat
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -419,7 +421,8 @@ namespace DataPetriNetOnSmt.Tests
 
             var dpn = pnmlParser.DeserializeDpn(xDoc);
 
-            var constraintGraph = new ConstraintGraph(dpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            var constraintGraph = new ConstraintGraph(dpn, 
+                new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();

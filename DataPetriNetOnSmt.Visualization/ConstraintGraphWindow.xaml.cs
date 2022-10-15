@@ -1,12 +1,13 @@
 ﻿using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Extensions;
-using DataPetriNetOnSmt.Visualization.Services;
+using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using ToGraphParser;
 
 namespace DataPetriNetOnSmt.Visualization
 {
@@ -27,6 +28,18 @@ namespace DataPetriNetOnSmt.Visualization
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
             logControl.FormSoundnessVerificationLog(dpn, constraintGraph, typedStates);
+        }
+
+        public ConstraintGraphWindow(ConstraintGraphToVisualize constraintGraph)
+        {
+            InitializeComponent();
+
+            constraintGraphToGraphParser = new ConstraintGraphToGraphParser();
+
+            graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph);
+            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+            logControl.FormSoundnessVerificationLog(constraintGraph);
         }
     }
 }

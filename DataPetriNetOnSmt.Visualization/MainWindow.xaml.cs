@@ -2,13 +2,17 @@
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
+using DataPetriNetParsers;
 using DataPetriNetTransformation;
 using Microsoft.Win32;
 using Microsoft.Z3;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
+using System.Xml.Linq;
+using ToGraphParser;
 
 namespace DataPetriNetOnSmt.Visualization
 {
@@ -38,10 +42,12 @@ namespace DataPetriNetOnSmt.Visualization
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
         }
 
-        private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
+        private void OpenDpn_Click(object sender, RoutedEventArgs e)
         {
-            var ofd = new OpenFileDialog();
-            ofd.Filter = "Model files (*.pnmlx) | *.pnmlx";
+            var ofd = new OpenFileDialog
+            {
+                Filter = "Model files (*.pnmlx) | *.pnmlx"
+            };
             if (ofd.ShowDialog() == true)
             {
                 XmlDocument xDoc = new XmlDocument();
@@ -106,8 +112,7 @@ namespace DataPetriNetOnSmt.Visualization
             {
                 var constraintGraph = new ConstraintGraph(
                     currentDisplayedNet, 
-                    new ConstraintExpressionServiceForRealsWithManualConcat(currentDisplayedNet.Context));
-                //new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
+                    new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
                 await Task.Run(() => constraintGraph.GenerateGraph(true));
                 ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
                 constraintGraphWindow.Owner = this;
@@ -117,9 +122,30 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void TransformModelItem_Click(object sender, RoutedEventArgs e)
         {
-            //currentDisplayedNet
             currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
+
+        private void OpenCG_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog
+            {
+                Filter = "CG files (*.cgml) | *.cgml"
+            };
+            if (ofd.ShowDialog() == true)
+            {
+                using (var fs = new FileStream(ofd.FileName, FileMode.Open))
+                {
+                    var cgmlParser = new CgmlParser();
+                    var xDocument = XDocument.Load(fs);
+
+                    var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
+
+                    var constraintGraphWindow = new ConstraintGraphWindow(constraintGraphToVisualize);
+                    constraintGraphWindow.Owner = this;
+                    constraintGraphWindow.Show();
+                }
+            }
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using Microsoft.Msagl.Drawing;
+﻿using DataPetriNetOnSmt;
+using Microsoft.Msagl.Drawing;
 using System.Linq;
 
-namespace DataPetriNetOnSmt.Visualization.Services
+namespace ToGraphParser
 {
     public class DPNToGraphParser
     {

@@ -12,7 +12,8 @@
                 <MenuItem.Header>
                     <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0"/>
                 </MenuItem.Header>
-                <MenuItem x:Name="OpenMenuItem" Header="Open..." Click="OpenMenuItem_Click"/>
+                <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click"/>
+                <MenuItem x:Name="OpenCG" Header="Open Constraint Graph..." Click="OpenCG_Click"/>
             </MenuItem>
             <MenuItem Header="Model">
                 <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
