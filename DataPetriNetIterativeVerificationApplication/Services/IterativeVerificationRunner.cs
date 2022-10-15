@@ -79,7 +79,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                             (int)(verificationInput.DpnInfo.Conditions * n));
                         dpn.Name = Guid.NewGuid().ToString();
 
-                        var dpnPath = Path.Combine(verificationInput.OutputDirectory, dpn.Name + ".pnml");
+                        var dpnPath = Path.Combine(verificationInput.OutputDirectory, dpn.Name + ".pnmlx");
                         Directory.CreateDirectory(verificationInput.OutputDirectory);
 
                         FileStream fs = new FileStream(dpnPath, FileMode.Create);

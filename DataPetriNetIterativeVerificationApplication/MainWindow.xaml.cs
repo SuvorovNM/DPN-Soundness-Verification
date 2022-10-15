@@ -25,6 +25,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -36,10 +37,10 @@ namespace DataPetriNetIterativeVerificationApplication
     public partial class MainWindow : Window
     {
         private Dictionary<int, string> paths = new Dictionary<int, string>();
-        private ObservableCollection<VerificationOutputWithNumber> verificationResults = new ObservableCollection<VerificationOutputWithNumber>();
+        private ObservableCollection<VerificationOutputWithNumber> verificationResults = new();
         //private DataPetriNet currentNet;
         private CancellationTokenSource source;
-        private IterativeVerificationRunner verificationRunner = new IterativeVerificationRunner();
+        private IterativeVerificationRunner verificationRunner = new();
         public MainWindow()
         {
             InitializeComponent();
@@ -80,10 +81,15 @@ namespace DataPetriNetIterativeVerificationApplication
         private void Row_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = (DataGridRow)sender;
-            var outputRow = (VerificationOutputWithNumber)row.Item;
-            if (row != null)
+            var item = (VerificationOutputWithNumber)row.Item;
+            LoadCG(item);
+        }
+
+        private void LoadCG(VerificationOutputWithNumber item)
+        {
+            if (item != null)
             {
-                using (var fs = new FileStream(paths[outputRow.Number]+"_"+outputRow.VerificationType+".cgml", FileMode.Open))
+                using (var fs = new FileStream(paths[item.Number] + "_" + item.VerificationType + ".cgml", FileMode.Open))
                 {
                     var cgmlParser = new CgmlParser();
                     var xDocument = XDocument.Load(fs);
@@ -95,9 +101,7 @@ namespace DataPetriNetIterativeVerificationApplication
                     constraintGraphWindow.Show();
                 }
             }
-            // execute some code
         }
-
         private async void StartBtn_Click(object sender, RoutedEventArgs e)
         {
             StopsBtn.IsEnabled = true;
@@ -175,38 +179,6 @@ namespace DataPetriNetIterativeVerificationApplication
             StartBtn.IsEnabled = true;
         }
 
-        private async Task ListenToPipe(AnonymousPipeServerStream pipeStream, CancellationToken token)
-        {
-            //Thread.Sleep(1000);
-            //pipeStream.DisposeLocalCopyOfClientHandle();
-
-            using (StreamReader sr = new StreamReader(pipeStream))
-            {
-                do
-                {
-                    var lastString = await sr.ReadToEndAsync();
-                    if (lastString.Length > 0)
-                    {
-                        VerificationOutput? verificationOutput = null;
-
-                        XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
-                        using (TextReader reader = new StringReader(lastString))
-                        {
-                            verificationOutput = (VerificationOutput?)serializer.Deserialize(reader);
-                        }
-                        if (verificationOutput != null)
-                        {
-                            verificationResults.Add(new VerificationOutputWithNumber(verificationOutput, verificationResults.Count));
-                            //VerificationDG.ItemsSource = verificationResults;
-                            //VerificationDG.UpdateLayout();
-                            VerificationDG.Items.Refresh();
-                        }
-                    }
-                    await Task.Run(() => Thread.Sleep(1000));
-                } while (!token.IsCancellationRequested);
-            }
-        }
-
         private void MaxDtChb_Checked(object sender, RoutedEventArgs e)
         {
             MaxDtTb.Visibility = Visibility.Visible;
@@ -255,14 +227,43 @@ namespace DataPetriNetIterativeVerificationApplication
 
         private void PositiveIntegerNumber_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            var textBox = sender as TextBox;
             e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
         }
 
         private void PositiveRealNumber_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            var textBox = sender as TextBox;
             e.Handled = Regex.IsMatch(e.Text, "[^0-9.]+");
+        }
+
+        private void OpenDpn_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (VerificationOutputWithNumber)VerificationDG.SelectedItem;
+            LoadDpn(item);
+        }
+
+        private void LoadDpn(VerificationOutputWithNumber item)
+        {
+            if (item != null)
+            {
+                using (var fs = new FileStream(paths[item.Number] + ".pnmlx", FileMode.Open))
+                {
+                    var pnmlParser = new PnmlParser();
+                    var xDocument = new XmlDocument();
+                    xDocument.Load(fs);
+
+                    var dataPetriNet = pnmlParser.DeserializeDpn(xDocument);
+
+                    DpnWindow dpnWindow = new DpnWindow(dataPetriNet);
+                    dpnWindow.Owner = this;
+                    dpnWindow.Show();
+                }
+            }
+        }
+
+        private void OpenCg_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (VerificationOutputWithNumber)VerificationDG.SelectedItem;
+            LoadCG(item);
         }
     }
 }

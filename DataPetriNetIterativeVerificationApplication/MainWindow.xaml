@@ -63,11 +63,22 @@
         <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,192,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
         <Grid Margin="0,244,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
-                <DataGrid.ItemContainerStyle>
-                    <Style TargetType="DataGridRow">
+                <DataGrid.Resources>
+                    <ContextMenu x:Key="verificationContextMenu">
+                        <ContextMenu.Items>
+                            <MenuItem Header="Open DPN" Click="OpenDpn_Click"/>
+                            <MenuItem Header="Open CG" Click="OpenCg_Click"/>
+                        </ContextMenu.Items>
+                    </ContextMenu>
+                </DataGrid.Resources>
+
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <EventSetter Event="MouseDoubleClick" Handler="Row_DoubleClick"/>
+                        <Setter Property="ContextMenu" Value="{StaticResource verificationContextMenu}" />
                     </Style>
-                </DataGrid.ItemContainerStyle>
+                </DataGrid.RowStyle>
+
             </DataGrid>
         </Grid>
         <Label Content="Current DPN: " HorizontalAlignment="Left" Margin="33,213,0,0" VerticalAlignment="Top" Width="86" FontSize="13"/>
