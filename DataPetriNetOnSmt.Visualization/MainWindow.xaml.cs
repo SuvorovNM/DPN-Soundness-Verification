@@ -1,12 +1,15 @@
 ﻿using DataPetriNetGeneration;
+using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.Visualization.Services;
 using DataPetriNetParsers;
 using DataPetriNetTransformation;
+using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using Microsoft.Win32;
 using Microsoft.Z3;
 using System.IO;
+using System.Runtime.Intrinsics.Arm;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -98,26 +101,36 @@ namespace DataPetriNetOnSmt.Visualization
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraph = new ConstraintGraph(currentDisplayedNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
-                await Task.Run(() => constraintGraph.GenerateGraph(true));
-                ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
-                constraintGraphWindow.Owner = this;
-                constraintGraphWindow.Show();
+                var constraintGraphToVisualize = await CheckSoundness(
+                    new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+                VisualizeConstraintGraph(constraintGraphToVisualize);
             }
+        }
+
+        private void VisualizeConstraintGraph(ConstraintGraphToVisualize constraintGraphToVisualize)
+        {
+            var constraintGraphWindow = new ConstraintGraphWindow(constraintGraphToVisualize);
+            constraintGraphWindow.Owner = this;
+            constraintGraphWindow.Show();
         }
 
         private async Task DisplayConstraintGraphManualConcat()
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraph = new ConstraintGraph(
-                    currentDisplayedNet, 
+                var constraintGraphToVisualize = await CheckSoundness(
                     new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
-                await Task.Run(() => constraintGraph.GenerateGraph(true));
-                ConstraintGraphWindow constraintGraphWindow = new ConstraintGraphWindow(currentDisplayedNet, constraintGraph);
-                constraintGraphWindow.Owner = this;
-                constraintGraphWindow.Show();
+                VisualizeConstraintGraph(constraintGraphToVisualize);
             }
+        }
+
+        private async Task<ConstraintGraphToVisualize> CheckSoundness(AbstractConstraintExpressionService expressionService)
+        {
+            var constraintGraph = new ConstraintGraph(currentDisplayedNet, expressionService);
+            await Task.Run(() => constraintGraph.GenerateGraph(true));
+            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(currentDisplayedNet, constraintGraph);
+
+            return new ConstraintGraphToVisualize(constraintGraph, soundnessProperties);
         }
 
         private void TransformModelItem_Click(object sender, RoutedEventArgs e)

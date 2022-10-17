@@ -136,23 +136,6 @@ namespace DataPetriNetIterativeVerificationApplication
                 IncrementValue = ushort.Parse(IncrementValueTb.Text),
                 InitialN = ushort.Parse(InitialValueTb.Text)
             };
-
-            AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
-
-            /*currentNet = await Task.Run(()=> dpnGenerator.Generate(
-                dpnInfo.Places * iterationsInfo.InitialN,
-                dpnInfo.Transitions * iterationsInfo.InitialN,
-                dpnInfo.ExtraArcs * iterationsInfo.InitialN,
-                dpnInfo.Variables * iterationsInfo.InitialN,
-                dpnInfo.Conditions * iterationsInfo.InitialN));
-
-            DpnInfoLb.Content = new TextBlock()
-            {
-                Text = $"Places: {currentNet.Places.Count}, Transitions: {currentNet.Transitions.Count}, Arcs: {currentNet.Arcs.Count}," +
-                $" Variables: {dpnInfo.Variables}, Conditions: {dpnInfo.Conditions}",
-                TextDecorations = TextDecorations.Underline
-            };*/
-
             var verificationInput = new VerificationInput
             {
                 DpnInfo = dpnInfo,
@@ -162,17 +145,18 @@ namespace DataPetriNetIterativeVerificationApplication
                 OutputDirectory = DirectoryTb.Text,
             };
 
-            var iterativeVerificationTask = verificationRunner.RunVerificationLoop(verificationInput, verificationResults, source.Token);
-            //var listeningTask = ListenToPipe(pipeServer, source.Token);
+            var iterativeVerificationTask = verificationRunner.RunVerificationLoop(
+                verificationInput, 
+                verificationResults, 
+                source.Token);
 
-            //await listeningTask;
             try
             {
                 await iterativeVerificationTask;
             }
             catch (OperationCanceledException ex)
             {
-
+                // TODO: Update Initial N?
             }
 
             StopsBtn.IsEnabled = false;
