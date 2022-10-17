@@ -20,4 +20,10 @@
     <ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="testModel.pnml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

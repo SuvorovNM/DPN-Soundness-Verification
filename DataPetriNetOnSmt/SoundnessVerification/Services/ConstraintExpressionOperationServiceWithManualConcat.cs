@@ -103,21 +103,23 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             int previousExpressionCount;
 
+            var visitedExpressions = new HashSet<BoolExpr>(expressionsWithImplications.Count * 2);
+
             do
             {
                 previousExpressionCount = expressionsWithImplications.Count;
 
                 // We avoid expressions with both overwritten vars
-                 var baseExpressionsForImplications = expressionsWithImplications
-                    .Where(x => (x.IsNot && 
-                        !x.Args[0].Args.Any(x=>x.IsNumeral) &&
-                        x.Args[0].Args.Any(y => overwrittenVarNames.Contains(y)) &&
-                        x.Args[0].Args.Any(y => !overwrittenVarNames.Contains(y))) ||
-                        (!x.IsNot &&
-                        !x.Args.Any(x => x.IsNumeral) && 
-                        x.Args.Any(y => overwrittenVarNames.Contains(y)) &&
-                        x.Args.Any(y => !overwrittenVarNames.Contains(y))))
-                    .ToArray();
+                var baseExpressionsForImplications = expressionsWithImplications
+                   .Where(x => (x.IsNot &&
+                       !x.Args[0].Args.Any(x => x.IsNumeral) &&
+                       x.Args[0].Args.Any(y => overwrittenVarNames.Contains(y)) &&
+                       x.Args[0].Args.Any(y => !overwrittenVarNames.Contains(y))) ||
+                       (!x.IsNot &&
+                       !x.Args.Any(x => x.IsNumeral) &&
+                       x.Args.Any(y => overwrittenVarNames.Contains(y)) &&
+                       x.Args.Any(y => !overwrittenVarNames.Contains(y))))
+                    .ToHashSet();
 
                 var addedBaseExpressions = baseExpressionsForImplications
                     .Where(x => x.IsGE && baseExpressionsForImplications
@@ -126,18 +128,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         .Contains(Context.MkGe((ArithExpr)x.Args[1], (ArithExpr)x.Args[0])))
                     .Select(y => Context.MkEq((ArithExpr)y.Args[0], (ArithExpr)y.Args[1]));
 
-                if (addedBaseExpressions.Count() > 0)
-                {
-
-                }
-
-                baseExpressionsForImplications = baseExpressionsForImplications
+                var expressionSet = new HashSet<BoolExpr>(baseExpressionsForImplications
                     .Union(addedBaseExpressions)
-                    .ToArray();
+                    .Except(visitedExpressions));
 
                 // Replace a>=b and a<=b with a = b
 
-                foreach (var baseExpression in baseExpressionsForImplications)
+                foreach (var baseExpression in expressionSet)
                 {
                     Expr varToStay;
                     Expr varToRemove;
@@ -179,6 +176,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     if (baseExpression.IsNot)
                         expressionsWithImplications.AddUniqueExpressions(
                             GetNotEqImplications(varToStay, varToRemove, expressionsWithImplications));
+
+                    visitedExpressions.Add(baseExpression);
                 }
 
 
