@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services.Extensions
 {
-    public static class ListBoolExprExtension
+    public static class HashetBoolExprExtension
     {
-        public static void AddUniqueExpressions(this List<BoolExpr> source, IEnumerable<BoolExpr> expressionsToAdd)
+        public static void AddUniqueExpressions(this HashSet<BoolExpr> source, IEnumerable<BoolExpr> expressionsToAdd)
         {
-            var stringExpressions = source
+            /*var stringExpressions = source
                 .Select(x => x.ToString())
                 .ToArray();
 
@@ -22,6 +22,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services.Extensions
                 {
                     source.Add(expr);
                 }
+            }*/
+            foreach (var expr in expressionsToAdd)
+            {
+                source.Add(expr);
             }
         }
     }

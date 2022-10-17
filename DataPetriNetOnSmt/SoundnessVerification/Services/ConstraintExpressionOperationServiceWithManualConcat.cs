@@ -92,10 +92,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         }
 
         // Do implications until the result does not stabilize
-        private List<BoolExpr> GenerateAllImplications(IEnumerable<BoolExpr> constraints,
+        private HashSet<BoolExpr> GenerateAllImplications(IEnumerable<BoolExpr> constraints,
             Expr[] overwrittenVarNames)
         {
-            var expressionsWithImplications = new List<BoolExpr>(constraints);
+            var expressionsWithImplications = new HashSet<BoolExpr>(constraints);
             if (overwrittenVarNames.Length == 0)
             {
                 return expressionsWithImplications;
@@ -232,9 +232,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return implications;
         }
 
-        private List<BoolExpr> GetGEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetGEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new List<BoolExpr>();
+            var implications = new HashSet<BoolExpr>();
 
             // Maybe ToString()?
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
@@ -272,9 +272,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return implications;
         }
 
-        private List<BoolExpr> GetLTImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetLTImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new List<BoolExpr>();
+            var implications = new HashSet<BoolExpr>();
 
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
@@ -314,9 +314,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return implications;
         }
 
-        private List<BoolExpr> GetLEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetLEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new List<BoolExpr>();
+            var implications = new HashSet<BoolExpr>();
 
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
@@ -354,9 +354,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return implications;
         }
 
-        private List<BoolExpr> GetEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new List<BoolExpr>();
+            var implications = new HashSet<BoolExpr>();
 
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => !x.IsNot && x.Args[0] == varToRemove ||
@@ -427,7 +427,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         }
 
         // М.б. a>= c and a<=c || a == c. Проще просто на SAT проверить
-        private List<BoolExpr> GetNotEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetNotEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
             var expressionsArray = existingExpressions.ToArray();
 
@@ -450,11 +450,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     if (solver.Check() == Status.UNSATISFIABLE)
                     {
-                        return new List<BoolExpr> { Context.MkNot(Context.MkEq(varToStay, firstValue)) };
+                        return new HashSet<BoolExpr> { Context.MkNot(Context.MkEq(varToStay, firstValue)) };
                     }
                 }
             }
-            return new List<BoolExpr>();
+            return new HashSet<BoolExpr>();
         }
 
         #endregion
