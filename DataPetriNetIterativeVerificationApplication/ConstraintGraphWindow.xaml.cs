@@ -20,13 +20,13 @@ namespace DataPetriNetIterativeVerificationApplication
     /// <summary>
     /// Логика взаимодействия для ConstraintGraphWindow.xaml
     /// </summary>
-    public partial class ConstraintGraphWindow : Window
+    public partial class LtsWindow : Window
     {
-        public ConstraintGraphWindow(ConstraintGraphToVisualize constraintGraph)
+        public LtsWindow(LtsToVisualize constraintGraph)
         {
             InitializeComponent();
 
-            var constraintGraphToGraphParser = new ConstraintGraphToGraphParser();
+            var constraintGraphToGraphParser = new LtsToGraphParser();
 
             graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;

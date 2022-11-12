@@ -19,5 +19,14 @@ namespace DataPetriNetOnSmt.Extensions
         {
             return expressions.Where(x => x.ConstraintVariable.VariableType == varType);
         }
+
+        public static Dictionary<string, DomainType> GetOverwrittenVarsDict(this IEnumerable<IConstraintExpression> expressions)
+        {
+            return expressions
+                .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+                .Select(x => x.ConstraintVariable)
+                .Distinct()
+                .ToDictionary(x => x.Name, y => y.Domain);
+        }
     }
 }

@@ -10,9 +10,9 @@ namespace DataPetriNetVerificationDomain
     public enum VerificationTypeEnum
     {
         None = 0,
-        QeWithTransformation = 1,
-        QeWithoutTransformation = 2,
-        NsqeWithTransformation = 4,
-        NsqeWithoutTransformation = 8,
+        QeWithoutTransformation = 1,
+        QeWithTransformation = 2,
+        NsqeWithoutTransformation = 4,
+        NsqeWithTransformation = 8,
     }
 }

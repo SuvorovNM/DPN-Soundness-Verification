@@ -1,5 +1,5 @@
 ﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System.Collections.Generic;
 
 namespace ToGraphParser.Extensions

@@ -66,7 +66,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     solver.Add(concatenatedExpressionGroup);
                     if (solver.Check() == Status.SATISFIABLE)
                     {
-
                         var expressionGroupWithImplications = GenerateAllImplications(
                             concatenatedExpressionGroup,
                             variablesToOverwrite);
@@ -78,6 +77,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         var andBlockExpression = GetAndBlockExpression(expressionGroupWithoutOverwrittenVars);
 
                         andBlockExpression = SubstituteWriteVarsWithReadVars(andBlockExpression, overwrittenVarNames);
+
                         andBlockExpressions.Add(andBlockExpression);
                     }
 
@@ -124,7 +124,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 var addedBaseExpressions = baseExpressionsForImplications
                     .Where(x => x.IsGE && baseExpressionsForImplications
                         .Contains(Context.MkLe((ArithExpr)x.Args[0], (ArithExpr)x.Args[1])) ||
-                            x.IsGE && baseExpressionsForImplications
+                            x.IsLE && baseExpressionsForImplications
                         .Contains(Context.MkGe((ArithExpr)x.Args[1], (ArithExpr)x.Args[0])))
                     .Select(y => Context.MkEq((ArithExpr)y.Args[0], (ArithExpr)y.Args[1]));
 
@@ -188,240 +188,161 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         #region Implications - maybe to different classes with the same interface?
 
-        private List<BoolExpr> GetGTImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private HashSet<BoolExpr> GetGTImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new List<BoolExpr>();
-
-            // Maybe ToString()?
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsGT || x.IsGE || x.IsEq)
-                .Where(x => x.Args[0] == varToRemove);
-
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
-            {
-                // For integers, increment of Const by 1
-                if (varToStay.IsInt && expr.Args[1].IsIntNum && expr.IsGT)
-                {
-                    var increasedConst = Context.MkInt(Int32.Parse(expr.Args[1].ToString()) + 1);
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, increasedConst));
-                }
-                else
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-            }
-
+                .Where(x => x.Args[0] == varToRemove)
+                .ToList();
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
-                .Where(x => x.Args[1] == varToRemove);
+                .Where(x => x.Args[1] == varToRemove)
+                .ToList();
 
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
-            {
-                // For integers, increment of Const by 1
-                if (varToStay.IsInt && expr.Args[0].IsIntNum && expr.IsLT)
-                {
-                    var increasedConst = Context.MkInt(Int32.Parse(expr.Args[0].ToString()) + 1);
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, increasedConst));
-                }
-                else
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-            }
+            var implications = new HashSet<BoolExpr>(expressionsToConsiderWithVarToRemoveInFirstPosition.Count +
+                expressionsToConsiderWithVarToRemoveInSecondPosition.Count);
+
+            expressionsToConsiderWithVarToRemoveInFirstPosition
+                .ForEach(x => implications.Add(
+                    varToStay.IsInt && x.Args[1].IsIntNum && x.IsGT
+                        ? Context.MkGt((ArithExpr)varToStay, Context.MkInt(int.Parse(x.Args[1].ToString()) + 1))
+                        : Context.MkGt((ArithExpr)varToStay, (ArithExpr)x.Args[1])));
+
+            expressionsToConsiderWithVarToRemoveInSecondPosition
+                .ForEach(x => implications.Add(
+                    varToStay.IsInt && x.Args[0].IsIntNum && x.IsLT
+                        ? Context.MkGt((ArithExpr)varToStay, Context.MkInt(int.Parse(x.Args[0].ToString()) + 1))
+                        : Context.MkGt((ArithExpr)varToStay, (ArithExpr)x.Args[0])));
 
             return implications;
         }
 
         private HashSet<BoolExpr> GetGEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new HashSet<BoolExpr>();
-
-            // Maybe ToString()?
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsGT || x.IsGE || x.IsEq)
-                .Where(x => x.Args[0] == varToRemove);
-
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
-            {
-                if (expr.IsGT)
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                else
-                {
-                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-            }
-
+                .Where(x => x.Args[0] == varToRemove)
+                .ToList();
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
-                .Where(x => x.Args[1] == varToRemove);
+                .Where(x => x.Args[1] == varToRemove)
+                .ToList();
 
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
-            {
-                if (expr.IsLT)
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                else
-                {
-                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-            }
+            var implications = new HashSet<BoolExpr>(expressionsToConsiderWithVarToRemoveInFirstPosition.Count +
+                expressionsToConsiderWithVarToRemoveInSecondPosition.Count);
+
+            expressionsToConsiderWithVarToRemoveInFirstPosition
+                .ForEach(x => implications.Add(
+                    x.IsGT
+                        ? Context.MkGt((ArithExpr)varToStay, (ArithExpr)x.Args[1])
+                        : Context.MkGe((ArithExpr)varToStay, (ArithExpr)x.Args[1])
+                    ));
+
+            expressionsToConsiderWithVarToRemoveInSecondPosition
+                .ForEach(x => implications.Add(
+                    x.IsLT
+                        ? Context.MkGt((ArithExpr)varToStay, (ArithExpr)x.Args[0])
+                        : Context.MkGe((ArithExpr)varToStay, (ArithExpr)x.Args[0])
+                    ));
 
             return implications;
         }
 
         private HashSet<BoolExpr> GetLTImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new HashSet<BoolExpr>();
-
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
-                .Where(x => x.Args[0] == varToRemove);
-
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
-            {
-                if (varToStay.IsInt && expr.Args[1].IsIntNum && expr.IsLT)
-                {
-                    var increasedConst = Context.MkInt(Int32.Parse(expr.Args[1].ToString()) - 1);
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, increasedConst));
-                }
-                else
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-            }
-
-
+                .Where(x => x.Args[0] == varToRemove)
+                .ToList();
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
                 .Where(x => x.IsGT || x.IsGE || x.IsEq)
-                .Where(x => x.Args[1] == varToRemove);
+                .Where(x => x.Args[1] == varToRemove)
+                .ToList();
 
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
-            {
-                if (varToStay.IsInt && expr.Args[0].IsIntNum && expr.IsGT)
-                {
-                    var increasedConst = Context.MkInt(Int32.Parse(expr.Args[0].ToString()) - 1);
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, increasedConst));
-                }
-                else
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-            }
+            var implications = new HashSet<BoolExpr>(expressionsToConsiderWithVarToRemoveInFirstPosition.Count +
+                expressionsToConsiderWithVarToRemoveInSecondPosition.Count);
+
+            expressionsToConsiderWithVarToRemoveInFirstPosition
+                .ForEach(x => implications.Add(
+                    x.IsInt && x.Args[1].IsIntNum && x.IsLT // Check for int numbers
+                        ? Context.MkLt((ArithExpr)varToStay, Context.MkInt(int.Parse(x.Args[1].ToString()) - 1))
+                        : Context.MkLt((ArithExpr)varToStay, (ArithExpr)x.Args[1])));
+
+            expressionsToConsiderWithVarToRemoveInSecondPosition
+                .ForEach(x => implications.Add(
+                    x.IsInt && x.Args[0].IsIntNum && x.IsGT // Check for int numbers
+                        ? Context.MkLt((ArithExpr)varToStay, Context.MkInt(int.Parse(x.Args[0].ToString()) - 1))
+                        : Context.MkLt((ArithExpr)varToStay, (ArithExpr)x.Args[0])
+                    ));
 
             return implications;
         }
 
         private HashSet<BoolExpr> GetLEImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new HashSet<BoolExpr>();
-
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => x.IsLT || x.IsLE || x.IsEq)
-                .Where(x => x.Args[0] == varToRemove);
-
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
-            {
-                if (expr.IsLT)
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                else
-                {
-                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-            }
-
-
+                .Where(x => x.Args[0] == varToRemove)
+                .ToList();
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
                 .Where(x => x.IsGT || x.IsGE || x.IsEq)
-                .Where(x => x.Args[1] == varToRemove);
+                .Where(x => x.Args[1] == varToRemove)
+                .ToList();
 
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
-            {
-                if (expr.IsGT)
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                else
-                {
-                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-            }
+            var implications = new HashSet<BoolExpr>(expressionsToConsiderWithVarToRemoveInFirstPosition.Count +
+                expressionsToConsiderWithVarToRemoveInSecondPosition.Count);
+
+            expressionsToConsiderWithVarToRemoveInFirstPosition
+                .ForEach(x => implications.Add(
+                    x.IsLT
+                        ? Context.MkLt((ArithExpr)varToStay, (ArithExpr)x.Args[1])
+                        : Context.MkLe((ArithExpr)varToStay, (ArithExpr)x.Args[1])));
+
+            expressionsToConsiderWithVarToRemoveInSecondPosition
+                .ForEach(x => implications.Add(
+                    x.IsGT
+                        ? Context.MkLt((ArithExpr)varToStay, (ArithExpr)x.Args[0])
+                        : Context.MkLe((ArithExpr)varToStay, (ArithExpr)x.Args[0])));
 
             return implications;
         }
 
-        private HashSet<BoolExpr> GetEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
+        private List<BoolExpr> GetEqImplications(Expr varToStay, Expr varToRemove, IEnumerable<BoolExpr> existingExpressions)
         {
-            var implications = new HashSet<BoolExpr>();
-
             var expressionsToConsiderWithVarToRemoveInFirstPosition = existingExpressions
                 .Where(x => !x.IsNot && x.Args[0] == varToRemove ||
-                    x.IsNot && x.Args[0].Args[0] == varToRemove);
-
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInFirstPosition)
-            {
-                if (expr.IsGT)
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                if (expr.IsGE)
-                {
-                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                if (expr.IsLT)
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                if (expr.IsLE)
-                {
-                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                if (expr.IsEq)
-                {
-                    implications.Add(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[1]));
-                }
-                if (expr.IsNot)
-                {
-                    implications.Add(Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[1])));
-                }
-            }
-
-
+                    x.IsNot && x.Args[0].Args[0] == varToRemove)
+                .ToList();
             var expressionsToConsiderWithVarToRemoveInSecondPosition = existingExpressions
                 .Where(x => !x.IsNot && x.Args[1] == varToRemove ||
-                    x.IsNot && x.Args[0].Args[1] == varToRemove);
+                    x.IsNot && x.Args[0].Args[1] == varToRemove)
+                .ToList();
 
-            foreach (var expr in expressionsToConsiderWithVarToRemoveInSecondPosition)
-            {
-                if (expr.IsGT)
-                {
-                    implications.Add(Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                if (expr.IsGE)
-                {
-                    implications.Add(Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                if (expr.IsLT)
-                {
-                    implications.Add(Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                if (expr.IsLE)
-                {
-                    implications.Add(Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                if (expr.IsEq)
-                {
-                    implications.Add(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0]));
-                }
-                if (expr.IsNot)
-                {
-                    implications.Add(Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[0])));
-                }
-            }
+            var implications = new List<BoolExpr>(expressionsToConsiderWithVarToRemoveInFirstPosition.Count +
+                expressionsToConsiderWithVarToRemoveInSecondPosition.Count);
+
+            expressionsToConsiderWithVarToRemoveInFirstPosition
+                .ForEach(expr => implications.Add(
+                    expr switch
+                    {
+                        { IsGT: true } => Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]),
+                        { IsGE: true } => Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]),
+                        { IsLT: true } => Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[1]),
+                        { IsLE: true } => Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[1]),
+                        { IsEq: true } => Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[1]),
+                        { IsNot: true } => Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[1]))
+                    }));
+            expressionsToConsiderWithVarToRemoveInSecondPosition
+                .ForEach(expr => implications.Add(
+                    expr switch
+                    {
+                        { IsGT: true } => Context.MkLt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]),
+                        { IsGE: true } => Context.MkLe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]),
+                        { IsLT: true } => Context.MkGt((ArithExpr)varToStay, (ArithExpr)expr.Args[0]),
+                        { IsLE: true } => Context.MkGe((ArithExpr)varToStay, (ArithExpr)expr.Args[0]),
+                        { IsEq: true } => Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0]),
+                        { IsNot: true } => Context.MkNot(Context.MkEq((ArithExpr)varToStay, (ArithExpr)expr.Args[0].Args[0]))
+                    }));
 
             return implications;
         }
@@ -461,7 +382,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         private IEnumerable<BoolExpr> GetConstraintsWithoutOverwrittenVars(IEnumerable<BoolExpr> constraints,
             Expr[] overwrittenVarNames)
-        {         
+        {
             return constraints
                 .Where(x => !x.IsNot && x.Args.All(y => !overwrittenVarNames.Contains(y))
                 || x.IsNot && x.Args[0].Args.All(y => !overwrittenVarNames.Contains(y)));
@@ -499,6 +420,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         private BoolExpr GetAndBlockExpression(IEnumerable<BoolExpr> constraints)
         {
             return Context.MkAnd(constraints);
+        }
+
+        public override BoolExpr ConcatExpressions(BoolExpr source, BoolExpr target, Dictionary<string, DomainType> overwrittenVars)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -101,8 +101,16 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                             var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
                             proc = Process.Start(processInfo);
                             pipeServer.DisposeLocalCopyOfClientHandle();
-                            await proc.WaitForExitAsync(token);
-                            await listenTask;
+                            try
+                            {
+                                await proc.WaitForExitAsync(token);
+                                await listenTask;
+                            }
+                            catch (OperationCanceledException ex)
+                            {
+                                proc.Kill();
+                                throw;
+                            }
                         }
 
                         successfulCase = proc?.ExitCode >= 0;
@@ -138,19 +146,30 @@ namespace DataPetriNetIterativeVerificationApplication.Services
             CancellationToken token)
         {
             byte[] buffer = new byte[65535];
+            string lastString = string.Empty;
             await pipeStream.ReadAsync(buffer, 0, buffer.Length, token);
-            string lastString = Encoding.UTF8.GetString(buffer);
+            lastString = Encoding.UTF8.GetString(buffer);
 
             VerificationOutput? verificationOutput = null;
 
-            XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
-            using (TextReader reader = new StringReader(lastString))
+            if (lastString != string.Empty)
             {
-                verificationOutput = (VerificationOutput?)serializer.Deserialize(reader);
-            }
-            if (verificationOutput != null)
-            {
-                currentverificationResults.Add(new VerificationOutputWithNumber(verificationOutput, currentverificationResults.Count));
+                XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
+                using (TextReader reader = new StringReader(lastString))
+                {
+                    try
+                    {
+                        verificationOutput = (VerificationOutput?)serializer.Deserialize(reader);
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                if (verificationOutput != null)
+                {
+                    currentverificationResults.Add(new VerificationOutputWithNumber(verificationOutput, currentverificationResults.Count));
+                }
             }
         }
 

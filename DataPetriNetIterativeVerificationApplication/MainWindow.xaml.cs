@@ -96,7 +96,7 @@ namespace DataPetriNetIterativeVerificationApplication
 
                     var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
 
-                    var constraintGraphWindow = new ConstraintGraphWindow(constraintGraphToVisualize);
+                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize);
                     constraintGraphWindow.Owner = this;
                     constraintGraphWindow.Show();
                 }

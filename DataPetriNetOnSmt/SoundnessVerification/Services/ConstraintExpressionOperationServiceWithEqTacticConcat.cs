@@ -13,6 +13,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         {
         }
 
+        [Obsolete("Have changed the way how new state is computed - existential quantifier is now applied on the whole formula")]
         public override BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false)
         {
             if (source is null)
@@ -53,7 +54,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     var currentArrayIndex = 0;
                     foreach (var keyValuePair in overwrittenVarNames)
                     {
-                        variablesToOverwrite[currentArrayIndex++] = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+                        variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
                     }
 
                     var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
@@ -67,8 +68,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     foreach (var keyValuePair in overwrittenVarNames)
                     {
-                        var sourceVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
-                        var targetVar = GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+                        var sourceVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+                        var targetVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
 
                         expressionWithRemovedOverwrittenVars = (BoolExpr)expressionWithRemovedOverwrittenVars.Substitute(sourceVar, targetVar);
                     }
@@ -120,19 +121,53 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 : Context.MkOr(andBlockExpressions);
         }
 
-        private Expr GenerateExpression(string variableName, DomainType domain, VariableType varType)
+        public override BoolExpr ConcatExpressions(
+            BoolExpr source, 
+            BoolExpr target, 
+            Dictionary<string, DomainType> overwrittenVars)
         {
-            var nameSuffix = varType == VariableType.Written
-                ? "_w"
-                : "_r";
-
-            return domain switch
+            if (source is null)
             {
-                DomainType.Integer => Context.MkIntConst(variableName + nameSuffix),
-                DomainType.Real => Context.MkRealConst(variableName + nameSuffix),
-                DomainType.Boolean => Context.MkBoolConst(variableName + nameSuffix),
-                _ => throw new NotImplementedException("Domain type is not supported yet"),
-            };
+                throw new ArgumentNullException(nameof(source));
+            }
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            var andExpression = Context.MkAnd(source, target);
+            BoolExpr resultBlockExpression = andExpression;
+
+            if (overwrittenVars.Count > 0)
+            {
+                var variablesToOverwrite = new Expr[overwrittenVars.Count];
+                var currentArrayIndex = 0;
+                foreach (var keyValuePair in overwrittenVars)
+                {
+                    variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+                }
+
+                var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
+
+                Goal g = Context.MkGoal(true, true, false);
+                g.Assert(existsExpression);
+                Tactic tac = Context.MkTactic("qe");
+                ApplyResult a = tac.Apply(g);
+                var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
+
+
+                foreach (var keyValuePair in overwrittenVars)
+                {
+                    var sourceVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+                    var targetVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+
+                    expressionWithRemovedOverwrittenVars = (BoolExpr)expressionWithRemovedOverwrittenVars.Substitute(sourceVar, targetVar);
+                }
+                resultBlockExpression = expressionWithRemovedOverwrittenVars;
+            }
+
+
+            return resultBlockExpression;
         }
     }
 }

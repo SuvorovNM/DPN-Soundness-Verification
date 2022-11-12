@@ -1,4 +1,4 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification;
+﻿using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;

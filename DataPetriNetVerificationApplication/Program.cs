@@ -29,6 +29,7 @@ namespace DataPetriNetVerificationApplication
         const string PipeClientHandleParameterName = "PipeClientHandle";
         const string DpnFileParameterName = "DpnFile";
         const string OutputDirectoryParameterName = "OutputDirectory";
+        const string SaveConstraintGraph = "SaveCG";
         private static Context context = new Context();
         private static ITransformation transformation = new TransformationToAtomicConstraints();
 
@@ -43,6 +44,7 @@ namespace DataPetriNetVerificationApplication
             string? pipeClientHandle = null;
             string? dpnFilePath = null;
             string? outputDirectory = null;
+            bool saveCG = false;
 
             var index = 0;
             do
@@ -70,6 +72,9 @@ namespace DataPetriNetVerificationApplication
                     case OutputDirectoryParameterName:
                         outputDirectory = args[++index];
                         break;
+                    case SaveConstraintGraph:
+                        saveCG = bool.Parse(args[++index]);
+                        break;
                     default:
                         throw new ArgumentException("Parameter " + args[index] + " is not supported!");
                 }
@@ -90,15 +95,25 @@ namespace DataPetriNetVerificationApplication
             AbstractConstraintExpressionService constraintExpressionService = GetExpressionService(verificationType);
             DataPetriNet dpnToVerify = GetDpnToVerify(verificationType, dpnFilePath);
 
-
+            CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(30));
             var timer = new Stopwatch();
             timer.Start();
 
             var cg = new ConstraintGraph(dpnToVerify, constraintExpressionService);
-            cg.GenerateGraph();
-            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
 
-            timer.Stop();
+            var task = Task.Run(() => cg.GenerateGraph(), source.Token);
+            //cg.GenerateGraph();
+            SoundnessProperties soundnessProperties;
+            if (task.Wait(TimeSpan.FromMinutes(30)))
+            {
+                soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
+
+                timer.Stop();
+            }
+            else
+            {
+                throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
+            }
 
             var satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
             var outputRow = new VerificationOutput(
@@ -115,13 +130,16 @@ namespace DataPetriNetVerificationApplication
             {
                 SaveResultInFile(verificationType, outputDirectory, outputRow);
 
-                var constraintGraphToSave = new ConstraintGraphToVisualize(cg, soundnessProperties);
-
-                using (var fs = new FileStream(Path.Combine(outputDirectory, dpnToVerify.Name + "_" + verificationType + ".cgml"), FileMode.Create))
+                if (saveCG)
                 {
-                    var cgmlParser = new CgmlParser();
-                    var xmlDocument = cgmlParser.Serialize(constraintGraphToSave);
-                    xmlDocument.Save(fs);  
+                    var constraintGraphToSave = new ConstraintGraphToVisualize(cg, soundnessProperties);
+
+                    using (var fs = new FileStream(Path.Combine(outputDirectory, dpnToVerify.Name + "_" + verificationType + ".cgml"), FileMode.Create))
+                    {
+                        var cgmlParser = new CgmlParser();
+                        var xmlDocument = cgmlParser.Serialize(constraintGraphToSave);
+                        xmlDocument.Save(fs);
+                    }
                 }
                return 1;
             }
@@ -180,7 +198,7 @@ namespace DataPetriNetVerificationApplication
                     sw.AutoFlush = true;
                     XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
                     serializer.Serialize(sw, outputRow);
-                    pipeClient.WaitForPipeDrain(); // May be unnecessary
+                    //pipeClient.WaitForPipeDrain(); // May be unnecessary
                 }
             }
         }

@@ -2,7 +2,7 @@
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt

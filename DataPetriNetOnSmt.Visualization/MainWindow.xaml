@@ -22,8 +22,9 @@
                 </MenuItem>
                 <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
                 <MenuItem x:Name="TransformModelItem" Header="Transform model" Click="TransformModelItem_Click"/>
+                <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click"/>
 
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Check for soundness">
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG">
                     <MenuItem x:Name="ManualSoundnessMenuItem" Header="nSQE-based Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>
                     <MenuItem x:Name="QeTacticSoundnessMenuItem" Header="QE-based Implication Implementation" Click="QeTacticSoundnessMenuItem_Click"/>
                 </MenuItem>

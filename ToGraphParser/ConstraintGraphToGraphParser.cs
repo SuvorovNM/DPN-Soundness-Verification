@@ -1,6 +1,6 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Z3;
@@ -11,9 +11,9 @@ using ToGraphParser.Extensions;
 
 namespace ToGraphParser
 {
-    public class ConstraintGraphToGraphParser
+    public class LtsToGraphParser
     {
-        public Graph FormGraphBasedOnCG(ConstraintGraphToVisualize constraintGraph)
+        public Graph FormGraphBasedOnCG(LtsToVisualize constraintGraph)
         {
             Graph graph = new Graph();
 
@@ -24,7 +24,7 @@ namespace ToGraphParser
         }
 
         private Dictionary<int, string> AddStatesToGraph
-            (ConstraintGraphToVisualize constraintGraph, 
+            (LtsToVisualize constraintGraph, 
             Graph graph)
         {
             var addedStates = new Dictionary<int, string>();
@@ -70,7 +70,7 @@ namespace ToGraphParser
             return addedStates;
         }
 
-        private static void AddArcsToGraph(ConstraintGraphToVisualize constraintGraph, Graph graph, Dictionary<int, string> addedStates)
+        private static void AddArcsToGraph(LtsToVisualize constraintGraph, Graph graph, Dictionary<int, string> addedStates)
         {
             foreach (var transition in constraintGraph.ConstraintArcs)
             {

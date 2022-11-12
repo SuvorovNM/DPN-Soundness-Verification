@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetOnSmt.Visualization.Services;
 using DataPetriNetParsers;
 using DataPetriNetTransformation;
@@ -101,13 +102,14 @@ namespace DataPetriNetOnSmt.Visualization
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraphToVisualize = await CheckSoundness(
+                var constraintGraph = new ConstraintGraph(currentDisplayedNet, 
                     new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+                var constraintGraphToVisualize = await CheckSoundness(constraintGraph);
                 VisualizeConstraintGraph(constraintGraphToVisualize);
             }
         }
 
-        private void VisualizeConstraintGraph(ConstraintGraphToVisualize constraintGraphToVisualize)
+        private void VisualizeConstraintGraph(LtsToVisualize constraintGraphToVisualize)
         {
             var constraintGraphWindow = new ConstraintGraphWindow(constraintGraphToVisualize);
             constraintGraphWindow.Owner = this;
@@ -118,25 +120,43 @@ namespace DataPetriNetOnSmt.Visualization
         {
             if (currentDisplayedNet != null)
             {
-                var constraintGraphToVisualize = await CheckSoundness(
+                var constraintGraph = new ConstraintGraph(currentDisplayedNet,
                     new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
+                var constraintGraphToVisualize = await CheckSoundness(constraintGraph);
                 VisualizeConstraintGraph(constraintGraphToVisualize);
             }
         }
 
-        private async Task<ConstraintGraphToVisualize> CheckSoundness(AbstractConstraintExpressionService expressionService)
+        private async Task<LtsToVisualize> CheckSoundness
+            (LabeledTransitionSystem lts)
         {
-            var constraintGraph = new ConstraintGraph(currentDisplayedNet, expressionService);
-            await Task.Run(() => constraintGraph.GenerateGraph(true));
-            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(currentDisplayedNet, constraintGraph);
+            //var constraintGraph = new ConstraintGraph(currentDisplayedNet, expressionService);
+            await Task.Run(() => lts.GenerateGraph(true));
+            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(currentDisplayedNet, lts);
 
-            return new ConstraintGraphToVisualize(constraintGraph, soundnessProperties);
+            return new LtsToVisualize(lts, soundnessProperties);
         }
 
         private void TransformModelItem_Click(object sender, RoutedEventArgs e)
         {
             currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
+
+        private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentDisplayedNet != null)
+            {
+                var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+
+                //lts.GenerateGraph();
+
+                //var check = new CyclesFinder().GetCycles(lts);
+
+
+                var ltsToVisualize = await CheckSoundness(lts);
+                VisualizeConstraintGraph(ltsToVisualize);
+            }
         }
 
         private void OpenCG_Click(object sender, RoutedEventArgs e)

@@ -1,6 +1,6 @@
 ﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
 {
-    public class ConstraintGraphToVisualize
+    public class LtsToVisualize
     {
         public List<ConstraintStateToVisualize> ConstraintStates { get; init; }
         public List<ConstraintArcToVisualize> ConstraintArcs { get; init; }
@@ -18,23 +18,23 @@ namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
         public List<string> DeadTransitions { get; init; }
         
 
-        public ConstraintGraphToVisualize(ConstraintGraph constraintGraph, SoundnessProperties soundnessProperties)
+        public LtsToVisualize(LabeledTransitionSystem lts, SoundnessProperties soundnessProperties)
         {
             IsBounded = soundnessProperties.Boundedness;
             IsSound = soundnessProperties.Soundness;
 
-            ConstraintStates = constraintGraph.ConstraintStates
+            ConstraintStates = lts.ConstraintStates
                 .Select(x => new ConstraintStateToVisualize(x, soundnessProperties.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default)))
                 .ToList();
 
-            ConstraintArcs = constraintGraph.ConstraintArcs
+            ConstraintArcs = lts.ConstraintArcs
                 .Select(x => new ConstraintArcToVisualize(x))
                 .ToList();
 
             DeadTransitions = soundnessProperties.DeadTransitions;
         }
 
-        public ConstraintGraphToVisualize()
+        public LtsToVisualize()
         {
             ConstraintStates = new List<ConstraintStateToVisualize>();
             ConstraintArcs = new List<ConstraintArcToVisualize>();

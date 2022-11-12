@@ -15,7 +15,7 @@ namespace DataPetriNetParsers
 {
     public class CgmlParser
     {
-        public ConstraintGraphToVisualize Deserialize(XDocument document)
+        public LtsToVisualize Deserialize(XDocument document)
         {
             ArgumentNullException.ThrowIfNull(document);
 
@@ -83,7 +83,7 @@ namespace DataPetriNetParsers
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
             var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
 
-            return new ConstraintGraphToVisualize
+            return new LtsToVisualize
             {
                 ConstraintStates = constraintStates,
                 ConstraintArcs = constraintArcs,
@@ -93,7 +93,7 @@ namespace DataPetriNetParsers
             };
         }
 
-        public XDocument Serialize(ConstraintGraphToVisualize cg)
+        public XDocument Serialize(LtsToVisualize cg)
         {
             ArgumentNullException.ThrowIfNull(cg);
 

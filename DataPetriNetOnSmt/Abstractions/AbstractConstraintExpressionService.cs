@@ -130,6 +130,8 @@ namespace DataPetriNetOnSmt.Abstractions
         }
         public abstract BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false);
 
+        public abstract BoolExpr ConcatExpressions(BoolExpr source, BoolExpr target, Dictionary<string,DomainType> overwrittenVars);
+
 
         protected static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
         {

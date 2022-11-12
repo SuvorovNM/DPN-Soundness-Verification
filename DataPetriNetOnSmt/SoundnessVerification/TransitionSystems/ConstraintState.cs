@@ -1,7 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using Microsoft.Z3;
 
-namespace DataPetriNetOnSmt.SoundnessVerification
+namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public class ConstraintState
     {

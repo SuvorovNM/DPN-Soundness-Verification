@@ -1,4 +1,4 @@
-﻿namespace DataPetriNetOnSmt.SoundnessVerification
+﻿namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public class ConstraintArc
     {

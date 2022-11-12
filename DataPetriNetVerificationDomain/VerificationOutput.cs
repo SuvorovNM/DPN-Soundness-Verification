@@ -1,6 +1,6 @@
 ﻿using DataPetriNetOnSmt;
-using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
 ﻿using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using EnumsNET;
 using System;
@@ -14,7 +14,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, LtsToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -103,7 +103,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
             return "Process model is UNSOUND: \n\n";
         }
 
-        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
+        private static string FormGraphInfoLines(LtsToVisualize graph)
         {
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
         }

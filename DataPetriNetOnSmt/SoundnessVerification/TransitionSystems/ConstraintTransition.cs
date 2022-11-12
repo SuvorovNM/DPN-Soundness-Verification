@@ -1,7 +1,7 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 
-namespace DataPetriNetOnSmt.SoundnessVerification
+namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public class ConstraintTransition : Node
     {

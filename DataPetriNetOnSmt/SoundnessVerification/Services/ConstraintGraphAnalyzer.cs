@@ -1,5 +1,7 @@
 ﻿using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
+using System.ComponentModel.DataAnnotations;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
@@ -12,38 +14,47 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
     public static class ConstraintGraphAnalyzer
     {
-        public static SoundnessProperties CheckSoundness(DataPetriNet dpn, ConstraintGraph cg)
+        public static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
         {
             var stateTypes = GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
 
             var boundedness = cg.IsFullGraph;
 
-            var deadTransitions = dpn.Transitions
-                            .Select(x => x.Id)
-                            .Except(cg.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
-                            .ToList();
+            var restoredDpnTransitions = dpn.Transitions
+                .Select(x => x.Id.IndexOf("_st_") >= 0
+                    ? x.Id[..x.Id.IndexOf("_st_")]
+                    : x.Id);
+            var restoredConstraintArcTransitions = cg.ConstraintArcs
+                .Where(x => !x.Transition.IsSilent)
+                .Select(x => x.Transition.Id.IndexOf("_st_") >= 0
+                    ? x.Transition.Id[..x.Transition.Id.IndexOf("_st_")]
+                    : x.Transition.Id);
+
+            var deadTransitions = restoredDpnTransitions
+                .Except(restoredConstraintArcTransitions)
+                .ToList();
 
             var hasDeadlocks = false;
             var isFinalMarkingAlwaysReachable = true;
             var isFinalMarkingClean = true;
 
-            foreach(var constraintState in cg.ConstraintStates)
+            foreach (var constraintState in cg.ConstraintStates)
             {
                 hasDeadlocks |= stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock);
                 isFinalMarkingAlwaysReachable &= !stateTypes[constraintState].HasFlag(ConstraintStateType.NoWayToFinalMarking);
                 isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(ConstraintStateType.UncleanFinal);
             }
 
-            var isSound = boundedness 
-                && !hasDeadlocks 
-                && isFinalMarkingAlwaysReachable 
+            var isSound = boundedness
+                && !hasDeadlocks
+                && isFinalMarkingAlwaysReachable
                 && isFinalMarkingClean
-                && deadTransitions.Count > 0;
+                && deadTransitions.Count == 0;
 
             return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
         }
 
-        public static Dictionary<ConstraintState, ConstraintStateType> GetStatesDividedByTypesNew(ConstraintGraph graph, IEnumerable<Place> terminalNodes)
+        public static Dictionary<ConstraintState, ConstraintStateType> GetStatesDividedByTypesNew(LabeledTransitionSystem graph, IEnumerable<Place> terminalNodes)
         {
             var stateDictionary = graph.ConstraintStates.ToDictionary(x => x, y => ConstraintStateType.Default);
 
@@ -63,7 +74,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return stateDictionary;
 
 
-            static void DefineDeadlocks(ConstraintGraph graph, IEnumerable<Place> terminalNodes, Dictionary<ConstraintState, ConstraintStateType> stateDictionary)
+            static void DefineDeadlocks(LabeledTransitionSystem graph, IEnumerable<Place> terminalNodes, Dictionary<ConstraintState, ConstraintStateType> stateDictionary)
             {
                 graph.ConstraintStates
                                 .Where(x => x.PlaceTokens.Keys.Except(terminalNodes).Any(y => x.PlaceTokens[y] > 0)
@@ -72,7 +83,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                                 .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.Deadlock);
             }
 
-            static void DefineStatesWithNoWayToFinals(ConstraintGraph graph, Dictionary<ConstraintState, ConstraintStateType> stateDictionary, IEnumerable<ConstraintState> finalStates)
+            static void DefineStatesWithNoWayToFinals(LabeledTransitionSystem graph, Dictionary<ConstraintState, ConstraintStateType> stateDictionary, IEnumerable<ConstraintState> finalStates)
             {
                 var statesLeadingToFinals = new List<ConstraintState>(finalStates);
                 var intermediateStates = new List<ConstraintState>(finalStates);
@@ -112,33 +123,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                                 .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.Final);
             }
 
-            static void DefineInitialState(ConstraintGraph graph, Dictionary<ConstraintState, ConstraintStateType> stateDictionary)
+            static void DefineInitialState(LabeledTransitionSystem graph, Dictionary<ConstraintState, ConstraintStateType> stateDictionary)
             {
                 stateDictionary[graph.InitialState] = stateDictionary[graph.InitialState] | ConstraintStateType.Initial;
             }
         }
-
-        /*public static SoundnessProperties CheckSoundness(DataPetriNet dpn, ConstraintGraph cg)
-        {
-            var stateTypes = GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
-
-            var deadTransitions = dpn.Transitions
-                            .Select(x => x.Id)
-                            .Except(cg.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
-                            .ToList();
-
-            var isFinalMarkingAlwaysReachable = !stateTypes[StateType.NoWayToFinalMarking].Any();
-            var isFinalMarkingReachedInCleanWay = !stateTypes[StateType.UncleanFinal].Any();
-            var hasDeadlocks = stateTypes[StateType.Deadlock].Any();
-
-            var isSound = cg.IsFullGraph
-                && isFinalMarkingAlwaysReachable
-                && isFinalMarkingReachedInCleanWay
-                && !hasDeadlocks
-                && deadTransitions.Count == 0;
-
-            return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
-        }*/
 
         public static Dictionary<StateType, List<ConstraintState>> GetStatesDividedByTypes(ConstraintGraph graph, IEnumerable<Place> terminalNodes)
         {
