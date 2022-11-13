@@ -1,4 +1,5 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
+﻿using DataPetriNetOnSmt.Extensions;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public record Cycle(List<ConstraintArc> CycleArcs, List<ConstraintArc> OutputArcs);
+    public record Cycle(HashSet<ConstraintArc> CycleArcs, HashSet<ConstraintArc> OutputArcs);
     public class CyclesFinder
     {
         public List<Cycle> GetCycles(LabeledTransitionSystem lts)
@@ -15,10 +16,54 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             List<ConstraintArc> initialPath = new List<ConstraintArc>();
             HashSet<ConstraintState> visitedStates = new HashSet<ConstraintState>();
 
-            return RecursiveDFSToFindCycles(lts, initialPath, visitedStates);
+            var cycles = RecursiveDFSToFindCycles(lts, initialPath, visitedStates);
+
+            var intersectingCycles = CompoundIntersectingCycles(cycles);
+
+            return intersectingCycles;
         }
 
-        public List<Cycle> RecursiveDFSToFindCycles(
+        private List<Cycle> CompoundIntersectingCycles(List<Cycle> sourceCycles)
+        {
+            var newCycles = new List<Cycle>(sourceCycles);
+            var previousCount = newCycles.Count;
+
+            var i = 0;
+            do
+            {
+                var j = 0;
+                while (j < newCycles.Count)
+                {
+                    if ( i!= j &&
+                        newCycles[i].CycleArcs.Select(x => x.SourceState).Intersect(newCycles[j].CycleArcs.Select(y => y.SourceState)).Any())
+                    {
+
+                        if (j < i)
+                        {
+                            newCycles[j].CycleArcs.AddRange(newCycles[i].CycleArcs);
+                            newCycles[j].OutputArcs.AddRange(newCycles[i].OutputArcs);
+                            newCycles.RemoveAt(i);
+                        }
+                        else
+                        {
+                            newCycles[i].CycleArcs.AddRange(newCycles[j].CycleArcs);
+                            newCycles[i].OutputArcs.AddRange(newCycles[j].OutputArcs);
+                            newCycles.RemoveAt(j);
+                        }
+                    }
+                    else
+                    {
+                        j++;
+                    }
+                }
+                i++;
+
+            } while (i < newCycles.Count);
+
+            return newCycles;
+        }
+
+        private List<Cycle> RecursiveDFSToFindCycles(
             LabeledTransitionSystem lts, 
             List<ConstraintArc> currentPath,
             HashSet<ConstraintState> visitedStates)
@@ -54,10 +99,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         var outArcs = lts.ConstraintArcs
                             .Where(x => (x.SourceState == currentPath[i].SourceState)//|| x.SourceState == currentPath[i].TargetState 
                                 && x != currentPath[i]);
-                        foreach (var item in outArcs)
-                        {
-                            arcsOutCycle.Add(item);
-                        }
+                        arcsOutCycle.AddRange(outArcs);
                     }
                 }
                 isCycle |= arc.SourceState == arc.TargetState;
@@ -67,11 +109,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     var outArcs = lts.ConstraintArcs
                             .Where(x => (x.SourceState == arc.SourceState)
                                 && x != arc);
-                    foreach (var item in outArcs)
-                    {
-                        arcsOutCycle.Add(item);
-                    }
-                    cycles.Add(new Cycle(arcsInCycle.ToList(), arcsOutCycle.ToList()));
+                    arcsOutCycle.AddRange(outArcs);
+                    cycles.Add(new Cycle(arcsInCycle, arcsOutCycle));
                 }
                 else
                 {
@@ -82,7 +121,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
             }
 
-            visitedStates.Add(currentPath.Count == 0 ? lts.InitialState : currentPath[^1].TargetState);
+            //visitedStates.Add(currentPath.Count == 0 ? lts.InitialState : currentPath[^1].TargetState);
             return cycles;
         }
     }

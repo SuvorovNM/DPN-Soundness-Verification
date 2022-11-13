@@ -73,21 +73,37 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     foreach(var baseTransition in updatedTransitionsBasis)
                     {
-                        var transitionPositive = (Transition)baseTransition.Clone();
-                        transitionPositive.Id = transitionPositive.Id + "+" + outputTransition.Id;
-                        transitionPositive.Label = transitionPositive.Id;
-                        transitionPositive.Guard.ActualConstraintExpression = context.MkAnd(
-                            transitionPositive.Guard.ActualConstraintExpression,
-                            formulaToConjunct);
-                        updatedTransitions.Add(transitionPositive);
+                        var isPositiveSatisfiable = context.CanBeSatisfied
+                            (context.MkAnd(
+                            baseTransition.Guard.ActualConstraintExpression,
+                            formulaToConjunct));
+                        var isNegativeSatisfiable = context.CanBeSatisfied
+                            (context.MkAnd(
+                            baseTransition.Guard.ActualConstraintExpression,
+                            context.MkNot(formulaToConjunct)));
 
-                        var transitionNegative = (Transition)baseTransition.Clone();
-                        transitionNegative.Id = transitionNegative.Id + "-" + outputTransition.Id;
-                        transitionNegative.Label = transitionNegative.Id;
-                        transitionNegative.Guard.ActualConstraintExpression = context.MkAnd(
-                            transitionNegative.Guard.ActualConstraintExpression,
-                            context.MkNot(formulaToConjunct));
-                        updatedTransitions.Add(transitionNegative);
+                        if (!isPositiveSatisfiable || !isNegativeSatisfiable)
+                        {
+                            updatedTransitions.Add((Transition)baseTransition.Clone());
+                        }
+                        else
+                        {
+                            var transitionPositive = (Transition)baseTransition.Clone();
+                            transitionPositive.Id = transitionPositive.Id + "+" + outputTransition.Id;
+                            transitionPositive.Label = transitionPositive.Id;
+                            transitionPositive.Guard.ActualConstraintExpression = context.MkAnd(
+                                transitionPositive.Guard.ActualConstraintExpression,
+                                formulaToConjunct);
+                            updatedTransitions.Add(transitionPositive);
+
+                            var transitionNegative = (Transition)baseTransition.Clone();
+                            transitionNegative.Id = transitionNegative.Id + "-" + outputTransition.Id;
+                            transitionNegative.Label = transitionNegative.Id;
+                            transitionNegative.Guard.ActualConstraintExpression = context.MkAnd(
+                                transitionNegative.Guard.ActualConstraintExpression,
+                                context.MkNot(formulaToConjunct));
+                            updatedTransitions.Add(transitionNegative);
+                        }
                     }
 
                     updatedTransitions = updatedTransitions

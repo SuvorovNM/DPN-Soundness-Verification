@@ -11,6 +11,20 @@ namespace DataPetriNetOnSmt.Extensions
 {
     public static class ContextExtensions
     {
+        public static bool CanBeSatisfied(this Context context, BoolExpr expression)
+        {
+            if (expression is null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            Solver s = context.MkSimpleSolver();
+            s.Assert(expression);
+
+            var result = s.Check() == Status.SATISFIABLE;
+
+            return result;
+        }
 
         public static BoolExpr GetReadExpression(this Context context, BoolExpr smtExpression, Dictionary<string, DomainType> overwrittenVarNames)
         {
