@@ -1,20 +1,66 @@
-﻿using DataPetriNetOnSmt.Enums;
+﻿using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt.Extensions
 {
     public static class BoolExprExtensions
     {
-        public static BoolExpr? GetExpressionWithoutNotClause(this BoolExpr sourceExpression)
+        public static Dictionary<string, DomainType> GetTypedVarsDict(this BoolExpr expression, VariableType varType)
         {
-            if (sourceExpression == null)
+            var postfix = varType == VariableType.Written
+                ? "_w"
+                : "_r";
+
+            // Not sure what would be faster - go through string(2) or through the leafs(1)
+            Stack<Expr> expressionsToConsider = new Stack<Expr>();
+            expressionsToConsider.Push(expression);
+
+            HashSet<Expr> variables = new HashSet<Expr>();
+
+            while (expressionsToConsider.Count > 0)
             {
-                throw new ArgumentNullException(nameof(sourceExpression));
+                var expressionToConsider = expressionsToConsider.Pop();
+                if (expressionToConsider.IsAnd || expressionToConsider.IsOr || expressionToConsider.IsNot)
+                {
+                    foreach(var expressionArg in expressionToConsider.Args)
+                    {
+                        expressionsToConsider.Push(expressionArg);
+                    }
+                }
+                else
+                {
+                    if (!expressionToConsider.IsTrue && !expressionToConsider.IsFalse)
+                    {
+                        foreach (var expressionArg in expressionToConsider.Args)
+                        {
+                            if (!expressionArg.IsNumeral && expressionArg.ToString().EndsWith(postfix))
+                            {
+                                variables.Add(expressionArg);
+                            }
+                        }
+                    }
+                }
             }
 
-            return sourceExpression.IsNot
-                    ? sourceExpression.Args[0] as BoolExpr
-                    : sourceExpression;
+            var result = new Dictionary<string, DomainType>();
+            foreach (var variable in variables)
+            {
+                if (variable.IsBool)
+                {
+                    result.Add(variable.ToString()[..^2], DomainType.Boolean);
+                }
+                if (variable.IsInt)
+                {
+                    result.Add(variable.ToString()[..^2], DomainType.Integer);
+                }
+                if (variable.IsReal)
+                {
+                    result.Add(variable.ToString()[..^2], DomainType.Real);
+                }
+            }
+
+            return result;
         }
 
         public static LogicalConnective GetLogicalConnective(this BoolExpr sourceExpression)

@@ -41,74 +41,74 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             foreach (var sourceTransition in newDPN.Transitions)
             {
-                var cyclesWithTransition = cycles
-                    .Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
-
-                var outputTransitions = cyclesWithTransition
-                    .SelectMany(x => x.OutputArcs)
-                    .Where(x => transitionsDict[x.Transition.Id].Guard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Read)
-                        .Intersect(sourceTransition.Guard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written)).Any())
-                    .Select(x => transitionsDict[x.Transition.Id]);
-
                 var updatedTransitions = new List<Transition> { sourceTransition };
-                var overwrittenVarsInSourceTransition = sourceTransition.Guard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
 
-                foreach (var outputTransition in outputTransitions)
+                var writeVarsInSourceTransition = sourceTransition.Guard.WriteVars;
+
+                if (writeVarsInSourceTransition.Count > 0)
                 {
-                    var updatedTransitionsBasis = new List<Transition>(updatedTransitions);
+                    var cyclesWithTransition = cycles
+                        .Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
 
-                    var smtFormula = context.GetSmtExpression(outputTransition.Guard.BaseConstraintExpressions);
-                    var overwrittenVarsInOutTransition = outputTransition.Guard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
-                    var readFormula = context.GetReadExpression(smtFormula, overwrittenVarsInOutTransition);
+                    // TODO: Не очень верно проверять на read "BaseConstraintExpressions"
+                    var outputTransitions = cyclesWithTransition
+                        .SelectMany(x => x.OutputArcs)
+                        .Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars//BaseConstraintExpressions
+                            .Intersect(writeVarsInSourceTransition).Any())
+                        .Select(x => transitionsDict[x.Transition.Id])
+                        .Distinct();
 
-
-                    var formulaToConjunct = readFormula;
-                    foreach (var overwrittenVar in overwrittenVarsInSourceTransition)
+                    foreach (var outputTransition in outputTransitions)
                     {
-                        var readVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
-                        var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
+                        var updatedTransitionsBasis = new List<Transition>(updatedTransitions);
 
-                        formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
-                    }
+                        var overwrittenVarsInOutTransition = outputTransition.Guard.WriteVars;
+                        var readFormula = context.GetReadExpression(outputTransition.Guard.ActualConstraintExpression, overwrittenVarsInOutTransition);
 
-                    foreach(var baseTransition in updatedTransitionsBasis)
-                    {
-                        var isPositiveSatisfiable = context.CanBeSatisfied
-                            (context.MkAnd(
-                            baseTransition.Guard.ActualConstraintExpression,
-                            formulaToConjunct));
-                        var isNegativeSatisfiable = context.CanBeSatisfied
-                            (context.MkAnd(
-                            baseTransition.Guard.ActualConstraintExpression,
-                            context.MkNot(formulaToConjunct)));
 
-                        if (!isPositiveSatisfiable || !isNegativeSatisfiable)
+                        var formulaToConjunct = readFormula;
+                        foreach (var overwrittenVar in writeVarsInSourceTransition)
                         {
-                            updatedTransitions.Add((Transition)baseTransition.Clone());
+                            var readVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
+                            var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
+
+                            formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
                         }
-                        else
+
+                        foreach (var baseTransition in updatedTransitionsBasis)
                         {
-                            var transitionPositive = (Transition)baseTransition.Clone();
-                            transitionPositive.Id = transitionPositive.Id + "+" + outputTransition.Id;
-                            transitionPositive.Label = transitionPositive.Id;
-                            transitionPositive.Guard.ActualConstraintExpression = context.MkAnd(
-                                transitionPositive.Guard.ActualConstraintExpression,
+                            var positiveConstraint = context.MkAnd(
+                                baseTransition.Guard.ActualConstraintExpression,
                                 formulaToConjunct);
-                            updatedTransitions.Add(transitionPositive);
-
-                            var transitionNegative = (Transition)baseTransition.Clone();
-                            transitionNegative.Id = transitionNegative.Id + "-" + outputTransition.Id;
-                            transitionNegative.Label = transitionNegative.Id;
-                            transitionNegative.Guard.ActualConstraintExpression = context.MkAnd(
-                                transitionNegative.Guard.ActualConstraintExpression,
+                            var negativeConstraint = context.MkAnd(
+                                baseTransition.Guard.ActualConstraintExpression,
                                 context.MkNot(formulaToConjunct));
-                            updatedTransitions.Add(transitionNegative);
-                        }
-                    }
 
-                    updatedTransitions = updatedTransitions
-                        .Except(updatedTransitionsBasis)
-                        .ToList();
+                            var isPositiveSatisfiable = context.CanBeSatisfied(positiveConstraint);
+                            var isNegativeSatisfiable = context.CanBeSatisfied(negativeConstraint);
+
+                            if (!isPositiveSatisfiable || !isNegativeSatisfiable)
+                            {
+                                updatedTransitions.Add((Transition)baseTransition.Clone());
+                            }
+                            else
+                            {
+                                var positiveTransition = new Transition(
+                                    baseTransition.Id+ "+" + outputTransition.Id, 
+                                    new Guard(context, baseTransition.Guard.BaseConstraintExpressions, positiveConstraint));
+                                updatedTransitions.Add(positiveTransition);
+
+                                var negativeTransition = new Transition(
+                                    baseTransition.Id + "-" + outputTransition.Id,
+                                    new Guard(context, baseTransition.Guard.BaseConstraintExpressions, negativeConstraint));
+                                updatedTransitions.Add(negativeTransition);
+                            }
+                        }
+
+                        updatedTransitions = updatedTransitions
+                            .Except(updatedTransitionsBasis)
+                            .ToList();
+                    }
                 }
 
                 foreach (var updatedTransition in updatedTransitions)

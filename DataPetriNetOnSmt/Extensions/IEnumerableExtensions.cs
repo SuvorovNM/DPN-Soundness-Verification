@@ -19,7 +19,7 @@ namespace DataPetriNetOnSmt.Extensions
         {
             return expressions.Where(x => x.ConstraintVariable.VariableType == varType);
         }
-
+        
         public static Dictionary<string, DomainType> GetTypedVarsDict(this IEnumerable<IConstraintExpression> expressions, VariableType varType)
         {
             return expressions

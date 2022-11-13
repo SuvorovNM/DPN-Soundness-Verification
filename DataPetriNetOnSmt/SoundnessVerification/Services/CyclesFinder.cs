@@ -87,7 +87,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             foreach (var arc in availableArcs)
             {
                 var isCycle = false;
-                var arcsInCycle = new HashSet<ConstraintArc>();//List
+                var arcsInCycle = new HashSet<ConstraintArc>();
                 var arcsOutCycle = new HashSet<ConstraintArc>();
 
                 for (int i =0; i< currentPath.Count; i++)
@@ -97,7 +97,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     {
                         arcsInCycle.Add(currentPath[i]);
                         var outArcs = lts.ConstraintArcs
-                            .Where(x => (x.SourceState == currentPath[i].SourceState)//|| x.SourceState == currentPath[i].TargetState 
+                            .Where(x => (x.SourceState == currentPath[i].SourceState)
                                 && x != currentPath[i]);
                         arcsOutCycle.AddRange(outArcs);
                     }

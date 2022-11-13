@@ -9,11 +9,31 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Guard : ICloneable
     {
         private readonly VariablesStore localVariables;
+        private bool readNeedsToBeRecalculated = false;
+        private Dictionary<string, DomainType> readVars = new Dictionary<string, DomainType>();
         public Context Context { get; set; }
 
         public bool IsSatisfied { get; private set; }
-        public List<IConstraintExpression> BaseConstraintExpressions { get; set; }
-        public BoolExpr ActualConstraintExpression { get; set; }
+        public List<IConstraintExpression> BaseConstraintExpressions { get; init; }
+        public BoolExpr ActualConstraintExpression { get; init; }
+
+        public Dictionary<string, DomainType> WriteVars { get; init; }
+        public Dictionary<string, DomainType> ReadVars 
+        { 
+            get 
+            { 
+                if (readNeedsToBeRecalculated)
+                {
+                    readVars = ActualConstraintExpression.GetTypedVarsDict(VariableType.Read);
+                    readNeedsToBeRecalculated = false;
+                }
+                return readVars;
+            }
+            set
+            {
+                readVars = value;
+            }
+        }
 
         public Guard(Context ctx, List<IConstraintExpression>? baseConstraints = null)
         {
@@ -26,6 +46,8 @@ namespace DataPetriNetOnSmt.DPNElements
             {
                 BaseConstraintExpressions = baseConstraints;
                 ActualConstraintExpression = ctx.GetSmtExpression(baseConstraints);
+                WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
+                ReadVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Read);
             }
 
             localVariables = new VariablesStore();
@@ -38,13 +60,10 @@ namespace DataPetriNetOnSmt.DPNElements
             ActualConstraintExpression = actualConstraintExpression;
             localVariables = new VariablesStore();
             Context = ctx;
-        }
 
-        [Obsolete("Due to a new algorithm implementation, this ctor is not relevant")]
-        public Guard()
-        {
-            BaseConstraintExpressions = new List<IConstraintExpression>();
-            localVariables = new VariablesStore();
+            WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
+            //ReadVars = ActualConstraintExpression.GetTypedVarsDict(VariableType.Read);
+            readNeedsToBeRecalculated = true;
         }
 
         public bool Verify(VariablesStore globalVariables, Context ctx)
@@ -209,9 +228,10 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public object Clone()
         {
-            var clonedGuard = new Guard(Context, BaseConstraintExpressions, ActualConstraintExpression);
-            clonedGuard.BaseConstraintExpressions = BaseConstraintExpressions.Select(x => x.Clone()).ToList(); // May be irrelevant
-
+            var clonedGuard = new Guard(
+                Context, 
+                BaseConstraintExpressions.Select(x => x.Clone()).ToList(), 
+                ActualConstraintExpression);
             return clonedGuard;
         }
     }
