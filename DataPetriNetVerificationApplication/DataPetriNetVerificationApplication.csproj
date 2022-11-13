@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
-    <ProjectReference Include="..\DataPetriNetTransformation\DataPetriNetTransformation.csproj" />
     <ProjectReference Include="..\DataPetriNetVerificationDomain\DataPetriNetVerificationDomain.csproj" />
     <ProjectReference Include="..\ToGraphParser\DataPetriNetParsers.csproj" />
   </ItemGroup>

@@ -32,16 +32,17 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                 foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
                 {
-                    var smtExpression = GetSmtExpression(transition.Guard.ConstraintExpressions);
+                    var smtExpression = transition.Guard.ActualConstraintExpression;
+                        //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
 
-                    var overwrittenVarNames = transition.Guard.ConstraintExpressions
-                        .GetOverwrittenVarsDict();
-                    var readExpression = GetReadExpression(smtExpression, overwrittenVarNames);
+                    var overwrittenVarNames = transition.Guard.BaseConstraintExpressions
+                        .GetTypedVarsDict(VariableType.Written);
+                    var readExpression = Context.GetReadExpression(smtExpression, overwrittenVarNames);
 
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
                         var constraintsIfTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, transition.Guard.ConstraintExpressions, removeRedundantBlocks);
+                            .ConcatExpressions(currentState.Constraints, transition.Guard.BaseConstraintExpressions, removeRedundantBlocks);
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {

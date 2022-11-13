@@ -9,19 +9,47 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Guard : ICloneable
     {
         private readonly VariablesStore localVariables;
+        public Context Context { get; set; }
 
         public bool IsSatisfied { get; private set; }
-        public List<IConstraintExpression> ConstraintExpressions { get; set; }
+        public List<IConstraintExpression> BaseConstraintExpressions { get; set; }
+        public BoolExpr ActualConstraintExpression { get; set; }
 
+        public Guard(Context ctx, List<IConstraintExpression>? baseConstraints = null)
+        {
+            if (baseConstraints == null)
+            {
+                BaseConstraintExpressions = new List<IConstraintExpression>();
+                ActualConstraintExpression = ctx.MkTrue();
+            }
+            else
+            {
+                BaseConstraintExpressions = baseConstraints;
+                ActualConstraintExpression = ctx.GetSmtExpression(baseConstraints);
+            }
+
+            localVariables = new VariablesStore();
+            Context = ctx;            
+        }
+
+        public Guard(Context ctx, List<IConstraintExpression> baseConstraints, BoolExpr actualConstraintExpression)
+        {
+            BaseConstraintExpressions = baseConstraints;
+            ActualConstraintExpression = actualConstraintExpression;
+            localVariables = new VariablesStore();
+            Context = ctx;
+        }
+
+        [Obsolete("Due to a new algorithm implementation, this ctor is not relevant")]
         public Guard()
         {
-            ConstraintExpressions = new List<IConstraintExpression>();
+            BaseConstraintExpressions = new List<IConstraintExpression>();
             localVariables = new VariablesStore();
         }
 
         public bool Verify(VariablesStore globalVariables, Context ctx)
         {
-            if (ConstraintExpressions.Count == 0)
+            if (BaseConstraintExpressions.Count == 0)
             {
                 IsSatisfied = true;
                 return true;
@@ -67,7 +95,7 @@ namespace DataPetriNetOnSmt.DPNElements
                                 .Where(x => x.Key.Name.ToString().EndsWith("_w"))
                                 .ToDictionary(x => string.Concat(x.Key.Name.ToString().SkipLast(2)), y => y.Value);
 
-            var writeVariables = ConstraintExpressions.GetExpressionsOfType(VariableType.Written)
+            var writeVariables = BaseConstraintExpressions.GetExpressionsOfType(VariableType.Written)
                 .Select(x => x.ConstraintVariable)
                 .Distinct();
 
@@ -109,7 +137,7 @@ namespace DataPetriNetOnSmt.DPNElements
             List<BoolExpr> disjuncts = new List<BoolExpr>();
             var currentIndex = 0;
             //disjuncts[currentIndex] = ConstraintExpressions[0].GetSmtExpression(ctx);
-            foreach (var constraint in ConstraintExpressions)
+            foreach (var constraint in BaseConstraintExpressions)
             {
                 if (constraint.LogicalConnective == LogicalConnective.And)
                 {
@@ -155,7 +183,7 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             if (IsSatisfied)
             {
-                var variablesToUpdate = ConstraintExpressions
+                var variablesToUpdate = BaseConstraintExpressions
                     .GetExpressionsOfType(VariableType.Written)
                     .Select(x => x.ConstraintVariable)
                     .Distinct();
@@ -181,11 +209,10 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public object Clone()
         {
-            return new Guard
-            {
-                ConstraintExpressions = this.ConstraintExpressions.Select(x => x.Clone()).ToList(),
-                IsSatisfied = this.IsSatisfied
-            };
+            var clonedGuard = new Guard(Context, BaseConstraintExpressions, ActualConstraintExpression);
+            clonedGuard.BaseConstraintExpressions = BaseConstraintExpressions.Select(x => x.Clone()).ToList(); // May be irrelevant
+
+            return clonedGuard;
         }
     }
 }

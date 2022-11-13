@@ -3,8 +3,8 @@ using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetParsers;
-using DataPetriNetTransformation;
 using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CsvClassMaps;
@@ -132,7 +132,7 @@ namespace DataPetriNetVerificationApplication
 
                 if (saveCG)
                 {
-                    var constraintGraphToSave = new ConstraintGraphToVisualize(cg, soundnessProperties);
+                    var constraintGraphToSave = new LtsToVisualize(cg, soundnessProperties);
 
                     using (var fs = new FileStream(Path.Combine(outputDirectory, dpnToVerify.Name + "_" + verificationType + ".cgml"), FileMode.Create))
                     {

@@ -37,13 +37,15 @@ namespace ToGraphParser
 
                 graph.AddNode(nodeToAdd);
 
-                if (transition.Guard.ConstraintExpressions.Any())
+                if (transition.Guard.BaseConstraintExpressions.Any())
                 {
                     var edgeToAdd = new Edge(nodeToAdd, nodeToAdd, ConnectionToGraph.Connected);
                     edgeToAdd.Attr.LineWidth = 0;
                     edgeToAdd.Attr.ArrowheadAtSource = ArrowStyle.None;
                     edgeToAdd.Attr.ArrowheadAtTarget = ArrowStyle.None;
-                    edgeToAdd.LabelText = string.Join(" ", transition.Guard.ConstraintExpressions.Select(x => x.ToString()));
+                    //edgeToAdd.LabelText = string.Join(" ", transition.Guard.BaseConstraintExpressions.Select(x => x.ToString()));
+                    edgeToAdd.LabelText = transition.Guard.ActualConstraintExpression.ToString();
+
                     edgeToAdd.Attr.Color = Color.White;
                 }
             }

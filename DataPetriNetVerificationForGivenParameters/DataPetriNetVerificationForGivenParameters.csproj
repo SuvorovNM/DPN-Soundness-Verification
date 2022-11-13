@@ -15,7 +15,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DataPetriNetGeneration\DataPetriNetGeneration.csproj" />
     <ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
-    <ProjectReference Include="..\DataPetriNetTransformation\DataPetriNetTransformation.csproj" />
   </ItemGroup>
 
 </Project>

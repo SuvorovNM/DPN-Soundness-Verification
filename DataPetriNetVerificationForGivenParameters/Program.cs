@@ -9,9 +9,9 @@ using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using System.Diagnostics;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetTransformation;
 using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 
 JsonSerializer serializer = new JsonSerializer();
 

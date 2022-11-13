@@ -60,9 +60,9 @@ namespace DataPetriNetOnSmt.Tests
                         new XElement("text", transition.Label)));
                 transitionElement.SetAttributeValue("id", transition.Id);
 
-                if (transition.Guard.ConstraintExpressions.Count > 0)
+                if (transition.Guard.BaseConstraintExpressions.Count > 0)
                 {
-                    var resultExpression = string.Join(" ", transition.Guard.ConstraintExpressions.Select(x => x.ToString()));
+                    var resultExpression = string.Join(" ", transition.Guard.BaseConstraintExpressions.Select(x => x.ToString()));
                     transitionElement.SetAttributeValue("guard", resultExpression);
                 }
                 dpnStructureElement.Add(transitionElement);
@@ -133,14 +133,14 @@ namespace DataPetriNetOnSmt.Tests
 
                     dpn.Name = name?.FirstChild?.InnerText ?? string.Empty;
                     AddVariablesToDpn(dpn, varTypeDict, variables);
-                    AddPetriNetElementsToDpn(dpn, varTypeDict, page);
+                    AddPetriNetElementsToDpn(dpn, varTypeDict, page, dpn.Context);
                 }
             }
 
             return dpn;
         }
 
-        private void AddPetriNetElementsToDpn(DataPetriNet dpn, Dictionary<string, DomainType> varTypeDict, XmlNode? page)
+        private void AddPetriNetElementsToDpn(DataPetriNet dpn, Dictionary<string, DomainType> varTypeDict, XmlNode? page, Context context)
         {
             if (page != null && page.HasChildNodes)
             {
@@ -153,7 +153,7 @@ namespace DataPetriNetOnSmt.Tests
                             break;
                         // Transitions should be executed only after obtaining variables
                         case "transition":
-                            dpn.Transitions.Add(GetTransitionFromXmlNode(page.ChildNodes[i], varTypeDict));
+                            dpn.Transitions.Add(GetTransitionFromXmlNode(page.ChildNodes[i], varTypeDict, context));
                             break;
                         // Arcs must be executed only after adding all places
                         case "arc":
@@ -214,10 +214,11 @@ namespace DataPetriNetOnSmt.Tests
             return place;
         }
 
-        private Transition GetTransitionFromXmlNode(XmlNode transitionNode, Dictionary<string, DomainType> varTypeDict)
+        private Transition GetTransitionFromXmlNode(XmlNode transitionNode, Dictionary<string, DomainType> varTypeDict, Context context)
         {
-            var transition = new Transition();
-            transition.Id = transitionNode.Attributes["id"].Value;
+            //var transition = new Transition();
+            var transitionId = transitionNode.Attributes["id"].Value;
+            var transitionName = string.Empty;
             var constraintList = new List<IConstraintExpression>();
 
             var expressionString = transitionNode.Attributes["guard"]?.Value;
@@ -242,7 +243,7 @@ namespace DataPetriNetOnSmt.Tests
                 {
                     constraintList[0].LogicalConnective = LogicalConnective.Empty;
                 }
-                transition.Guard.ConstraintExpressions = constraintList;
+                //transition.Guard.BaseConstraintExpressions = constraintList;
 
             }
             for (var i = 0; i < transitionNode.ChildNodes.Count; i++)
@@ -250,14 +251,17 @@ namespace DataPetriNetOnSmt.Tests
                 switch (transitionNode.ChildNodes[i]?.Name)
                 {
                     case "name":
-                        transition.Label = transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty;
+                        transitionName = transitionNode.ChildNodes[i]?.FirstChild?.InnerText ?? string.Empty;
                         break;
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
                 }
             }
 
-            return transition;
+            return new Transition(transitionId, new Guard(context, constraintList))
+            {
+                Label = transitionName
+            };
         }
 
         private Arc GetArcFromXmlNode(XmlNode arcNode, IEnumerable<Node> dpnNodes)

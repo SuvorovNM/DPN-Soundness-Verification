@@ -133,7 +133,7 @@ namespace DataPetriNetGeneration
             chosenTransitionsNumber = random.Next(minTransitionPerPlace, maxTransitionPerPlace + 1);
             for (int i = 0; i < chosenTransitionsNumber; i++)
             {
-                var transition = new Transition($"t{startTransitionId + i}");
+                var transition = new Transition($"t{startTransitionId + i}", new Guard(Context));
                 dpn.Transitions.Add(transition);
                 dpn.Arcs.Add(new Arc(sourcePlace, transition));
             }

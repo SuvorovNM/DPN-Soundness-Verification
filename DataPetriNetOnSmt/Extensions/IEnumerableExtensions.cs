@@ -20,10 +20,10 @@ namespace DataPetriNetOnSmt.Extensions
             return expressions.Where(x => x.ConstraintVariable.VariableType == varType);
         }
 
-        public static Dictionary<string, DomainType> GetOverwrittenVarsDict(this IEnumerable<IConstraintExpression> expressions)
+        public static Dictionary<string, DomainType> GetTypedVarsDict(this IEnumerable<IConstraintExpression> expressions, VariableType varType)
         {
             return expressions
-                .Where(x => x.ConstraintVariable.VariableType == VariableType.Written)
+                .Where(x => x.ConstraintVariable.VariableType == varType)
                 .Select(x => x.ConstraintVariable)
                 .Distinct()
                 .ToDictionary(x => x.Name, y => y.Domain);

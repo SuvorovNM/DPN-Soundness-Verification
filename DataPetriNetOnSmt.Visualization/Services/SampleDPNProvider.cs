@@ -10,6 +10,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
     {
         public DataPetriNet GetVOVDataPetriNet()
         {
+            var context = new Context();
             var placesList = new List<Place>
             {
                 new Place("i", PlaceType.Initial),
@@ -32,13 +33,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
 
             var transitionList = new List<Transition>
             {
-                new Transition
-                {
-                    Id = "Credit request",
-                    Label = "Credit request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
+                new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                         {
                             new ConstraintVOCExpression<long>
                             {
@@ -52,18 +47,10 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Id = "Verify",
-                    Label = "Verify",
-                    Guard = new Guard
+                        })),
+                new Transition("Verify", new Guard(context, new List<IConstraintExpression>
                     {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
-                            new ConstraintVOCExpression<bool>
+                        new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
                                 LogicalConnective = LogicalConnective.Empty,
@@ -75,7 +62,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             },
-                            new ConstraintVOCExpression<bool>
+                        new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
                                 LogicalConnective = LogicalConnective.Or,
@@ -87,16 +74,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
                     }
-                },
-                new Transition
-                {
-                    Id = "Prepare",
-                    Label = "Prepare",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
+                )),
+                new Transition("Prepare", new Guard(context, new List<IConstraintExpression>
                         {
                             new ConstraintVOCExpression<bool>
                             {
@@ -110,17 +90,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Id = "Skip",
-                    Label = "Skip",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
+                        })),
+                new Transition("Skip", new Guard(context, new List<IConstraintExpression>{
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -133,17 +104,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Make proposal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Make proposal",
-                    Label = "Make proposal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -161,17 +124,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.LessThanOrEqual
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Refuse proposal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Refuse proposal",
-                    Label = "Refuse proposal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -189,17 +144,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Unequal
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Update request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Update request",
-                    Label = "Update request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -217,23 +164,10 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.LessThan
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("AND split",new Guard(context)),
+                new Transition("Inform acceptance VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "AND split",
-                    Label = "AND split",
-                    Guard = new Guard()
-                },
-                new Transition
-                {
-                    Id = "Inform acceptance VIP",
-                    Label = "Inform acceptance VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -246,17 +180,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThan
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform rejection", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Inform rejection",
-                    Label = "Inform rejection",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -269,17 +195,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Open credit loan", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Open credit loan",
-                    Label = "Open credit loan",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -292,15 +210,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Id = "AND join",
-                    Label = "AND join",
-                    Guard = new Guard()
-                }
+                        })),
+                new Transition("AND join",new Guard(context)),
             };
 
             var arcsList = new List<Arc>
@@ -333,7 +244,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 new Arc(transitionList[11], placesList[10]),
             };
 
-            return new DataPetriNet(new Context())
+            return new DataPetriNet(context)
             {
                 Places = placesList,
                 Transitions = transitionList,
@@ -344,6 +255,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
 
         public DataPetriNet GetVOCDataPetriNet()
         {
+            var context = new Context();
             var placesList = new List<Place>
             {
                 new Place("i", PlaceType.Initial),
@@ -363,14 +275,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
 
             var transitionList = new List<Transition>
             {
-                new Transition
+                new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Credit request",
-                    Label = "Credit request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 Constant = new DefinableValue<long>(0),
@@ -383,17 +289,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Verify", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Verify",
-                    Label = "Verify",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -418,17 +316,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Skip assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Skip assessment",
-                    Label = "Skip assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -441,17 +331,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Simple assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Simple assessment",
-                    Label = "Simple assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -488,17 +370,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Advanced assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Advanced assessment",
-                    Label = "Advanced assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -535,17 +409,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Renegotiate request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Renegotiate request",
-                    Label = "Renegotiate request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 Constant = new DefinableValue<long>(15000),
@@ -570,23 +436,10 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("AND split",new Guard(context)),
+                new Transition("Inform acceptance customer normal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "AND split",
-                    Label = "AND split",
-                    Guard = new Guard()
-                },
-                new Transition
-                {
-                    Id = "Inform acceptance customer normal",
-                    Label = "Inform acceptance customer normal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -611,17 +464,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform acceptance customer VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Inform acceptance customer VIP",
-                    Label = "Inform acceptance customer VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -646,17 +491,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform rejection customer VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Inform rejection customer VIP",
-                    Label = "Inform rejection customer VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -681,17 +518,9 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Open credit loan", new Guard(context, new List<IConstraintExpression>
                 {
-                    Id = "Open credit loan",
-                    Label = "Open credit loan",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -704,15 +533,8 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Id = "AND join",
-                    Label = "AND join",
-                    Guard = new Guard()
-                }
+                        })),
+                new Transition("AND join",new Guard(context))
             };
 
             var arcsList = new List<Arc>
@@ -745,7 +567,7 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 new Arc(transitionList[11], placesList[8]),
             };
 
-            return new DataPetriNet(new Context())
+            return new DataPetriNet(context)
             {
                 Places = placesList,
                 Transitions = transitionList,

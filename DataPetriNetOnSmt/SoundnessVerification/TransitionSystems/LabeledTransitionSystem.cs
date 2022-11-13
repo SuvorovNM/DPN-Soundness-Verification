@@ -51,58 +51,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
         public abstract void GenerateGraph(bool removeRedundantBlocks = false);
 
-        protected BoolExpr GetReadExpression(BoolExpr smtExpression, Dictionary<string, DomainType> overwrittenVarNames)
-        {
-            var variablesToOverwrite = new Expr[overwrittenVarNames.Count];
-            var currentArrayIndex = 0;
-            foreach (var keyValuePair in overwrittenVarNames)
-            {
-                variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
-            }
-
-            if (variablesToOverwrite.Length > 0)
-            {
-                var existsExpression = Context.MkExists(variablesToOverwrite, smtExpression);
-
-                Goal g = Context.MkGoal(true, true, false);
-                g.Assert((BoolExpr)existsExpression);
-                Tactic tac = Context.MkTactic("qe");
-                ApplyResult a = tac.Apply(g);
-
-                return a.Subgoals[0].AsBoolExpr();
-            }
-            else
-            {
-                return smtExpression;
-            }
-        }
-
-        protected BoolExpr GetSmtExpression(List<IConstraintExpression> constraints)
-        {
-            List<BoolExpr> expressions = new List<BoolExpr>();
-
-            var j = -1;
-
-            for (int i = 0; i < constraints.Count; i++)
-            {
-                if (constraints[i].LogicalConnective == LogicalConnective.Or ||
-                    constraints[i].LogicalConnective == LogicalConnective.Empty)
-                {
-                    j++;
-                    var smtExpr = constraints[i].GetSmtExpression(Context);
-                    expressions.Add(smtExpr);
-                }
-                else
-                {
-                    expressions[j] = Context.MkAnd(expressions[j], constraints[i].GetSmtExpression(Context));
-                }
-            }
-
-            return expressions.Count > 0
-                ? Context.MkOr(expressions)
-                : Context.MkTrue();
-        }
-
         protected void AddNewState(ConstraintState currentState,
                                 ConstraintTransition transition,
                                 Dictionary<Node, int> marking,

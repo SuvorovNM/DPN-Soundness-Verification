@@ -10,16 +10,12 @@ namespace DataPetriNetOnSmt
     [Serializable]
     public class DataPetriNet : IDisposable, ICloneable
     {
-        //[field: NonSerialized]
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public Context Context { get; set; }
 
         public string Name { get; set; }
-        //[System.Xml.Serialization.XmlIgnoreAttribute]
         public List<Place> Places { get; set; }
-        //[System.Xml.Serialization.XmlIgnoreAttribute]
         public List<Transition> Transitions { get; set; }
-        //[System.Xml.Serialization.XmlIgnoreAttribute]
         public List<Arc> Arcs { get; set; }
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public VariablesStore Variables { get; set; }

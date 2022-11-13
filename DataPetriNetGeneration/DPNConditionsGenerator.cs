@@ -92,7 +92,7 @@ namespace DataPetriNetGeneration
 
                 if (CheckSatisfiability(conditions) == Status.SATISFIABLE)
                 {
-                    dpn.Transitions[transitionIndex].Guard = new Guard { ConstraintExpressions = conditions };
+                    dpn.Transitions[transitionIndex].Guard = new Guard(dpn.Context, conditions);
                     transitionIndex++;
                 }
             }

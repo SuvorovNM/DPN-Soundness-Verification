@@ -5,7 +5,6 @@ using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetOnSmt.Visualization.Services;
 using DataPetriNetParsers;
-using DataPetriNetTransformation;
 using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using Microsoft.Win32;
 using Microsoft.Z3;
@@ -29,7 +28,7 @@ namespace DataPetriNetOnSmt.Visualization
         private readonly DPNToGraphParser dpnParser;
         private readonly PnmlParser pnmlParser;
         private readonly SampleDPNProvider dpnProvider;
-        private readonly ITransformation dpnTransformation;
+        //private readonly ITransformation dpnTransformation;
         private Context context;
 
         public MainWindow()
@@ -38,7 +37,7 @@ namespace DataPetriNetOnSmt.Visualization
             dpnParser = new DPNToGraphParser();
             dpnProvider = new SampleDPNProvider();
             pnmlParser = new PnmlParser();
-            dpnTransformation = new TransformationToAtomicConstraints();
+            //dpnTransformation = new TransformationToAtomicConstraints();
             context = new Context();
 
             currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
@@ -137,8 +136,16 @@ namespace DataPetriNetOnSmt.Visualization
             return new LtsToVisualize(lts, soundnessProperties);
         }
 
-        private void TransformModelItem_Click(object sender, RoutedEventArgs e)
+        private void TransformModelToAtomicItem_Click(object sender, RoutedEventArgs e)
         {
+            var dpnTransformation = new TransformationToAtomicConstraints();
+            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
+
+        private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
+        {
+            var dpnTransformation = new TransformationToRefined();
             currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }

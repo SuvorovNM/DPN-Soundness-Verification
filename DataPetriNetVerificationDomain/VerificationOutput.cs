@@ -46,7 +46,7 @@ namespace DataPetriNetVerificationDomain
             Arcs = (ushort)dpn.Arcs.Count;
             Variables = (ushort)dpn.Variables.GetAllVariables().Count;
             Conditions = (ushort)dpn.Transitions
-                .SelectMany(x => x.Guard.ConstraintExpressions.Select(y => y.GetSmtExpression(dpn.Context)))
+                .SelectMany(x => x.Guard.BaseConstraintExpressions.Select(y => y.GetSmtExpression(dpn.Context)))
                 .Distinct()
                 .Count();
             Boundedness = soundnessProperties.Boundedness;

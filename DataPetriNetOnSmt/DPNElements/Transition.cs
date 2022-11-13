@@ -6,13 +6,13 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Transition : Node, ICloneable
     {
         public Guard Guard { get; set; }
-        public Transition()
+        public Transition(Guard guard)
         {
-            Guard = new Guard();
+            Guard = guard;
         }
-        public Transition(string label)
+        public Transition(string label, Guard guard)
         {
-            Guard = new Guard();
+            Guard = guard;
             Label = label;
             Id = label;
         }
@@ -75,12 +75,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public object Clone()
         {
-            return new Transition
-            {
-                Guard = (Guard)Guard.Clone(),
-                Id = this.Id,
-                Label = this.Label
-            };
+            return new Transition(Label, (Guard)Guard.Clone());
         }
     }
 }

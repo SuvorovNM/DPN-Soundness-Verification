@@ -22,45 +22,18 @@ namespace DataPetriNetOnSmt.Tests
         [TestInitialize]
         public void Initialize()
         {
+            var context = new Context();
             var placesList = new List<Place>
             {
-                new Place
-                {
-                    Label = "i",
-                    Tokens = 1
-                },
-                new Place
-                {
-                    Label = "p1"
-                },
-                new Place
-                {
-                    Label = "p2"
-                },
-                new Place
-                {
-                    Label = "p3"
-                },
-                new Place
-                {
-                    Label = "p4"
-                },
-                new Place
-                {
-                    Label = "p5"
-                },
-                new Place
-                {
-                    Label = "p6"
-                },
-                new Place
-                {
-                    Label = "p7"
-                },
-                new Place
-                {
-                    Label = "o"
-                }
+                new Place("i", PlaceType.Initial),
+                new Place("p1", PlaceType.Intermediary),
+                new Place("p2", PlaceType.Intermediary),
+                new Place("p3", PlaceType.Intermediary),
+                new Place("p4", PlaceType.Intermediary),
+                new Place("p5", PlaceType.Intermediary),
+                new Place("p6", PlaceType.Intermediary),
+                new Place("p7", PlaceType.Intermediary),
+                new Place("o", PlaceType.Final)
             };
 
             var variables = new VariablesStore();
@@ -69,13 +42,8 @@ namespace DataPetriNetOnSmt.Tests
 
             var transitionList = new List<Transition>
             {
-                new Transition
+                new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Credit request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 Constant = new DefinableValue<long>(0),
@@ -88,16 +56,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Verify", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Verify",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -122,16 +83,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Skip assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Skip assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -144,16 +98,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Simple assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Simple assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -190,16 +137,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    },
-                },
-                new Transition
+                        })),
+                new Transition("Advanced assessment", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Advanced assessment",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -236,16 +176,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Renegotiate request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Renegotiate request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 Constant = new DefinableValue<long>(15000),
@@ -270,21 +203,10 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("AND split",new Guard(context)),
+                new Transition("Inform acceptance customer normal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "AND split",
-                    Guard = new Guard()
-                },
-                new Transition
-                {
-                    Label = "Inform acceptance customer normal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -309,16 +231,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform acceptance customer VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Inform acceptance customer VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -343,16 +258,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform rejection customer VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Inform rejection customer VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -377,16 +285,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Open credit loan", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Open credit loan",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
@@ -399,14 +300,8 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Label = "AND split",
-                    Guard = new Guard()
-                }
+                        })),
+                new Transition("AND join",new Guard(context))
             };
 
             var arcsList = new List<Arc>
@@ -439,7 +334,7 @@ namespace DataPetriNetOnSmt.Tests
                 new Arc(transitionList[11], placesList[8]),
             };
 
-            dataPetriNet = new DataPetriNet(new Context())
+            dataPetriNet = new DataPetriNet(context)
             {
                 Places = placesList,
                 Transitions = transitionList,

@@ -26,53 +26,20 @@ namespace DataPetriNetOnSmt.Tests
         [TestInitialize]
         public void Initialize()
         {
+            var context = new Context();
             var placesList = new List<Place>
             {
-                new Place
-                {
-                    Label = "i",
-                    Tokens = 1
-                },
-                new Place
-                {
-                    Label = "p1"
-                },
-                new Place
-                {
-                    Label = "p2"
-                },
-                new Place
-                {
-                    Label = "p3"
-                },
-                new Place
-                {
-                    Label = "p4"
-                },
-                new Place
-                {
-                    Label = "p5"
-                },
-                new Place
-                {
-                    Label = "p6"
-                },
-                new Place
-                {
-                    Label = "p7"
-                },
-                new Place
-                {
-                    Label = "p8"
-                },
-                new Place
-                {
-                    Label = "p9"
-                },
-                new Place
-                {
-                    Label = "o"
-                }
+                new Place("i", PlaceType.Initial),
+                new Place("p1", PlaceType.Intermediary),
+                new Place("p2", PlaceType.Intermediary),
+                new Place("p3", PlaceType.Intermediary),
+                new Place("p4", PlaceType.Intermediary),
+                new Place("p5", PlaceType.Intermediary),
+                new Place("p6", PlaceType.Intermediary),
+                new Place("p7", PlaceType.Intermediary),
+                new Place("p8", PlaceType.Intermediary),
+                new Place("p9", PlaceType.Intermediary),
+                new Place("o", PlaceType.Final)
             };
 
             var variables = new VariablesStore();
@@ -82,12 +49,7 @@ namespace DataPetriNetOnSmt.Tests
 
             var transitionList = new List<Transition>
             {
-                new Transition
-                {
-                    Label = "Credit request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
+                new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                         {
                             new ConstraintVOCExpression<long>
                             {
@@ -101,17 +63,10 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Label = "Verify",
-                    Guard = new Guard
+                        })),
+                new Transition("Verify", new Guard(context, new List<IConstraintExpression>
                     {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
-                            new ConstraintVOCExpression<bool>
+                        new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(true),
                                 LogicalConnective = LogicalConnective.Empty,
@@ -123,7 +78,7 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Written
                                 }
                             },
-                            new ConstraintVOCExpression<bool>
+                        new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
                                 LogicalConnective = LogicalConnective.Or,
@@ -135,15 +90,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Written
                                 }
                             }
-                        }
                     }
-                },
-                new Transition
-                {
-                    Label = "Prepare",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
+                )),
+                new Transition("Prepare", new Guard(context, new List<IConstraintExpression>
                         {
                             new ConstraintVOCExpression<bool>
                             {
@@ -157,16 +106,8 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Label = "Skip",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
+                        })),
+                new Transition("Skip", new Guard(context, new List<IConstraintExpression>{
                             new ConstraintVOCExpression<bool>
                             {
                                 Constant = new DefinableValue<bool>(false),
@@ -179,16 +120,9 @@ namespace DataPetriNetOnSmt.Tests
                                     VariableType = VariableType.Read
                                 }
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Make proposal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Make proposal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -206,16 +140,9 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.LessThanOrEqual
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Refuse proposal", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Refuse proposal",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -233,16 +160,9 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Unequal
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Update request", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Update request",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOVExpression
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -260,21 +180,10 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.LessThan
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("AND split",new Guard(context)),
+                new Transition("Inform acceptance VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "AND split",
-                    Guard = new Guard()
-                },
-                new Transition
-                {
-                    Label = "Inform acceptance VIP",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<long>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -287,16 +196,9 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThan
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Inform rejection", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Inform rejection",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -309,16 +211,9 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal
                             }
-                        }
-                    }
-                },
-                new Transition
+                        })),
+                new Transition("Open credit loan", new Guard(context, new List<IConstraintExpression>
                 {
-                    Label = "Open credit loan",
-                    Guard = new Guard
-                    {
-                        ConstraintExpressions = new List<IConstraintExpression>
-                        {
                             new ConstraintVOCExpression<bool>
                             {
                                 ConstraintVariable = new ConstraintVariable
@@ -331,14 +226,8 @@ namespace DataPetriNetOnSmt.Tests
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.Equal
                             }
-                        }
-                    }
-                },
-                new Transition
-                {
-                    Label = "AND join",
-                    Guard = new Guard()
-                }
+                        })),
+                new Transition("AND join",new Guard(context)),
             };
 
             var arcsList = new List<Arc>
@@ -371,7 +260,7 @@ namespace DataPetriNetOnSmt.Tests
                 new Arc(transitionList[11], placesList[10]),
             };
 
-            dataPetriNet = new DataPetriNet(new Context())
+            dataPetriNet = new DataPetriNet(context)
             {
                 Places = placesList,
                 Transitions = transitionList,

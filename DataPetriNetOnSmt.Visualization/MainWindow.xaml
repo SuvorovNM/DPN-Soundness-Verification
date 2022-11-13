@@ -21,7 +21,10 @@
                     <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
                 </MenuItem>
                 <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
-                <MenuItem x:Name="TransformModelItem" Header="Transform model" Click="TransformModelItem_Click"/>
+                <MenuItem x:Name="TransformModelItem" Header="Transform model">
+                    <MenuItem x:Name="TransformModelToAtomicItem" Header="Transform model to atomic" Click="TransformModelToAtomicItem_Click"/>
+                    <MenuItem x:Name="TransformModelToRefined" Header="Transform model to refined" Click="TransformModelToRefinedItem_Click"/>
+                </MenuItem>
                 <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click"/>
 
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG">
