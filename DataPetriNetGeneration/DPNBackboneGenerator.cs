@@ -3,6 +3,7 @@ using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
+using System.Runtime.Intrinsics.Arm;
 
 namespace DataPetriNetGeneration
 {
@@ -19,7 +20,7 @@ namespace DataPetriNetGeneration
 
         // To async?
         public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int extraArcsCount)
-            // Is there any maximum for additionalArcsCount?
+        // Is there any maximum for additionalArcsCount?
         {
             var dpn = GenerateSoundBackbone(placesCount, transitionsCount);
 
@@ -49,7 +50,7 @@ namespace DataPetriNetGeneration
 
         private void AddArc(DataPetriNet dpn, Node source, Node target)
         {
-            var existentArc = dpn.Arcs.FirstOrDefault(x=> x.Source == source && x.Destination == target);
+            var existentArc = dpn.Arcs.FirstOrDefault(x => x.Source == source && x.Destination == target);
             if (existentArc != null)
             {
                 existentArc.Weight++;
@@ -60,6 +61,7 @@ namespace DataPetriNetGeneration
             }
         }
 
+        // TODO: Allow to work if |P| > |T|
         public DataPetriNet GenerateSoundBackbone(int placesCount, int transitionsCount)
         {
             if (placesCount < 2)
@@ -71,44 +73,96 @@ namespace DataPetriNetGeneration
                 throw new ArgumentException("Number of transitions cannot be less than 1");
             }
 
-            var maxTransitionPerPlace = transitionsCount / (placesCount - 1);
+            // if transitionsCount + 1 >= placesCount
+            if (transitionsCount + 1 >= placesCount)
+                return GenerateWithPrevailingTransitions(placesCount, transitionsCount);
+            else
+                return GenerateWithPrevailingPlaces(placesCount, transitionsCount);
+        }
+
+        private DataPetriNet GenerateWithPrevailingPlaces(int placesCount, int transitionsCount)
+        {
             var transitionsRemained = transitionsCount;
             var placesRemained = placesCount;
 
             var dpn = new DataPetriNet(Context);
 
-            var initialPlace = new Place("i", PlaceType.Initial); // TODO: Maybe add inheritance instead of PlaceType enum
+            var initialPlace = new Place("i", PlaceType.Initial);
             dpn.Places.Add(initialPlace);
             placesRemained -= 1;
 
-            int chosenTransitionsNumber;
-            GenerateIntermediaryTransitions(initialPlace, transitionsCount - transitionsRemained, dpn, maxTransitionPerPlace, out chosenTransitionsNumber);
-            transitionsRemained -= chosenTransitionsNumber;         
+            while (transitionsRemained > 1)
+            {
+                GenerateIntermediaryTransitions(dpn.Places.Last(), transitionsCount - transitionsRemained, dpn);
+                transitionsRemained -= 1;
+
+                GenerateIntermediaryPlace(placesCount - placesRemained, dpn);
+                placesRemained -= 1;
+            }
+
+            GenerateIntermediaryTransitions(dpn.Places.Last(), transitionsCount - transitionsRemained, dpn);
+
+            var outputPlace = new Place("o", PlaceType.Final);
+            dpn.Places.Add(outputPlace);
+            placesRemained -= 1;
+            dpn.Arcs.Add(new Arc(dpn.Transitions.Last(), outputPlace));
+
+            while (placesRemained > 0)
+            {
+                var transitionId = random.Next(dpn.Transitions.Count - 1);
+
+                var chosenTransition1 = dpn.Transitions[transitionId];
+                var chosenTransition2 = dpn.Transitions[transitionId + 1];
+
+                var place = new Place($"p{placesCount - placesRemained}", PlaceType.Intermediary);
+                dpn.Places.Add(place);
+                dpn.Arcs.Add(new Arc(chosenTransition1, place));
+                dpn.Arcs.Add(new Arc(place, chosenTransition2));
+
+                placesRemained -= 1;
+            }
+
+            return dpn;
+        }
+
+        private DataPetriNet GenerateWithPrevailingTransitions(int placesCount, int transitionsCount)
+        {
+            var transitionsRemained = transitionsCount;
+            var placesRemained = placesCount;
+
+            var dpn = new DataPetriNet(Context);
+
+            var initialPlace = new Place("i", PlaceType.Initial);
+            dpn.Places.Add(initialPlace);
+            placesRemained -= 1;
+
+            GenerateIntermediaryTransitions(initialPlace, transitionsCount - transitionsRemained, dpn);
+            transitionsRemained -= 1;
 
             while (placesRemained > 1)
             {
                 GenerateIntermediaryPlace(placesCount - placesRemained, dpn);
                 placesRemained -= 1;
 
-                GenerateIntermediaryTransitions(dpn.Places.Last(), transitionsCount - transitionsRemained, dpn, maxTransitionPerPlace, out chosenTransitionsNumber);
-                transitionsRemained -= chosenTransitionsNumber;
+                GenerateIntermediaryTransitions(dpn.Places.Last(), transitionsCount - transitionsRemained, dpn);
+                transitionsRemained -= 1;
             };
-
-            while (transitionsRemained > 0)
-            {
-                var chosenPlace = dpn.Places[random.Next(dpn.Places.Count)];
-                var maxTransitions = Math.Min(maxTransitionPerPlace, transitionsRemained);
-                GenerateIntermediaryTransitions(chosenPlace, transitionsCount - transitionsRemained, dpn, maxTransitions, out chosenTransitionsNumber);
-                transitionsRemained -= chosenTransitionsNumber;
-            }
 
             var outputPlace = new Place("o", PlaceType.Final);
             dpn.Places.Add(outputPlace);
+            dpn.Arcs.Add(new Arc(dpn.Transitions.Last(), outputPlace));
 
-            var transitionsWithoutOutgoingArcs = dpn.Transitions.Except(dpn.Arcs.Select(x => x.Source));
-            foreach (var transition in transitionsWithoutOutgoingArcs)
+            while (transitionsRemained > 0)
             {
-                dpn.Arcs.Add(new Arc(transition, outputPlace));
+                var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count)];
+                var chosenPlace2 = dpn.Places[random.Next(dpn.Places.Count)];
+
+                var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(Context));
+                dpn.Transitions.Add(transition);
+                dpn.Arcs.Add(new Arc(chosenPlace1, transition));
+                dpn.Arcs.Add(new Arc(transition, chosenPlace2));
+
+                transitionsRemained -= 1;
             }
 
             return dpn;
@@ -116,27 +170,21 @@ namespace DataPetriNetGeneration
 
         private void GenerateIntermediaryPlace(int id, DataPetriNet dpn)
         {
-            var availableTransitions = dpn.Transitions.Except(dpn.Arcs.Select(x => x.Source)).ToList();
-            var transitionWithFollowingPlace = random.Next(0, availableTransitions.Count);
+            //var availableTransitions = dpn.Transitions.Except(dpn.Arcs.Select(x => x.Source)).ToList();
+            //var transitionWithFollowingPlace = random.Next(0, availableTransitions.Count);
             var place = new Place($"p{id}", PlaceType.Intermediary);
             dpn.Places.Add(place);
-            dpn.Arcs.Add(new Arc(availableTransitions[transitionWithFollowingPlace], place));
+            dpn.Arcs.Add(new Arc(dpn.Transitions.Last(), place));
         }
 
         private void GenerateIntermediaryTransitions(
             Place sourcePlace,
-            int startTransitionId, 
-            DataPetriNet dpn, 
-            int maxTransitionPerPlace, 
-            out int chosenTransitionsNumber)
+            int transitionId,
+            DataPetriNet dpn)
         {
-            chosenTransitionsNumber = random.Next(minTransitionPerPlace, maxTransitionPerPlace + 1);
-            for (int i = 0; i < chosenTransitionsNumber; i++)
-            {
-                var transition = new Transition($"t{startTransitionId + i}", new Guard(Context));
-                dpn.Transitions.Add(transition);
-                dpn.Arcs.Add(new Arc(sourcePlace, transition));
-            }
+            var transition = new Transition($"t{transitionId}", new Guard(Context));
+            dpn.Transitions.Add(transition);
+            dpn.Arcs.Add(new Arc(sourcePlace, transition));
         }
     }
 }

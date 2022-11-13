@@ -75,11 +75,11 @@ namespace DataPetriNetOnSmt.Extensions
 
             var resultExpression = expressions.Count > 1
                 ? context.MkOr(expressions)
-                : expressions[0];
+                : expressions.Count == 1
+                    ? expressions[0]
+                    : context.MkTrue();
 
-            return expressions.Count > 0
-                ? resultExpression
-                : context.MkTrue();
+            return resultExpression;
         }
 
         public static Expr GenerateExpression(this Context context, string variableName, DomainType domain, VariableType varType)
