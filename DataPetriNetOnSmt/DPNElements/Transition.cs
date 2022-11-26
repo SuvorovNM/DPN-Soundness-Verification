@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.Extensions;
 using Microsoft.Z3;
 
 namespace DataPetriNetOnSmt.DPNElements
@@ -6,15 +7,52 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Transition : Node, ICloneable
     {
         public Guard Guard { get; set; }
+        public bool IsSplitted { get; set; }
+        public string? BaseTransitionId { get; set; }
         public Transition(Guard guard)
         {
             Guard = guard;
+            IsSplitted = false;
+            BaseTransitionId = Id;// null;
         }
-        public Transition(string label, Guard guard)
+        public Transition(string label, Guard guard, string? baseTransitionId = null)
         {
             Guard = guard;
             Label = label;
             Id = label;
+            IsSplitted = baseTransitionId != null;
+            BaseTransitionId = baseTransitionId;
+        }
+
+        public (Transition? positive, Transition? negative) Split(BoolExpr formulaToConjunct, string secondTransitionId) // Context context,
+        {
+            var positiveConstraint = Guard.Context.MkAnd(
+                                Guard.ActualConstraintExpression,
+                                formulaToConjunct);
+
+            var negativeConstraint = Guard.Context.MkAnd(
+                Guard.ActualConstraintExpression,
+                Guard.Context.MkNot(formulaToConjunct));
+
+            var isPositiveSatisfiable = Guard.Context.CanBeSatisfied(positiveConstraint);
+            var isNegativeSatisfiable = Guard.Context.CanBeSatisfied(negativeConstraint);
+
+            if (!isPositiveSatisfiable || !isNegativeSatisfiable)
+            {
+                return (null, null);
+            }
+            else
+            {
+                var positiveTransition = new Transition(
+                    Id + "+" + secondTransitionId,
+                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, positiveConstraint), BaseTransitionId ?? Id);
+
+                var negativeTransition = new Transition(
+                    Id + "-" + secondTransitionId,
+                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, negativeConstraint), BaseTransitionId ?? Id);
+
+                return (positiveTransition, negativeTransition);
+            }
         }
 
         public bool TryFire(VariablesStore variables, IEnumerable<Arc> arcs, Context ctx)

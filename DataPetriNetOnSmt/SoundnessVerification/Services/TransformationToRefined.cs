@@ -5,24 +5,27 @@ using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public class TransformationToRefined : ITransformation
+    public class TransformationToRefined //: ITransformation
     {
         private CyclesFinder cyclesFinder;
+        //public long MillisecondsForBoundednessCheck;
+        //public long MillisecondsForTransformation;
         public TransformationToRefined()
         {
             cyclesFinder = new CyclesFinder();
         }
 
-        public DataPetriNet Transform(DataPetriNet sourceDpn)
+        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn)
         {
             var newDPN = (DataPetriNet)sourceDpn.Clone();
-            var context = newDPN.Context;
+            var context = sourceDpn.Context;
 
             var transitionsPreset = new Dictionary<Transition, List<(Place place, int weight)>>();
             var transitionsPostset = new Dictionary<Transition, List<(Place place, int weight)>>();
@@ -30,6 +33,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             var lts = new ClassicalLabeledTransitionSystem(sourceDpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(sourceDpn.Context));
             lts.GenerateGraph();
+
+            if (!lts.IsFullGraph)
+            {
+                return (sourceDpn, lts);
+            }
+
             var cycles = cyclesFinder.GetCycles(lts);
 
             var refinedTransitions = new List<Transition>();
@@ -77,32 +86,17 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                         foreach (var baseTransition in updatedTransitionsBasis)
                         {
-                            var positiveConstraint = context.MkAnd(
-                                baseTransition.Guard.ActualConstraintExpression,
-                                formulaToConjunct);
-                            var negativeConstraint = context.MkAnd(
-                                baseTransition.Guard.ActualConstraintExpression,
-                                context.MkNot(formulaToConjunct));
-
-                            var isPositiveSatisfiable = context.CanBeSatisfied(positiveConstraint);
-                            var isNegativeSatisfiable = context.CanBeSatisfied(negativeConstraint);
-
-                            if (!isPositiveSatisfiable || !isNegativeSatisfiable)
+                            (var positiveTransition, var negativeTransition) = baseTransition
+                                .Split(formulaToConjunct, outputTransition.Id);
+                            if (positiveTransition!=null && negativeTransition != null)
                             {
-                                updatedTransitions.Add((Transition)baseTransition.Clone());
+                                updatedTransitions.Add(positiveTransition);
+                                updatedTransitions.Add(negativeTransition);
                             }
                             else
                             {
-                                var positiveTransition = new Transition(
-                                    baseTransition.Id+ "+" + outputTransition.Id, 
-                                    new Guard(context, baseTransition.Guard.BaseConstraintExpressions, positiveConstraint));
-                                updatedTransitions.Add(positiveTransition);
-
-                                var negativeTransition = new Transition(
-                                    baseTransition.Id + "-" + outputTransition.Id,
-                                    new Guard(context, baseTransition.Guard.BaseConstraintExpressions, negativeConstraint));
-                                updatedTransitions.Add(negativeTransition);
-                            }
+                                updatedTransitions.Add((Transition)baseTransition.Clone());
+                            }                           
                         }
 
                         updatedTransitions = updatedTransitions
@@ -129,7 +123,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             newDPN.Transitions = refinedTransitions;
             newDPN.Arcs = refinedArcs;
 
-            return newDPN;
+            //stopwatch.Stop();
+
+            //timers.Add("MillisecondsForTransformation", stopwatch.ElapsedMilliseconds);
+
+            return (newDPN, lts);
         }
 
         private static void FillTransitionsArcs(DataPetriNet sourceDpn, Dictionary<Transition, List<(Place place, int weight)>> transitionsPreset, Dictionary<Transition, List<(Place place, int weight)>> transitionsPostset)

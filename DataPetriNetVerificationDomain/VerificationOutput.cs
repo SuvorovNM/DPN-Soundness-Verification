@@ -19,12 +19,16 @@ namespace DataPetriNetVerificationDomain
         public ushort Variables { get; init; }
         public ushort Conditions { get; init; }
         public bool Boundedness { get; init; }
+        public int LtsStates { get; init; }
+        public int LtsArcs { get; init; }
         public int ConstraintStates { get; init; }
-        public int ConstraintArcs { get; init; }
+        public int ConstraintArcs { get; init; }        
         public ushort DeadTransitions { get; init; }
         public bool Deadlocks { get; init; }
         public bool Soundness { get; init; }
-        public string Time { get; init; }
+        public string VerificationTime { get; init; }
+        public string BoundednessCheckTime { get; init; }
+        public string TransformationTime { get; init; }
 
         public string Identifier { get; init; }
 
@@ -37,9 +41,11 @@ namespace DataPetriNetVerificationDomain
             DataPetriNet dpn, 
             VerificationTypeEnum verificationType,
             bool satisfiesConditions,
-            ConstraintGraph cg, 
-            SoundnessProperties soundnessProperties, 
-            long milliseconds)
+            ClassicalLabeledTransitionSystem lts,
+            ConstraintGraph cg,             
+            SoundnessProperties soundnessProperties,
+            long millisecondsForTransformation,
+            long millisecondsForVerification)
         {
             Places = (ushort)dpn.Places.Count;
             Transitions = (ushort)dpn.Transitions.Count;
@@ -50,15 +56,19 @@ namespace DataPetriNetVerificationDomain
                 .Distinct()
                 .Count();
             Boundedness = soundnessProperties.Boundedness;
+            LtsStates = lts.ConstraintStates.Count;
+            LtsArcs = lts.ConstraintArcs.Count;
             ConstraintStates = cg.ConstraintStates.Count;
             ConstraintArcs = cg.ConstraintArcs.Count;
             DeadTransitions = (ushort)soundnessProperties.DeadTransitions.Count;
             Deadlocks = soundnessProperties.Deadlocks;
             Soundness = soundnessProperties.Soundness;
-            Time = milliseconds.ToString();
+            VerificationTime = millisecondsForVerification.ToString();
             SatisfiesCounditions = satisfiesConditions;
             Identifier = dpn.Name;
             VerificationType = verificationType;
+            BoundednessCheckTime = lts.Milliseconds.ToString();
+            TransformationTime = millisecondsForTransformation.ToString();
         }
     }
     public class VerificationOutputWithNumber : VerificationOutput
@@ -78,7 +88,7 @@ namespace DataPetriNetVerificationDomain
             DeadTransitions = verificationOutput.DeadTransitions;
             Deadlocks = verificationOutput.Deadlocks;
             Soundness = verificationOutput.Soundness;
-            Time = verificationOutput.Time;
+            VerificationTime = verificationOutput.VerificationTime;
             Number = number;
             SatisfiesCounditions = verificationOutput.SatisfiesCounditions;
             Identifier = verificationOutput.Identifier;

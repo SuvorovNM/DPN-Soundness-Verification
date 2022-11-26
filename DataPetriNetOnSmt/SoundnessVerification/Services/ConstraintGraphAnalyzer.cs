@@ -20,18 +20,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             var boundedness = cg.IsFullGraph;
 
-            var restoredDpnTransitions = dpn.Transitions
-                .Select(x => x.Id.IndexOf("_st_") >= 0
-                    ? x.Id[..x.Id.IndexOf("_st_")]
-                    : x.Id);
-            var restoredConstraintArcTransitions = cg.ConstraintArcs
-                .Where(x => !x.Transition.IsSilent)
-                .Select(x => x.Transition.Id.IndexOf("_st_") >= 0
-                    ? x.Transition.Id[..x.Transition.Id.IndexOf("_st_")]
-                    : x.Transition.Id);
-
-            var deadTransitions = restoredDpnTransitions
-                .Except(restoredConstraintArcTransitions)
+            var deadTransitions = dpn.Transitions
+                .Select(x => x.BaseTransitionId ?? x.Id)
+                .Except(cg.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
                 .ToList();
 
             var hasDeadlocks = false;

@@ -134,6 +134,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             {
                 throw new ArgumentNullException(nameof(target));
             }
+            
 
             var andExpression = Context.MkAnd(source, target);
             BoolExpr resultBlockExpression = andExpression;

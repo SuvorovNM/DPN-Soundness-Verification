@@ -41,6 +41,7 @@ namespace DataPetriNetOnSmt.DPNElements
             {
                 BaseConstraintExpressions = new List<IConstraintExpression>();
                 ActualConstraintExpression = ctx.MkTrue();
+                WriteVars = new Dictionary<string, DomainType>();
             }
             else
             {

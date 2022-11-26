@@ -31,7 +31,7 @@ namespace DataPetriNetVerificationApplication
         const string OutputDirectoryParameterName = "OutputDirectory";
         const string SaveConstraintGraph = "SaveCG";
         private static Context context = new Context();
-        private static ITransformation transformation = new TransformationToAtomicConstraints();
+        private static TransformationToRefined transformation = new TransformationToRefined();
 
         static int Main(string[] args)
         {
@@ -82,7 +82,6 @@ namespace DataPetriNetVerificationApplication
             } while (index < args.Length);
 
             ArgumentNullException.ThrowIfNull(dpnFilePath);
-            ArgumentNullException.ThrowIfNull(verificationType);
             ArgumentNullException.ThrowIfNull(outputDirectory);
 
             var conditionsInfo = new ConditionsInfo
@@ -92,37 +91,71 @@ namespace DataPetriNetVerificationApplication
                 DeadTransitions = deadTransitions
             };
 
-            AbstractConstraintExpressionService constraintExpressionService = GetExpressionService(verificationType);
-            DataPetriNet dpnToVerify = GetDpnToVerify(verificationType, dpnFilePath);
+            DataPetriNet dpnToVerify = GetDpnToVerify(dpnFilePath);
+            AbstractConstraintExpressionService constraintExpressionService = new ConstraintExpressionOperationServiceWithEqTacticConcat(dpnToVerify.Context);
 
             CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(30));
             var timer = new Stopwatch();
+
             timer.Start();
+            (var dpnRefined, var lts) = transformation.Transform(dpnToVerify);
+            timer.Stop();
+            var millisecondsToTransform = timer.ElapsedMilliseconds;
 
-            var cg = new ConstraintGraph(dpnToVerify, constraintExpressionService);
-
-            var task = Task.Run(() => cg.GenerateGraph(), source.Token);
-            //cg.GenerateGraph();
+            VerificationOutput outputRow;
+            bool satisfiesConditions;
             SoundnessProperties soundnessProperties;
-            if (task.Wait(TimeSpan.FromMinutes(30)))
-            {
-                soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
+            LabeledTransitionSystem ltsToSave;
 
-                timer.Stop();
+            if (!lts.IsFullGraph)
+            {
+                soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, lts);
+
+                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
+
+                outputRow = new VerificationOutput(
+                    dpnToVerify,
+                    verificationType.Value,
+                    satisfiesConditions,
+                    lts,
+                    new ConstraintGraph(),
+                    soundnessProperties,
+                    -1,
+                    lts.Milliseconds);
+
+                ltsToSave = lts;
             }
             else
             {
-                throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
-            }
+                timer.Start();
+                var cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
 
-            var satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
-            var outputRow = new VerificationOutput(
-                dpnToVerify,
-                verificationType.Value,
-                satisfiesConditions, 
-                cg, 
-                soundnessProperties, 
-                timer.ElapsedMilliseconds);
+                var task = Task.Run(() => cgRefined.GenerateGraph(), source.Token);
+
+                if (task.Wait(TimeSpan.FromMinutes(30)))
+                {
+                    soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+
+                    timer.Stop();
+                }
+                else
+                {
+                    throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
+                }
+
+                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
+                outputRow = new VerificationOutput(
+                    dpnToVerify,
+                    verificationType.Value,
+                    satisfiesConditions,
+                    lts,
+                    cgRefined,
+                    soundnessProperties,
+                    millisecondsToTransform,
+                    timer.ElapsedMilliseconds);
+
+                ltsToSave = cgRefined;
+            }
 
             SendResultToPipe(pipeClientHandle, outputRow);
 
@@ -132,7 +165,7 @@ namespace DataPetriNetVerificationApplication
 
                 if (saveCG)
                 {
-                    var constraintGraphToSave = new LtsToVisualize(cg, soundnessProperties);
+                    var constraintGraphToSave = new LtsToVisualize(ltsToSave, soundnessProperties);
 
                     using (var fs = new FileStream(Path.Combine(outputDirectory, dpnToVerify.Name + "_" + verificationType + ".cgml"), FileMode.Create))
                     {
@@ -141,11 +174,23 @@ namespace DataPetriNetVerificationApplication
                         xmlDocument.Save(fs);
                     }
                 }
-               return 1;
+                return 1;
             }
             return -1;
         }
 
+        private static DataPetriNet GetDpnToVerify(string dpnFilePath)
+        {
+            var xDoc = new XmlDocument();
+            xDoc.Load(dpnFilePath);
+
+            var parser = new PnmlParser();
+            var dpn = parser.DeserializeDpn(xDoc);
+            //dpn.Context = context;
+            return dpn;
+        }
+
+        [Obsolete("Nsqe is not adapted to the new algorithm")]
         private static DataPetriNet GetDpnToVerify(VerificationTypeEnum? verificationType, string dpnFilePath)
         {
             var xDoc = new XmlDocument();
@@ -160,11 +205,12 @@ namespace DataPetriNetVerificationApplication
                 VerificationTypeEnum.QeWithoutTransformation or VerificationTypeEnum.NsqeWithoutTransformation =>
                     dpn,
                 VerificationTypeEnum.NsqeWithTransformation or VerificationTypeEnum.QeWithTransformation =>
-                    transformation.Transform(dpn),
+                    new TransformationToAtomicConstraints().Transform(dpn).dpn,
                 _ => throw new ArgumentException("Verification type " + nameof(verificationType) + " is not supported!")
             };
         }
 
+        [Obsolete("Nsqe is not adapted to the new algorithm")]
         private static AbstractConstraintExpressionService GetExpressionService(VerificationTypeEnum? verificationType)
         {
             return verificationType switch
@@ -198,7 +244,6 @@ namespace DataPetriNetVerificationApplication
                     sw.AutoFlush = true;
                     XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
                     serializer.Serialize(sw, outputRow);
-                    //pipeClient.WaitForPipeDrain(); // May be unnecessary
                 }
             }
         }

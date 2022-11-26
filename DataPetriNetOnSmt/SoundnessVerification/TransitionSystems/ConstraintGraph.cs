@@ -5,6 +5,7 @@ using DataPetriNetOnSmt.Extensions;
 using Microsoft.VisualBasic;
 using Microsoft.Z3;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
@@ -25,6 +26,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         public override void GenerateGraph(bool removeRedundantBlocks = false)
         {
             IsFullGraph = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             while (StatesToConsider.Count > 0)
             {
@@ -76,7 +78,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                     }
                 }
             }
-
+            stopwatch.Stop();
+            Milliseconds = stopwatch.ElapsedMilliseconds;
             IsFullGraph = true;
         }
     }

@@ -3,6 +3,7 @@ using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         public override void GenerateGraph(bool removeRedundantBlocks = false)
         {
             IsFullGraph = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             while (StatesToConsider.Count > 0)
             {
@@ -58,7 +60,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                     }
                 }
             }
-
+            stopwatch.Stop();
+            Milliseconds = stopwatch.ElapsedMilliseconds;
             IsFullGraph = true;
         }
     }

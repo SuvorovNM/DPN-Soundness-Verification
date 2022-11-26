@@ -63,7 +63,7 @@ bool VerifyWithTransformation(
 {
     var transformationTimer = new Stopwatch();
     transformationTimer.Start();
-    var transformedDpn = new TransformationToAtomicConstraints().Transform(dpn);
+    var transformedDpn = new TransformationToAtomicConstraints().Transform(dpn).dpn;
     transformationTimer.Stop();
     var cg = new ConstraintGraph(transformedDpn, expressionService);
     var verificationTimer = new Stopwatch();

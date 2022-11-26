@@ -49,16 +49,11 @@
                <text>t2</text>
             </name>
          </transition> 	
-		<transition id="t3" guard="b_w &gt; c_r">
+		<transition id="t3" guard="b_w &gt; a_r">
             <name>
                <text>t3</text>
             </name>
         </transition> 		 
-		<transition id="t4" guard="b_r &gt;= 3">
-            <name>
-               <text>t4</text>
-            </name>
-        </transition>		
 	  
          <arc id="arc0" source="i" target="t0">
             <name>
@@ -96,16 +91,6 @@
             </name>
          </arc>
 		 <arc id="arc5" source="t2" target="o">
-            <name>
-               <text>1</text>
-            </name>
-         </arc> 
-		 <arc id="arc4" source="p1" target="t4">
-            <name>
-               <text>1</text>
-            </name>
-         </arc>
-		 <arc id="arc5" source="t4" target="o">
             <name>
                <text>1</text>
             </name>

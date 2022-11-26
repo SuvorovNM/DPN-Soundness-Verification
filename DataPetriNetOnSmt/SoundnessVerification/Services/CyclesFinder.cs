@@ -11,12 +11,24 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
     public record Cycle(HashSet<ConstraintArc> CycleArcs, HashSet<ConstraintArc> OutputArcs);
     public class CyclesFinder
     {
+        private long pathsNumber = 0;
         public List<Cycle> GetCycles(LabeledTransitionSystem lts)
         {
             List<ConstraintArc> initialPath = new List<ConstraintArc>();
             HashSet<ConstraintState> visitedStates = new HashSet<ConstraintState>();
 
-            var cycles = RecursiveDFSToFindCycles(lts, initialPath, visitedStates);
+            var arcsDict = new Dictionary<ConstraintState, List<ConstraintArc>>();
+
+            foreach(var state in lts.ConstraintStates)
+            {
+                arcsDict[state] = new List<ConstraintArc>();
+            }
+            foreach(var arc in lts.ConstraintArcs)
+            {
+                arcsDict[arc.SourceState].Add(arc);
+            }
+
+            var cycles = RecursiveDFSToFindCycles(lts, initialPath, arcsDict);
 
             var intersectingCycles = CompoundIntersectingCycles(cycles);
 
@@ -35,7 +47,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 while (j < newCycles.Count)
                 {
                     if ( i!= j &&
-                        newCycles[i].CycleArcs.Select(x => x.SourceState).Intersect(newCycles[j].CycleArcs.Select(y => y.SourceState)).Any())
+                        newCycles[i].CycleArcs
+                            .Select(x => x.SourceState)
+                            .Intersect(newCycles[j].CycleArcs.Select(y => y.SourceState)).Any())
                     {
 
                         if (j < i)
@@ -66,22 +80,29 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         private List<Cycle> RecursiveDFSToFindCycles(
             LabeledTransitionSystem lts, 
             List<ConstraintArc> currentPath,
-            HashSet<ConstraintState> visitedStates)
+            Dictionary<ConstraintState, List<ConstraintArc>> arcsDict)
         {
             List<Cycle> cycles = new List<Cycle>();
 
             List<ConstraintArc> availableArcs;
             if (currentPath.Count == 0)
             {
-                availableArcs = lts.ConstraintArcs
+
+                availableArcs = arcsDict[lts.InitialState];
+                    /*lts.ConstraintArcs
                     .Where(x => x.SourceState == lts.InitialState)
-                    .ToList();
+                    .ToList();*/
             }
             else
             {
-                availableArcs = lts.ConstraintArcs
-                    .Where(x => x.SourceState == currentPath[^1].TargetState && !visitedStates.Contains(x.SourceState))
-                    .ToList();
+                availableArcs = arcsDict[currentPath[^1].TargetState];
+                    /*lts.ConstraintArcs
+                    .Where(x => x.SourceState == currentPath[^1].TargetState)
+                    .ToList();*/
+            }
+            if (availableArcs.Count == 0)
+            {
+                pathsNumber++;
             }
 
             foreach (var arc in availableArcs)
@@ -96,26 +117,33 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     if (isCycle)
                     {
                         arcsInCycle.Add(currentPath[i]);
-                        var outArcs = lts.ConstraintArcs
+                        var outArcs = arcsDict[currentPath[i].SourceState]
+                            .Where(x => x != currentPath[i]);
+
+                            /*lts.ConstraintArcs
                             .Where(x => (x.SourceState == currentPath[i].SourceState)
-                                && x != currentPath[i]);
+                                && x != currentPath[i]);*/
                         arcsOutCycle.AddRange(outArcs);
                     }
                 }
                 isCycle |= arc.SourceState == arc.TargetState;
                 if (isCycle)
                 {
+                    pathsNumber++;
                     arcsInCycle.Add(arc);
-                    var outArcs = lts.ConstraintArcs
+                    var outArcs = arcsDict[arc.SourceState]
+                        .Where(x => x != arc);
+
+                        /*lts.ConstraintArcs
                             .Where(x => (x.SourceState == arc.SourceState)
-                                && x != arc);
+                                && x != arc);*/
                     arcsOutCycle.AddRange(outArcs);
                     cycles.Add(new Cycle(arcsInCycle, arcsOutCycle));
                 }
                 else
                 {
                     currentPath.Add(arc);
-                    var furtherCycles = RecursiveDFSToFindCycles(lts, currentPath, visitedStates);
+                    var furtherCycles = RecursiveDFSToFindCycles(lts, currentPath, arcsDict);
                     currentPath.RemoveAt(currentPath.Count - 1);
                     cycles.AddRange(furtherCycles);
                 }

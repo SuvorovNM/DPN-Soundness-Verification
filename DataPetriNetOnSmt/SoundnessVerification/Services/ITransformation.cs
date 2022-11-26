@@ -9,6 +9,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public interface ITransformation
     {
-        public DataPetriNet Transform(DataPetriNet sourceDpn);
+        public (DataPetriNet dpn, Dictionary<string, long> timers) Transform(DataPetriNet sourceDpn);
     }
 }

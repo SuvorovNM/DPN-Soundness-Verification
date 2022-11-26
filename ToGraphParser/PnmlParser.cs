@@ -141,7 +141,10 @@ namespace DataPetriNetParsers
                     AddPetriNetElementsToDpn(dpn, varTypeDict, page, context);
                 }
             }
+            if (dpn.Context != dpn.Transitions[0].Guard.Context)
+            {
 
+            }
             return dpn;
         }
 

@@ -139,14 +139,14 @@ namespace DataPetriNetOnSmt.Visualization
         private void TransformModelToAtomicItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformationToAtomicConstraints();
-            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+            (currentDisplayedNet,_) = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 
         private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformationToRefined();
-            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+            (currentDisplayedNet,_) = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 

@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
+using System.Diagnostics;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
@@ -34,8 +35,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         private int overallPlaceIndex = 0;
         private Place lockingPlace = null;
 
-        public DataPetriNet Transform(DataPetriNet sourceDpn)
+        public (DataPetriNet dpn, Dictionary<string, long> timers) Transform(DataPetriNet sourceDpn)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             if (sourceDpn == null)
             {
                 throw new ArgumentNullException(nameof(sourceDpn));
@@ -83,7 +86,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 TryExpand(newDPN, transitionInfo);
             }
 
-            return newDPN;
+            stopwatch.Stop();
+
+            var timings = new Dictionary<string, long>();
+            timings.Add("MillisecondsForTransformation", stopwatch.ElapsedMilliseconds);
+
+            return (newDPN, timings);
         }
 
         private void TryExpand(DataPetriNet dpn, TransitionInfo transitionInfo)

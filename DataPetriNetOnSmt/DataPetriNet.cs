@@ -93,7 +93,7 @@ namespace DataPetriNetOnSmt
 
         public void Dispose()
         {
-            Context.Dispose();
+            //Context.Dispose();
         }
 
         public object Clone()

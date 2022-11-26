@@ -22,7 +22,7 @@ namespace DataPetriNetVerificationDomain.CsvClassMaps
             Map(x => x.DeadTransitions).Index(8).Name("DeadTransitions");
             Map(x => x.Deadlocks).Index(9).Name("Deadlocks");
             Map(x => x.Soundness).Index(10).Name("Soundness");
-            Map(x => x.Time).Index(11).Name("Milliseconds");
+            Map(x => x.VerificationTime).Index(11).Name("Milliseconds");
 
             Map(x => x.SatisfiesCounditions).Ignore();
             Map(x => x.VerificationType).Ignore();

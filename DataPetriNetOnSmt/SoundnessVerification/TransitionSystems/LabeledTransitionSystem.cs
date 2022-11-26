@@ -20,6 +20,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         public List<ConstraintState> ConstraintStates { get; set; }
         public List<ConstraintArc> ConstraintArcs { get; set; }
         public bool IsFullGraph { get; set; }
+        public long Milliseconds { get; set; }
 
         protected Stack<ConstraintState> StatesToConsider { get; set; }
 
@@ -37,6 +38,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             ConstraintArcs = new List<ConstraintArc>();
 
             IsFullGraph = false;
+            Milliseconds = 0;
 
             StatesToConsider = new Stack<ConstraintState>();
             StatesToConsider.Push(InitialState);
