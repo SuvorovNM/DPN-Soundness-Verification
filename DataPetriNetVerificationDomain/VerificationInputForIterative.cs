@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetVerificationDomain
 {
-    public struct VerificationInput
+    public class VerificationInputForIterative : VerificationInputBasis
     {
         public DpnToGenerateInfo DpnInfo;
         public VerificationTypeEnum VerificationType;
-        public ConditionsInfo ConditionsInfo;
         public IterationsInfo IterationsInfo;
-        public string OutputDirectory;
     }
 }

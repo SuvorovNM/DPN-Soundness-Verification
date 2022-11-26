@@ -7,60 +7,116 @@
         mc:Ignorable="d"
         Title="Iterative Verifier" Height="450" Width="875">
     <Grid Margin="0,1,0,-1">
-        <Label Content="DPN Characteristics" HorizontalAlignment="Left" Margin="20,18,0,0" VerticalAlignment="Top" Width="142" Height="26" FontSize="15"/>
-        <Label Content="Places:" HorizontalAlignment="Left" Margin="35,49,0,0" VerticalAlignment="Top" Width="72"/>
-        <Label Content="Transitions:" HorizontalAlignment="Left" Margin="35,75,0,0" VerticalAlignment="Top" Width="72"/>
-        <Label Content="Extra Arcs:" HorizontalAlignment="Left" Margin="35,101,0,0" VerticalAlignment="Top" Width="72"/>
-        <Label Content="Variables:" HorizontalAlignment="Left" Margin="35,127,0,0" VerticalAlignment="Top" Width="72"/>
-        <Label Content="Conditions:" HorizontalAlignment="Left" Margin="35,153,0,0" VerticalAlignment="Top" Width="72"/>
-        <TextBox Name="PlacesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <TextBox Name="TransitionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,82,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <TextBox Name="ArcsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,108,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <TextBox Name="VariablesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,133,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <TextBox Name="ConditionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,160,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <CheckBox Name="QEWithoutTransChb" Content="Without Transformation" HorizontalAlignment="Left" Margin="225,73,0,0" VerticalAlignment="Top" Width="152"/>
-        <CheckBox Name="QEWithTransChb" Content="With Transformation" HorizontalAlignment="Left" Margin="225,93,0,0" VerticalAlignment="Top" Width="152"/>
-        <Label Content="QE-based variant" HorizontalAlignment="Left" Margin="213,45,0,0" VerticalAlignment="Top" Width="131" FontWeight="Bold"/>
-        <CheckBox Name="nSQEWithoutTransChb"  Content="Without Transformation" HorizontalAlignment="Left" Margin="225,141,0,0" VerticalAlignment="Top" Width="152"/>
-        <CheckBox Name ="nSQEWithTransChb"  Content="With Transformation" HorizontalAlignment="Left" Margin="225,161,0,0" VerticalAlignment="Top" Width="152"/>
-        <Label Content="nSQE-based variant" HorizontalAlignment="Left" Margin="213,113,0,0" VerticalAlignment="Top" Width="131" FontWeight="Bold"/>
-        <Label Content="Verification Type" HorizontalAlignment="Left" Margin="193,18,0,0" VerticalAlignment="Top" Width="119" Height="30" FontSize="15"/>
-        <Label Content="Conditions" HorizontalAlignment="Left" Margin="403,18,0,0" VerticalAlignment="Top" Width="89" Height="30" FontSize="15"/>
-        <CheckBox Name="MaxDtChb" Content="Max Dead Transitions" HorizontalAlignment="Left" Margin="417,58,0,0" VerticalAlignment="Top" Width="136" Checked="MaxDtChb_Checked" Unchecked="MaxDtChb_Unchecked"/>
-        <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="417,83,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
-        <CheckBox Name="SoundnessChb" Content="Soundness" HorizontalAlignment="Left" Margin="417,108,0,0" VerticalAlignment="Top" Width="84" Checked="SoundnessChb_Checked" Unchecked="SoundnessChb_Unchecked"/>
-        <TextBox Name="MaxDtTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="558,57,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="35"/>
-        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="593,53,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <ComboBox Name="BoundnessCmb" HorizontalAlignment="Left" Margin="516,80,0,0" VerticalAlignment="Top" Width="77" Height="20">
-            <ComboBoxItem Content="True"/>
-            <ComboBoxItem Content="False"/>
-        </ComboBox>
-        <ComboBox Name="SoundnessCmb" HorizontalAlignment="Left" Margin="516,105,0,0" VerticalAlignment="Top" Width="77" Height="20">
-            <ComboBoxItem Content="True"/>
-            <ComboBoxItem Content="False"/>
-        </ComboBox>
-        <Label Content="Iterations" HorizontalAlignment="Left" Margin="625,18,0,0" VerticalAlignment="Top" Width="80" Height="30" FontSize="15"/>
-        <Label Content="DPNs per Configuration:" HorizontalAlignment="Left" Margin="645,72,0,0" VerticalAlignment="Top" Width="141"/>
-        <Label Content="Increment Value:" HorizontalAlignment="Left" Margin="645,99,0,0" VerticalAlignment="Top" Width="122"/>
-        <TextBox Name="DpnNumberTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,78,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <TextBox Name="IncrementValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,105,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <Label Content="Initial n-value:" HorizontalAlignment="Left" Margin="645,47,0,0" VerticalAlignment="Top" Width="122"/>
-        <TextBox Name="InitialValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,53,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-        <Label Content="n" HorizontalAlignment="Left" Margin="152,52,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <Label Content="n" HorizontalAlignment="Left" Margin="152,78,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <Label Content="n" HorizontalAlignment="Left" Margin="152,103,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <Label Content="n" HorizontalAlignment="Left" Margin="152,130,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <Label Content="n" HorizontalAlignment="Left" Margin="152,155,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,191,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
+        <TabControl x:Name="generationTypes">
+            <TabItem x:Name="iterativeGenerationTab">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="3">Iterative</TextBlock>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <Grid>
+                        <Label Content="DPN Characteristics" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Top" Width="142" Height="26" FontSize="15"/>
+                        <Label Content="Places:" HorizontalAlignment="Left" Margin="35,31,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Transitions:" HorizontalAlignment="Left" Margin="35,57,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Extra Arcs:" HorizontalAlignment="Left" Margin="35,83,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Variables:" HorizontalAlignment="Left" Margin="35,109,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Conditions:" HorizontalAlignment="Left" Margin="35,135,0,0" VerticalAlignment="Top" Width="72"/>
+                        <TextBox Name="PlacesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,36,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="TransitionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,62,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="ArcsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="VariablesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,114,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="ConditionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,140,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <CheckBox Name="QEWithoutTransChb" Content="Without Transformation" HorizontalAlignment="Left" Margin="225,56,0,0" VerticalAlignment="Top" Width="152"/>
+                        <CheckBox Name="QEWithTransChb" Content="With Transformation" HorizontalAlignment="Left" Margin="225,76,0,0" VerticalAlignment="Top" Width="152"/>
+                        <Label Content="QE-based variant" HorizontalAlignment="Left" Margin="213,28,0,0" VerticalAlignment="Top" Width="131" FontWeight="Bold"/>
+                        <CheckBox Name="nSQEWithoutTransChb"  Content="Without Transformation" HorizontalAlignment="Left" Margin="225,124,0,0" VerticalAlignment="Top" Width="152"/>
+                        <CheckBox Name ="nSQEWithTransChb"  Content="With Transformation" HorizontalAlignment="Left" Margin="225,143,0,0" VerticalAlignment="Top" Width="152"/>
+                        <Label Content="nSQE-based variant" HorizontalAlignment="Left" Margin="213,96,0,0" VerticalAlignment="Top" Width="131" FontWeight="Bold"/>
+                        <Label Content="Verification Type" HorizontalAlignment="Left" Margin="193,1,0,0" VerticalAlignment="Top" Width="119" Height="30" FontSize="15"/>
+                        <Label Content="Iterations" HorizontalAlignment="Left" Margin="625,1,0,0" VerticalAlignment="Top" Width="80" Height="30" FontSize="15"/>
+                        <Label Content="DPNs per Configuration:" HorizontalAlignment="Left" Margin="645,55,0,0" VerticalAlignment="Top" Width="141"/>
+                        <Label Content="Increment Value:" HorizontalAlignment="Left" Margin="645,82,0,0" VerticalAlignment="Top" Width="122"/>
+                        <TextBox Name="DpnNumberTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,61,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="IncrementValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <Label Content="Initial n-value:" HorizontalAlignment="Left" Margin="645,30,0,0" VerticalAlignment="Top" Width="122"/>
+                        <TextBox Name="InitialValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,36,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,34,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,60,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,85,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,112,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,137,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                    </Grid>
+                </TabItem.Content>
+            </TabItem>
+            <TabItem x:Name="randomGenerationTab">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="3">Random</TextBlock>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="45*"/>
+                            <ColumnDefinition Width="824*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="DPN Characteristics" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Top" Width="142" Height="26" FontSize="15" Grid.ColumnSpan="2"/>
+                        <Label Content="Places:" HorizontalAlignment="Left" Margin="35,31,0,0" VerticalAlignment="Top" Width="72" Grid.ColumnSpan="2"/>
+                        <Label Content="Transitions:" HorizontalAlignment="Left" Margin="35,57,0,0" VerticalAlignment="Top" Width="72" Grid.ColumnSpan="2"/>
+                        <Label Content="Extra Arcs:" HorizontalAlignment="Left" Margin="35,83,0,0" VerticalAlignment="Top" Width="72" Grid.ColumnSpan="2"/>
+                        <Label Content="Variables:" HorizontalAlignment="Left" Margin="35,109,0,0" VerticalAlignment="Top" Width="72" Grid.ColumnSpan="2"/>
+                        <Label Content="Conditions:" HorizontalAlignment="Left" Margin="35,135,0,0" VerticalAlignment="Top" Width="72" Grid.ColumnSpan="2"/>
+                        <Label Content="min:" HorizontalAlignment="Left" Margin="67,31,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="min:" HorizontalAlignment="Left" Margin="67,57,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="min:" HorizontalAlignment="Left" Margin="67,83,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="min:" HorizontalAlignment="Left" Margin="67,109,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="min:" HorizontalAlignment="Left" Margin="67,135,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <TextBox Name="MinPlacesTb" HorizontalAlignment="Left" Margin="103,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MinTransitionsTb" HorizontalAlignment="Left" Margin="103,57,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MinArcsTb" HorizontalAlignment="Left" Margin="103,83,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MinVarsTb" HorizontalAlignment="Left" Margin="103,109,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MinConditionsTb" HorizontalAlignment="Left" Margin="103,135,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <Label Content="max:" HorizontalAlignment="Left" Margin="155,31,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="max:" HorizontalAlignment="Left" Margin="155,57,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="max:" HorizontalAlignment="Left" Margin="155,83,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="max:" HorizontalAlignment="Left" Margin="155,109,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <Label Content="max:" HorizontalAlignment="Left" Margin="155,135,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                        <TextBox Name="MaxPlacesTb" HorizontalAlignment="Left" Margin="195,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MaxTransitionsTb" HorizontalAlignment="Left" Margin="195,57,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MaxArcsTb" HorizontalAlignment="Left" Margin="195,83,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MaxVarsTb" HorizontalAlignment="Left" Margin="195,109,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+                        <TextBox Name="MaxConditionsTb" HorizontalAlignment="Left" Margin="195,135,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.Column="1" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput"/>
+
+                    </Grid>
+                </TabItem.Content>
+
+            </TabItem>
+        </TabControl>
+        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,0,0,0" VerticalAlignment="Center" Width="90" Click="StartBtn_Click">
         </Button>
-        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="814,189,0,0" VerticalAlignment="Top" Width="30" Click="StopsBtn_Click">
+        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="814,0,0,0" VerticalAlignment="Center" Width="30" Click="StopsBtn_Click">
             <StackPanel Orientation="Horizontal">
                 <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
             </StackPanel>
         </Button>
-        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,185,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
-        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,192,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
-        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,192,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
+        <Label Content="Conditions" HorizontalAlignment="Left" Margin="403,31,0,0" VerticalAlignment="Top" Width="89" Height="30" FontSize="15"/>
+        <CheckBox Name="MaxDtChb" Content="Max Dead Transitions" HorizontalAlignment="Left" Margin="417,71,0,0" VerticalAlignment="Top" Width="136" Checked="MaxDtChb_Checked" Unchecked="MaxDtChb_Unchecked"/>
+        <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="417,96,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
+        <CheckBox Name="SoundnessChb" Content="Soundness" HorizontalAlignment="Left" Margin="417,121,0,0" VerticalAlignment="Top" Width="84" Checked="SoundnessChb_Checked" Unchecked="SoundnessChb_Unchecked"/>
+        <TextBox Name="MaxDtTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="558,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="35"/>
+        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="593,90,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+        <ComboBox Name="BoundnessCmb" HorizontalAlignment="Left" Margin="516,93,0,0" VerticalAlignment="Top" Width="77" Height="20">
+            <ComboBoxItem Content="True"/>
+            <ComboBoxItem Content="False"/>
+        </ComboBox>
+        <ComboBox Name="SoundnessCmb" HorizontalAlignment="Left" Margin="516,118,0,0" VerticalAlignment="Top" Width="77" Height="20">
+            <ComboBoxItem Content="True"/>
+            <ComboBoxItem Content="False"/>
+        </ComboBox>
+        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" Width="132" FontSize="14"/>
+        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,0,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Center" Width="487" MaxHeight="18" Height="18"/>
+        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,0,0,0" VerticalAlignment="Center" Height="18" Width="25"/>
         <Grid Margin="0,244,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
                 <DataGrid.Resources>
@@ -81,8 +137,6 @@
 
             </DataGrid>
         </Grid>
-        <Label Content="Current DPN: " HorizontalAlignment="Left" Margin="33,213,0,0" VerticalAlignment="Top" Width="86" FontSize="13"/>
-        <Label Name="DpnInfoLb" Foreground="Blue" HorizontalAlignment="Left" Margin="152,212,0,0" VerticalAlignment="Top" Width="518" MouseUp="Label_MouseUp" FontSize="13" Height="29"/>
 
     </Grid>
 </Window>

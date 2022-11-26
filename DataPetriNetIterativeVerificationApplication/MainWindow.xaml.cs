@@ -1,4 +1,5 @@
 ﻿using DataPetriNetGeneration;
+using DataPetriNetIterativeVerificationApplication.Enums;
 using DataPetriNetIterativeVerificationApplication.Services;
 using DataPetriNetOnSmt;
 using DataPetriNetParsers;
@@ -38,9 +39,8 @@ namespace DataPetriNetIterativeVerificationApplication
     {
         private Dictionary<int, string> paths = new Dictionary<int, string>();
         private ObservableCollection<VerificationOutputWithNumber> verificationResults = new();
-        //private DataPetriNet currentNet;
         private CancellationTokenSource source;
-        private IterativeVerificationRunner verificationRunner = new();
+        private VerificationRunner verificationRunner = new();
         public MainWindow()
         {
             InitializeComponent();
@@ -63,6 +63,18 @@ namespace DataPetriNetIterativeVerificationApplication
             IncrementValueTb.Text = "5";
             DpnNumberTb.Text = "3";
             DirectoryTb.Text = AppDomain.CurrentDomain.BaseDirectory + "Output";
+
+            MinPlacesTb.Text = "2";
+            MinTransitionsTb.Text = "2";
+            MinArcsTb.Text = "2";
+            MinVarsTb.Text = "2";
+            MinConditionsTb.Text = "2";
+
+            MaxPlacesTb.Text = "100";
+            MaxTransitionsTb.Text = "100";
+            MaxArcsTb.Text = "50";
+            MaxConditionsTb.Text = "100";
+            MaxVarsTb.Text = "100";
 
             VerificationDG.ItemsSource = verificationResults;
             verificationResults.CollectionChanged += listChanged;
@@ -108,21 +120,6 @@ namespace DataPetriNetIterativeVerificationApplication
             StartBtn.IsEnabled = false;
             source = new CancellationTokenSource();
 
-            var dpnInfo = new DpnToGenerateInfo
-            {
-                Places = double.Parse(PlacesNumberTb.Text, CultureInfo.InvariantCulture),
-                Transitions = double.Parse(TransitionsNumberTb.Text, CultureInfo.InvariantCulture),
-                ExtraArcs = double.Parse(ArcsNumberTb.Text, CultureInfo.InvariantCulture),
-                Conditions = double.Parse(ConditionsNumberTb.Text, CultureInfo.InvariantCulture),
-                Variables = double.Parse(VariablesNumberTb.Text, CultureInfo.InvariantCulture)
-            };
-
-            var verificationType =
-                (QEWithTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithTransformation : VerificationTypeEnum.None) |
-                (QEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithoutTransformation : VerificationTypeEnum.None) |
-                (nSQEWithTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithTransformation : VerificationTypeEnum.None) |
-                (nSQEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithoutTransformation : VerificationTypeEnum.None);
-
             var conditionsInfo = new ConditionsInfo
             {
                 Boundedness = BoundednessChb.IsChecked.Value ? BoundednessChb.IsChecked : null,
@@ -130,33 +127,71 @@ namespace DataPetriNetIterativeVerificationApplication
                 DeadTransitions = MaxDtChb.IsChecked.Value ? byte.Parse(MaxDtTb.Text) : null,
             };
 
-            var iterationsInfo = new IterationsInfo
+            if (iterativeGenerationTab.IsSelected)
             {
-                DpnsPerConfiguration = ushort.Parse(DpnNumberTb.Text),
-                IncrementValue = ushort.Parse(IncrementValueTb.Text),
-                InitialN = ushort.Parse(InitialValueTb.Text)
-            };
-            var verificationInput = new VerificationInput
-            {
-                DpnInfo = dpnInfo,
-                ConditionsInfo = conditionsInfo,
-                VerificationType = verificationType,
-                IterationsInfo = iterationsInfo,
-                OutputDirectory = DirectoryTb.Text,
-            };
 
-            var iterativeVerificationTask = verificationRunner.RunVerificationLoop(
-                verificationInput, 
-                verificationResults, 
-                source.Token);
+                var dpnInfo = new DpnToGenerateInfo
+                {
+                    Places = double.Parse(PlacesNumberTb.Text, CultureInfo.InvariantCulture),
+                    Transitions = double.Parse(TransitionsNumberTb.Text, CultureInfo.InvariantCulture),
+                    ExtraArcs = double.Parse(ArcsNumberTb.Text, CultureInfo.InvariantCulture),
+                    Conditions = double.Parse(ConditionsNumberTb.Text, CultureInfo.InvariantCulture),
+                    Variables = double.Parse(VariablesNumberTb.Text, CultureInfo.InvariantCulture)
+                };
 
-            try
-            {
+                var verificationType =
+                    (QEWithTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithTransformation : VerificationTypeEnum.None) |
+                    (QEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithoutTransformation : VerificationTypeEnum.None) |
+                    (nSQEWithTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithTransformation : VerificationTypeEnum.None) |
+                    (nSQEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithoutTransformation : VerificationTypeEnum.None);
+
+
+                var iterationsInfo = new IterationsInfo
+                {
+                    DpnsPerConfiguration = ushort.Parse(DpnNumberTb.Text),
+                    IncrementValue = ushort.Parse(IncrementValueTb.Text),
+                    InitialN = ushort.Parse(InitialValueTb.Text)
+                };
+                var verificationInput = new VerificationInputForIterative
+                {
+                    DpnInfo = dpnInfo,
+                    ConditionsInfo = conditionsInfo,
+                    VerificationType = verificationType,
+                    IterationsInfo = iterationsInfo,
+                    OutputDirectory = DirectoryTb.Text,
+                };
+
+                var iterativeVerificationTask = verificationRunner.RunIterativeVerificationLoop(
+                    verificationInput,
+                    verificationResults,
+                    source.Token);
+
                 await iterativeVerificationTask;
             }
-            catch (OperationCanceledException ex)
+            else
             {
-                // TODO: Update Initial N?
+                var verificationInput = new VerificationInputForRandom
+                {
+                    ConditionsInfo = conditionsInfo,
+                    MinPlaces = int.Parse(MinPlacesTb.Text),
+                    MaxPlaces = int.Parse(MaxPlacesTb.Text),
+                    MinTransitions = int.Parse(MinTransitionsTb.Text),
+                    MaxTransitions = int.Parse(MaxTransitionsTb.Text),
+                    MinArcs = int.Parse(MinArcsTb.Text),
+                    MaxArcs = int.Parse(MaxArcsTb.Text),
+                    MinConditions = int.Parse(MinConditionsTb.Text),
+                    MaxConditions = int.Parse(MaxConditionsTb.Text),
+                    MinVars = int.Parse(MinVarsTb.Text),
+                    MaxVars = int.Parse(MaxVarsTb.Text),
+                    OutputDirectory = DirectoryTb.Text,
+                };
+
+                var iterativeVerificationTask = verificationRunner.RunRandomVerificationLoop(
+                    verificationInput,
+                    verificationResults,
+                    source.Token);
+
+                await iterativeVerificationTask;
             }
 
             StopsBtn.IsEnabled = false;
