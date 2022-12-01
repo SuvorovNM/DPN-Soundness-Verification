@@ -27,6 +27,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
         const string SoundnessParameterName = nameof(ConditionsInfo.Soundness);
         const string DeadTransitionsParameterName = nameof(ConditionsInfo.DeadTransitions);
         const string VerificationTypeParameterName = nameof(VerificationTypeEnum);
+        const string VerificationAlgorithmTypeParameterName = nameof(VerificationAlgorithmTypeEnum);
         const string PipeClientHandleParameterName = "PipeClientHandle";
         const string DpnFileParameterName = "DpnFile";
         const string OutputDirectoryParameterName = "OutputDirectory";
@@ -80,8 +81,8 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                     Process proc = null;
                     using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
                     {
-
-                        var processInfo = FormProcessInfo(verificationInput, VerificationTypeEnum.NsqeWithoutTransformation, dpnPath, pipeServer, processPath);
+                        // Consider here base version as well?
+                        var processInfo = FormProcessInfo(verificationInput, VerificationAlgorithmTypeEnum.OptimizedVersion, dpnPath, pipeServer, processPath);
                         var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
                         proc = Process.Start(processInfo);
                         pipeServer.DisposeLocalCopyOfClientHandle();
@@ -136,11 +137,11 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                 for (int i = 0; i < verificationInput.IterationsInfo.DpnsPerConfiguration; i++)
                 {
                     var successfulCase = false;
-                    var verificationTypes = verificationInput.VerificationType
-                        .GetFlags()
-                        .Select(x => (VerificationTypeEnum)x)
-                        .Except(new List<VerificationTypeEnum> { VerificationTypeEnum.None })
-                        .ToList();
+                    var verificationTypes = new List<VerificationAlgorithmTypeEnum> 
+                    {
+                        VerificationAlgorithmTypeEnum.OptimizedVersion,
+                        VerificationAlgorithmTypeEnum.BaseVersion                        
+                    };
 
                     do
                     {
@@ -228,16 +229,16 @@ namespace DataPetriNetIterativeVerificationApplication.Services
             await pipeStream.ReadAsync(buffer, 0, buffer.Length, token);
             lastString = Encoding.UTF8.GetString(buffer);
 
-            VerificationOutput? verificationOutput = null;
+            MainVerificationInfo? verificationOutput = null;
 
             if (lastString != string.Empty)
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(VerificationOutput));
+                XmlSerializer serializer = new XmlSerializer(typeof(MainVerificationInfo));
                 using (TextReader reader = new StringReader(lastString))
                 {
                     try
                     {
-                        verificationOutput = (VerificationOutput?)serializer.Deserialize(reader);
+                        verificationOutput = (MainVerificationInfo?)serializer.Deserialize(reader);
                     }
                     catch (Exception ex)
                     {
@@ -253,7 +254,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 
         private ProcessStartInfo FormProcessInfo(
             VerificationInputBasis verificationInput,
-            VerificationTypeEnum currentVerificationType,
+            VerificationAlgorithmTypeEnum currentVerificationAlgorithmType,
             string dpnFilePath,
             AnonymousPipeServerStream serverPipe,
             ProcessPath path)
@@ -269,12 +270,12 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 
             var pipeHandle = serverPipe.GetClientHandleAsString();
             var outputDirectoryPath = verificationInput.OutputDirectory;
-            var verificationType = currentVerificationType.ToString();
+            var verificationAlgorithmType = currentVerificationAlgorithmType.ToString();
 
             var argumentsString = DpnFileParameterName + " " + dpnFilePath +
                 " " + PipeClientHandleParameterName + " " + pipeHandle +
                 " " + OutputDirectoryParameterName + " " + outputDirectoryPath +
-                " " + VerificationTypeParameterName + " " + verificationType;
+                " " + VerificationAlgorithmTypeParameterName + " " + verificationAlgorithmType;
 
             if (verificationInput.ConditionsInfo.DeadTransitions != null)
             {

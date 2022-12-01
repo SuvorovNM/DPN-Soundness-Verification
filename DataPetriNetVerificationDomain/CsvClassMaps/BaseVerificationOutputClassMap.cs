@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetVerificationDomain.CsvClassMaps
 {
-    public class OptimizedVerificationOutputClassMap : ClassMap<OptimizedVerificationOutput>
+    public class BasicVerificationOutputClassMap : ClassMap<BasicVerificationOutput>
     {
-        public OptimizedVerificationOutputClassMap()
+        public BasicVerificationOutputClassMap()
         {
             // NEEDS FIXING!
             Map(x => x.Places).Index(0).Name("PlacesCount");
@@ -20,8 +20,6 @@ namespace DataPetriNetVerificationDomain.CsvClassMaps
             Map(x => x.Boundedness).Index(5).Name("Boundedness");
             Map(x => x.LtsStates).Index(6).Name("LtsStates");
             Map(x => x.LtsArcs).Index(7).Name("LtsArcs");
-            Map(x => x.CgStates).Index(8).Name("ConstraintStates");
-            Map(x => x.CgArcs).Index(9).Name("ConstraintArcs");
             Map(x => x.CgRefStates).Index(10).Name("ConstraintRefStates");
             Map(x => x.CgRefArcs).Index(11).Name("ConstraintRefArcs");
             Map(x => x.DeadTransitions).Index(12).Name("DeadTransitions");
@@ -29,10 +27,11 @@ namespace DataPetriNetVerificationDomain.CsvClassMaps
             Map(x => x.Soundness).Index(14).Name("Soundness");
             Map(x => x.VerificationTime).Index(15).Name("VerificationTime");
             Map(x => x.LtsTime).Index(16).Name("LtsTime");
-            Map(x => x.CgTime).Index(17).Name("CgTime");
+            Map(x => x.TransformationTime).Index(17).Name("TransformationTime");
             Map(x => x.CgRefTime).Index(18).Name("CgRefTime");
 
             Map(x => x.SatisfiesCounditions).Ignore();
+            //Map(x => x.VerificationType).Ignore();
         }
     }
 }
