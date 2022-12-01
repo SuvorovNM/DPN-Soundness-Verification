@@ -9,6 +9,7 @@ using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using Microsoft.Win32;
 using Microsoft.Z3;
 using System.IO;
+using System.Linq;
 using System.Runtime.Intrinsics.Arm;
 using System.Threading.Tasks;
 using System.Windows;

@@ -65,6 +65,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 ConstraintArcs.Add(new ConstraintArc(currentState, transition, equalStateInGraph));
                 equalStateInGraph.ParentStates = equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
                 equalStateInGraph.ParentStates.Add(currentState);
+                equalStateInGraph.PreviousStepStates.Add(currentState);
+
+                if (equalStateInGraph.ParentStates.Contains(equalStateInGraph))
+                {
+                    equalStateInGraph.IsCyclic = true;
+                }
             }
             else
             {

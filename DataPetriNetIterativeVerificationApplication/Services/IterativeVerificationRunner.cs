@@ -172,7 +172,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                                 await proc.WaitForExitAsync(token);
                                 await listenTask;
                             }
-                            catch (OperationCanceledException ex)
+                            catch (Exception ex)//OperationCanceledException
                             {
                                 proc.Kill();
                                 throw;
@@ -223,7 +223,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
             ObservableCollection<VerificationOutputWithNumber> currentverificationResults,
             CancellationToken token)
         {
-            byte[] buffer = new byte[65535];
+            byte[] buffer = new byte[655350];
             string lastString = string.Empty;
             await pipeStream.ReadAsync(buffer, 0, buffer.Length, token);
             lastString = Encoding.UTF8.GetString(buffer);

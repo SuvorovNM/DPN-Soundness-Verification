@@ -5,6 +5,7 @@
         public ConstraintTransition Transition { get; set; }
         public ConstraintState SourceState { get; set; }
         public ConstraintState TargetState { get; set; }
+        public bool IsVisited { get; set; }
 
         public ConstraintArc(ConstraintState sourceState, ConstraintTransition transitionToFire, ConstraintState targetState)
         {

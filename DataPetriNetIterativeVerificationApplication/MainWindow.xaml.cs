@@ -55,7 +55,7 @@ namespace DataPetriNetIterativeVerificationApplication
             ArcsNumberTb.Text = "0.5";
             VariablesNumberTb.Text = "0.5";
             ConditionsNumberTb.Text = "1";
-            MaxDtTb.Text = "50";
+            MaxDtTb.Text = "60";
             QEWithoutTransChb.IsChecked = true;
             BoundnessCmb.SelectedIndex = 0;
             SoundnessCmb.SelectedIndex = 0;
@@ -66,15 +66,15 @@ namespace DataPetriNetIterativeVerificationApplication
 
             MinPlacesTb.Text = "2";
             MinTransitionsTb.Text = "2";
-            MinArcsTb.Text = "2";
-            MinVarsTb.Text = "2";
-            MinConditionsTb.Text = "2";
+            MinArcsTb.Text = "0";
+            MinVarsTb.Text = "1";
+            MinConditionsTb.Text = "0";
 
-            MaxPlacesTb.Text = "100";
-            MaxTransitionsTb.Text = "100";
+            MaxPlacesTb.Text = "150";
+            MaxTransitionsTb.Text = "150";
             MaxArcsTb.Text = "50";
-            MaxConditionsTb.Text = "100";
-            MaxVarsTb.Text = "100";
+            MaxConditionsTb.Text = "150";
+            MaxVarsTb.Text = "150";
 
             VerificationDG.ItemsSource = verificationResults;
             verificationResults.CollectionChanged += listChanged;
@@ -84,7 +84,7 @@ namespace DataPetriNetIterativeVerificationApplication
             var t = (VerificationOutputWithNumber)args.NewItems[0];
             if (t != null)
             {
-                paths.Add(t.Number, System.IO.Path.Combine(DirectoryTb.Text, t.Identifier));
+                paths.Add(t.Number, System.IO.Path.Combine(DirectoryTb.Text, t.Id));
             }
             VerificationDG.Items.Refresh();
             VerificationDG.Columns[^1].Visibility = Visibility.Collapsed;
@@ -94,14 +94,15 @@ namespace DataPetriNetIterativeVerificationApplication
         {
             var row = (DataGridRow)sender;
             var item = (VerificationOutputWithNumber)row.Item;
-            LoadCG(item);
+            //LoadCG(item);
+            LoadDpn(item);
         }
 
         private void LoadCG(VerificationOutputWithNumber item)
         {
             if (item != null)
             {
-                using (var fs = new FileStream(paths[item.Number] + "_" + item.VerificationType + ".cgml", FileMode.Open))
+                using (var fs = new FileStream(paths[item.Number] + ".cgml", FileMode.Open))// + "_" + item.VerificationType
                 {
                     var cgmlParser = new CgmlParser();
                     var xDocument = XDocument.Load(fs);
@@ -166,7 +167,14 @@ namespace DataPetriNetIterativeVerificationApplication
                     verificationResults,
                     source.Token);
 
-                await iterativeVerificationTask;
+                try
+                {
+                    await iterativeVerificationTask;
+                }
+                catch
+                {
+
+                }
             }
             else
             {
@@ -186,12 +194,18 @@ namespace DataPetriNetIterativeVerificationApplication
                     OutputDirectory = DirectoryTb.Text,
                 };
 
-                var iterativeVerificationTask = verificationRunner.RunRandomVerificationLoop(
+                var randomVerificationTask = verificationRunner.RunRandomVerificationLoop(
                     verificationInput,
                     verificationResults,
                     source.Token);
+                try
+                {
+                    await randomVerificationTask;
+                }
+                catch
+                {
 
-                await iterativeVerificationTask;
+                }
             }
 
             StopsBtn.IsEnabled = false;

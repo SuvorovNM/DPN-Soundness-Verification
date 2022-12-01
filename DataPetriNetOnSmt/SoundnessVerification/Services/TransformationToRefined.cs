@@ -22,7 +22,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             cyclesFinder = new CyclesFinder();
         }
 
-        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn)
+        public DataPetriNet Transform(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem lts)
         {
             var newDPN = (DataPetriNet)sourceDpn.Clone();
             var context = sourceDpn.Context;
@@ -30,14 +30,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var transitionsPreset = new Dictionary<Transition, List<(Place place, int weight)>>();
             var transitionsPostset = new Dictionary<Transition, List<(Place place, int weight)>>();
             FillTransitionsArcs(newDPN, transitionsPreset, transitionsPostset);
-
-            var lts = new ClassicalLabeledTransitionSystem(sourceDpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(sourceDpn.Context));
-            lts.GenerateGraph();
-
-            if (!lts.IsFullGraph)
-            {
-                return (sourceDpn, lts);
-            }
 
             var cycles = cyclesFinder.GetCycles(lts);
 
@@ -88,7 +80,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         {
                             (var positiveTransition, var negativeTransition) = baseTransition
                                 .Split(formulaToConjunct, outputTransition.Id);
-                            if (positiveTransition!=null && negativeTransition != null)
+                            if (positiveTransition != null && negativeTransition != null)
                             {
                                 updatedTransitions.Add(positiveTransition);
                                 updatedTransitions.Add(negativeTransition);
@@ -96,7 +88,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             else
                             {
                                 updatedTransitions.Add((Transition)baseTransition.Clone());
-                            }                           
+                            }
                         }
 
                         updatedTransitions = updatedTransitions
@@ -123,9 +115,20 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             newDPN.Transitions = refinedTransitions;
             newDPN.Arcs = refinedArcs;
 
-            //stopwatch.Stop();
+            return newDPN;
+        }
 
-            //timers.Add("MillisecondsForTransformation", stopwatch.ElapsedMilliseconds);
+        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn)
+        {
+            var lts = new ClassicalLabeledTransitionSystem(sourceDpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(sourceDpn.Context));
+            lts.GenerateGraph();
+
+            if (!lts.IsFullGraph)
+            {
+                return (sourceDpn, lts);
+            }
+
+            var newDPN = Transform(sourceDpn, lts);
 
             return (newDPN, lts);
         }

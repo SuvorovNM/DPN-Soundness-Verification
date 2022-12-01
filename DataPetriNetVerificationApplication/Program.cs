@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -95,67 +96,80 @@ namespace DataPetriNetVerificationApplication
             AbstractConstraintExpressionService constraintExpressionService = new ConstraintExpressionOperationServiceWithEqTacticConcat(dpnToVerify.Context);
 
             CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(30));
+            VerificationOutput outputRow;
             var timer = new Stopwatch();
 
             timer.Start();
-            (var dpnRefined, var lts) = transformation.Transform(dpnToVerify);
-            timer.Stop();
-            var millisecondsToTransform = timer.ElapsedMilliseconds;
 
-            VerificationOutput outputRow;
-            bool satisfiesConditions;
-            SoundnessProperties soundnessProperties;
-            LabeledTransitionSystem ltsToSave;
+            long ltsTime = 0;
+            long cgTime = 0;
+            long cgRefinedTime = 0;
+            var lts = new ClassicalLabeledTransitionSystem(dpnToVerify, constraintExpressionService);
+            var cg = new ConstraintGraph();
+            var cgRefined = new ConstraintGraph();
+            SoundnessProperties? soundnessProps = null;
+            bool satisfiesConditions = false;
 
-            if (!lts.IsFullGraph)
+            var verificationTask = Task.Run(() =>
             {
-                soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, lts);
+                lts.GenerateGraph();
+                soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, lts);
+                timer.Stop();
+                ltsTime = timer.ElapsedMilliseconds;
 
-                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
+                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                if (satisfiesConditions)
+                {
+                    if (soundnessProps.Soundness)
+                    {
+                        timer.Restart();
+                        cg = new ConstraintGraph(dpnToVerify, constraintExpressionService);
+                        cg.GenerateGraph();
+                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
+                        timer.Stop();
+                        cgTime = timer.ElapsedMilliseconds;
 
-                outputRow = new VerificationOutput(
-                    dpnToVerify,
-                    verificationType.Value,
-                    satisfiesConditions,
-                    lts,
-                    new ConstraintGraph(),
-                    soundnessProperties,
-                    -1,
-                    lts.Milliseconds);
+                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                        if (satisfiesConditions)
+                        {
+                            if (soundnessProps.Soundness)
+                            {
+                                timer.Restart();
 
-                ltsToSave = lts;
-            }
-            else
+                                var dpnRefined = transformation.Transform(dpnToVerify, lts);
+                                cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
+                                cgRefined.GenerateGraph();
+                                soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+
+                                timer.Stop();
+                                cgRefinedTime = timer.ElapsedMilliseconds;
+                            }
+                        }
+                    }
+                }
+            }, source.Token);
+            if (!verificationTask.Wait(TimeSpan.FromMinutes(20)))
             {
-                timer.Start();
-                var cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
+                var conditionsCount = dpnToVerify
+                    .Transitions
+                    .SelectMany(x => x.Guard.BaseConstraintExpressions)
+                    .Count();
+                var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
+                File.AppendAllText(badCasesPath, $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");
 
-                var task = Task.Run(() => cgRefined.GenerateGraph(), source.Token);
-
-                if (task.Wait(TimeSpan.FromMinutes(30)))
-                {
-                    soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
-
-                    timer.Stop();
-                }
-                else
-                {
-                    throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
-                }
-
-                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProperties);
-                outputRow = new VerificationOutput(
-                    dpnToVerify,
-                    verificationType.Value,
-                    satisfiesConditions,
-                    lts,
-                    cgRefined,
-                    soundnessProperties,
-                    millisecondsToTransform,
-                    timer.ElapsedMilliseconds);
-
-                ltsToSave = cgRefined;
+                throw new TimeoutException("Process requires more than 20 minutes to verify soundness");
             }
+
+            outputRow = new VerificationOutput(
+                dpnToVerify,
+                satisfiesConditions,
+                lts,
+                cg,
+                cgRefined,
+                soundnessProps,
+                ltsTime,
+                cgTime,
+                cgRefinedTime);
 
             SendResultToPipe(pipeClientHandle, outputRow);
 
@@ -165,14 +179,7 @@ namespace DataPetriNetVerificationApplication
 
                 if (saveCG)
                 {
-                    var constraintGraphToSave = new LtsToVisualize(ltsToSave, soundnessProperties);
-
-                    using (var fs = new FileStream(Path.Combine(outputDirectory, dpnToVerify.Name + "_" + verificationType + ".cgml"), FileMode.Create))
-                    {
-                        var cgmlParser = new CgmlParser();
-                        var xmlDocument = cgmlParser.Serialize(constraintGraphToSave);
-                        xmlDocument.Save(fs);
-                    }
+                    throw new NotImplementedException("Currently, it is prohibited to save CG!");
                 }
                 return 1;
             }
