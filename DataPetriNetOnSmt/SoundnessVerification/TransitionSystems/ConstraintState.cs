@@ -13,19 +13,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         public int Id { get; }
         public bool IsCyclic { get; set; }
 
-        public ConstraintState(int id, Dictionary<Node, int> tokens, BoolExpr constraint)
-        {
-            Id = id;
-            Constraints = constraint;
-            PlaceTokens = tokens;
-            IsCyclic = false;
-        }
-
         public ConstraintState(Context context)
         {
             PlaceTokens = new Dictionary<Node, int>();
             Constraints = context.MkTrue();
             ParentStates = new HashSet<ConstraintState>();
+            PreviousStepStates = new HashSet<ConstraintState>();
             Id = Interlocked.Increment(ref stateCounter);
             IsCyclic = false;
         }

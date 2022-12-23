@@ -38,7 +38,7 @@ namespace DataPetriNetVerificationApplication
         {
             //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetVerificationApplication\bin\Debug\net6.0\\dpn.pnmlx PipeClientHandle 1708 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\ VerificationTypeEnum QeWithoutTransformation".Split(" ");
 
-            //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\9fee4230-e7a9-4849-babc-1b06ba4eb35f.pnmlx PipeClientHandle 896 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum BaseVersion".Split(" ");
+            //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\new\7e51f096-709a-493d-88e1-ba7988b47358.pnmlx PipeClientHandle 896 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum BaseVersion".Split(" ");
 
             bool? soundness = null;
             bool? boundedness = null;
@@ -122,32 +122,29 @@ namespace DataPetriNetVerificationApplication
                 if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.OptimizedVersion)
                 {
                     satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                    if (satisfiesConditions)
+                    if (satisfiesConditions && soundnessProps.Soundness)
                     {
-                        if (soundnessProps.Soundness)
+                        timer.Restart();
+                        cg = new ConstraintGraph(dpnToVerify, constraintExpressionService);
+                        cg.GenerateGraph();
+                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
+                        timer.Stop();
+                        cgTime = timer.ElapsedMilliseconds;
+
+                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                        if (satisfiesConditions)
                         {
-                            timer.Restart();
-                            cg = new ConstraintGraph(dpnToVerify, constraintExpressionService);
-                            cg.GenerateGraph();
-                            soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cg);
-                            timer.Stop();
-                            cgTime = timer.ElapsedMilliseconds;
-
-                            satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                            if (satisfiesConditions)
+                            if (soundnessProps.Soundness)
                             {
-                                if (soundnessProps.Soundness)
-                                {
-                                    timer.Restart();
+                                timer.Restart();
 
-                                    var dpnRefined = transformation.Transform(dpnToVerify, lts);
-                                    cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
-                                    cgRefined.GenerateGraph();
-                                    soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
-                                    timer.Stop();
-                                    satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                                    cgRefinedTime = timer.ElapsedMilliseconds;
-                                }
+                                var dpnRefined = transformation.Transform(dpnToVerify, lts);
+                                cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
+                                cgRefined.GenerateGraph();
+                                soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+                                timer.Stop();
+                                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                                cgRefinedTime = timer.ElapsedMilliseconds;
                             }
                         }
                     }
@@ -165,18 +162,29 @@ namespace DataPetriNetVerificationApplication
                 }
                 if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.BaseVersion)
                 {
-                    timer.Restart();
-                    var dpnRefined = transformation.Transform(dpnToVerify, lts);
-                    timer.Stop();
-                    var transformationTime = timer.ElapsedMilliseconds;
+                    long transformationTime = 0;
+                    if (lts.IsFullGraph)
+                    {
+                        timer.Restart();
+                        var dpnRefined = transformation.Transform(dpnToVerify, lts);
+                        timer.Stop();
+                        transformationTime = timer.ElapsedMilliseconds;
 
-                    timer.Restart();
-                    cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
-                    cgRefined.GenerateGraph();
-                    soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
-                    timer.Stop();
-                    cgRefinedTime = timer.ElapsedMilliseconds;
-                    satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                        timer.Restart();
+                        cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
+                        cgRefined.GenerateGraph();
+                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+                        timer.Stop();
+                        cgRefinedTime = timer.ElapsedMilliseconds;
+
+                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                    }
+                    else
+                    {
+                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, lts);
+                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
+                    }
+                    
                     outputRow = new BasicVerificationOutput(
                         dpnToVerify,
                         satisfiesConditions,

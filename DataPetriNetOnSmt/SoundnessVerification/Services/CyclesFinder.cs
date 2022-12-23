@@ -48,7 +48,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             do
             {
                 var j = 0;
-                while (j < newCycles.Count)
+                while (j < newCycles.Count && i < newCycles.Count)
                 {
                     if (i != j &&
                         newCycles[i].CycleArcs
