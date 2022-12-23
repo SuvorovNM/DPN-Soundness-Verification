@@ -24,10 +24,16 @@ namespace DataPetriNetGeneration
             conditionsGenerator.Dispose();
         }
 
-        public DataPetriNet Generate(int placesCount, int transitionsCount, int additionalArcsCount, int varsCount, int conditionsCount)
+        public DataPetriNet Generate(
+            int placesCount, 
+            int transitionsCount, 
+            int additionalArcsCount, 
+            int varsCount, 
+            int conditionsCount,
+            bool soundnessPreference = false)
         {
             var dpn = backboneGenerator.GenerateBackbone(placesCount, transitionsCount, additionalArcsCount);
-            conditionsGenerator.GenerateConditions(dpn, varsCount, conditionsCount);
+            conditionsGenerator.GenerateConditions(dpn, varsCount, conditionsCount, soundnessPreference);
 
             return dpn;
         }

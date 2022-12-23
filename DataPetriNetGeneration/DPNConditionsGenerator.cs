@@ -21,7 +21,7 @@ namespace DataPetriNetGeneration
         {
             Context = context;
         }
-        public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount)
+        public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount, bool soundnessPreference = false)
         {
             if ((varsCount < 0) || (conditionsCount < 0))
             {
@@ -61,7 +61,7 @@ namespace DataPetriNetGeneration
 
                 for (int i = 0; i < conditionsPerTransition[transitionIndex]; i++)
                 {
-                    var firstVariableType = GetVarType(varTypesPool);
+                    var firstVariableType = GetVarType(varTypesPool, soundnessPreference);
                     var logicalConnectiveType = GetLogicalConnectiveType(connectivesPool, i);
                     var variableName = GetVarName(varsPool);
                     var predicate = GetPredicate(predicatesPool);
@@ -113,8 +113,16 @@ namespace DataPetriNetGeneration
             return varsPool[random.Next(0, varsPool.Count)];
         }
 
-        private VariableType GetVarType(List<VariableType> varTypesPool)
+        private VariableType GetVarType(List<VariableType> varTypesPool, bool soundnessPreference)
         {
+            if (soundnessPreference)
+            {
+                var chosenOption = random.Next(0, 4); // 75% chance of write condition
+
+                return chosenOption == 0
+                    ? VariableType.Read
+                    : VariableType.Written;
+            }
             return varTypesPool[random.Next(0, varTypesPool.Count)];
         }
 
