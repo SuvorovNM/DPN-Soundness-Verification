@@ -40,6 +40,8 @@ namespace DataPetriNetVerificationApplication
 
             //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\new\7e51f096-709a-493d-88e1-ba7988b47358.pnmlx PipeClientHandle 896 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum BaseVersion".Split(" ");
 
+            //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\sound\b2877e38-5428-4ee0-8c67-9946ad356d84.pnmlx PipeClientHandle 2052 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\sound VerificationAlgorithmTypeEnum OptimizedVersion Soundness True".Split(" "); ;
+
             bool? soundness = null;
             bool? boundedness = null;
             byte? deadTransitions = null;
@@ -141,7 +143,7 @@ namespace DataPetriNetVerificationApplication
                                 var dpnRefined = transformation.Transform(dpnToVerify, lts);
                                 cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
                                 cgRefined.GenerateGraph();
-                                soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+                                soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnRefined, cgRefined);
                                 timer.Stop();
                                 satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
                                 cgRefinedTime = timer.ElapsedMilliseconds;
@@ -173,7 +175,7 @@ namespace DataPetriNetVerificationApplication
                         timer.Restart();
                         cgRefined = new ConstraintGraph(dpnRefined, constraintExpressionService);
                         cgRefined.GenerateGraph();
-                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnToVerify, cgRefined);
+                        soundnessProps = ConstraintGraphAnalyzer.CheckSoundness(dpnRefined, cgRefined);
                         timer.Stop();
                         cgRefinedTime = timer.ElapsedMilliseconds;
 
@@ -208,7 +210,7 @@ namespace DataPetriNetVerificationApplication
                 throw new TimeoutException("Process requires more than 20 minutes to verify soundness");
             }
 
-            SendResultToPipe(pipeClientHandle, outputRow);
+            //SendResultToPipe(pipeClientHandle, outputRow);
 
             if (satisfiesConditions)
             {
@@ -296,14 +298,6 @@ namespace DataPetriNetVerificationApplication
                 {
                     sw.AutoFlush = true;
                     XmlSerializer serializer = new XmlSerializer(typeof(MainVerificationInfo));//null
-                    /*if (outputRow is OptimizedVerificationOutput)
-                    {
-                        serializer = new XmlSerializer(typeof(OptimizedVerificationOutput));
-                    }
-                    if (outputRow is BasicVerificationOutput)
-                    {
-                        serializer = new XmlSerializer(typeof(BasicVerificationOutput));
-                    }*/
                     serializer.Serialize(sw, new MainVerificationInfo(outputRow));
                 }
             }
