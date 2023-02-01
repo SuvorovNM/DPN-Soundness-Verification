@@ -12,11 +12,9 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public class TransformationToRefined //: ITransformation
+    public class TransformationToRefined
     {
         private CyclesFinder cyclesFinder;
-        //public long MillisecondsForBoundednessCheck;
-        //public long MillisecondsForTransformation;
         public TransformationToRefined()
         {
             cyclesFinder = new CyclesFinder();

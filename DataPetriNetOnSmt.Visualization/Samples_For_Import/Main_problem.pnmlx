@@ -78,10 +78,10 @@
          </arc>   
       </page>
       <variables>
-         <variable type="Integer">
+         <variable type="Real">
             <name>a</name>
          </variable>
-         <variable type="Integer">
+         <variable type="Real">
             <name>b</name>
          </variable>
       </variables>

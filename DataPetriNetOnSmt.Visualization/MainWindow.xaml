@@ -27,10 +27,8 @@
                 </MenuItem>
                 <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click"/>
 
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG">
-                    <MenuItem x:Name="ManualSoundnessMenuItem" Header="nSQE-based Implication Implementation" Click="ManualSoundnessMenuItem_Click"/>
-                    <MenuItem x:Name="QeTacticSoundnessMenuItem" Header="QE-based Implication Implementation" Click="QeTacticSoundnessMenuItem_Click"/>
-                </MenuItem>
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click"/>
+
             </MenuItem>
         </Menu>
         <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,26,0,0" />

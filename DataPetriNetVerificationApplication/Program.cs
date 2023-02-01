@@ -198,7 +198,7 @@ namespace DataPetriNetVerificationApplication
                         cgRefinedTime);
                 }
             }, source.Token);
-            if (!verificationTask.Wait(TimeSpan.FromMinutes(20)))
+            if (!verificationTask.Wait(TimeSpan.FromMinutes(120)))
             {
                 var conditionsCount = dpnToVerify
                     .Transitions
@@ -210,7 +210,7 @@ namespace DataPetriNetVerificationApplication
                 throw new TimeoutException("Process requires more than 20 minutes to verify soundness");
             }
 
-            //SendResultToPipe(pipeClientHandle, outputRow);
+            SendResultToPipe(pipeClientHandle, outputRow);
 
             if (satisfiesConditions)
             {
@@ -236,38 +236,6 @@ namespace DataPetriNetVerificationApplication
             return dpn;
         }
 
-        [Obsolete("Nsqe is not adapted to the new algorithm")]
-        private static DataPetriNet GetDpnToVerify(VerificationTypeEnum? verificationType, string dpnFilePath)
-        {
-            var xDoc = new XmlDocument();
-            xDoc.Load(dpnFilePath);
-
-            var parser = new PnmlParser();
-            var dpn = parser.DeserializeDpn(xDoc);
-            dpn.Context = context;
-
-            return verificationType switch
-            {
-                VerificationTypeEnum.QeWithoutTransformation or VerificationTypeEnum.NsqeWithoutTransformation =>
-                    dpn,
-                VerificationTypeEnum.NsqeWithTransformation or VerificationTypeEnum.QeWithTransformation =>
-                    new TransformationToAtomicConstraints().Transform(dpn).dpn,
-                _ => throw new ArgumentException("Verification type " + nameof(verificationType) + " is not supported!")
-            };
-        }
-
-        [Obsolete("Nsqe is not adapted to the new algorithm")]
-        private static AbstractConstraintExpressionService GetExpressionService(VerificationTypeEnum? verificationType)
-        {
-            return verificationType switch
-            {
-                VerificationTypeEnum.QeWithoutTransformation or VerificationTypeEnum.QeWithTransformation =>
-                    new ConstraintExpressionOperationServiceWithEqTacticConcat(context),
-                VerificationTypeEnum.NsqeWithoutTransformation or VerificationTypeEnum.NsqeWithTransformation =>
-                    new ConstraintExpressionOperationServiceWithManualConcat(context),
-                _ => throw new ArgumentException("Verification type " + nameof(verificationType) + " is not supported!")
-            };
-        }
 
         private static void SaveResultInFile(VerificationAlgorithmTypeEnum? verificationType, string? outputDirectory, MainVerificationInfo outputRow)
         {

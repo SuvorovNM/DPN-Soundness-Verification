@@ -128,7 +128,7 @@ namespace DataPetriNetOnSmt.Abstractions
 
             return result;
         }
-        public abstract BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false);
+        //public abstract BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false);
 
         public abstract BoolExpr ConcatExpressions(BoolExpr source, BoolExpr target, Dictionary<string,DomainType> overwrittenVars);
 

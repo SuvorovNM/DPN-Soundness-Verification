@@ -30,15 +30,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         }
     }
 
-    public class TransformationToAtomicConstraints : ITransformation
+    public class TransformationToAtomicConstraints
     {
         private int overallPlaceIndex = 0;
         private Place lockingPlace = null;
 
-        public (DataPetriNet dpn, Dictionary<string, long> timers) Transform(DataPetriNet sourceDpn)
+        public DataPetriNet Transform(DataPetriNet sourceDpn)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
             if (sourceDpn == null)
             {
                 throw new ArgumentNullException(nameof(sourceDpn));
@@ -86,12 +84,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 TryExpand(newDPN, transitionInfo);
             }
 
-            stopwatch.Stop();
-
-            var timings = new Dictionary<string, long>();
-            timings.Add("MillisecondsForTransformation", stopwatch.ElapsedMilliseconds);
-
-            return (newDPN, timings);
+            return newDPN;
         }
 
         private void TryExpand(DataPetriNet dpn, TransitionInfo transitionInfo)

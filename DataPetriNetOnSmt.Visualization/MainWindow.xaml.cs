@@ -93,10 +93,6 @@ namespace DataPetriNetOnSmt.Visualization
         {
             await DisplayConstraintGraphBasedOnQeConcat();
         }
-        private async void ManualSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            await DisplayConstraintGraphManualConcat();
-        }
 
         private async Task DisplayConstraintGraphBasedOnQeConcat()
         {
@@ -116,17 +112,6 @@ namespace DataPetriNetOnSmt.Visualization
             constraintGraphWindow.Show();
         }
 
-        private async Task DisplayConstraintGraphManualConcat()
-        {
-            if (currentDisplayedNet != null)
-            {
-                var constraintGraph = new ConstraintGraph(currentDisplayedNet,
-                    new ConstraintExpressionOperationServiceWithManualConcat(currentDisplayedNet.Context));
-                var constraintGraphToVisualize = await CheckSoundness(constraintGraph);
-                VisualizeConstraintGraph(constraintGraphToVisualize);
-            }
-        }
-
         private async Task<LtsToVisualize> CheckSoundness
             (LabeledTransitionSystem lts)
         {
@@ -140,7 +125,7 @@ namespace DataPetriNetOnSmt.Visualization
         private void TransformModelToAtomicItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformationToAtomicConstraints();
-            (currentDisplayedNet,_) = dpnTransformation.Transform(currentDisplayedNet);
+            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 

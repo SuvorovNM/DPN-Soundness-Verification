@@ -11,10 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetOnSmt.Visualiza
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetGeneration", "DataPetriNetGeneration\DataPetriNetGeneration.csproj", "{747EEDAD-7C8E-4AB2-9D16-0BF7FF664395}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetIterativeVerificationRunner", "DataPetriNetVeificationTimingEstimator\DataPetriNetIterativeVerificationRunner.csproj", "{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetVerificationForGivenParameters", "DataPetriNetVerificationForGivenParameters\DataPetriNetVerificationForGivenParameters.csproj", "{0FFDB513-2DFF-466A-9FA7-8D62F643398B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetIterativeVerificationApplication", "DataPetriNetIterativeVerificationApplication\DataPetriNetIterativeVerificationApplication.csproj", "{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataPetriNetParsers", "ToGraphParser\DataPetriNetParsers.csproj", "{3405D568-157D-47B7-B592-F3D59AE1EB6A}"
@@ -63,22 +59,6 @@ Global
 		{747EEDAD-7C8E-4AB2-9D16-0BF7FF664395}.Release|Any CPU.Build.0 = Release|Any CPU
 		{747EEDAD-7C8E-4AB2-9D16-0BF7FF664395}.Release|x64.ActiveCfg = Release|x64
 		{747EEDAD-7C8E-4AB2-9D16-0BF7FF664395}.Release|x64.Build.0 = Release|x64
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Debug|x64.Build.0 = Debug|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Release|x64.ActiveCfg = Release|Any CPU
-		{FC263FCA-C550-4BC2-8C27-398EA80AC4F1}.Release|x64.Build.0 = Release|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Debug|x64.Build.0 = Debug|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Release|x64.ActiveCfg = Release|Any CPU
-		{0FFDB513-2DFF-466A-9FA7-8D62F643398B}.Release|x64.Build.0 = Release|Any CPU
 		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}.Debug|x64.ActiveCfg = Debug|Any CPU

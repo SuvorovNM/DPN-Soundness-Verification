@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\DataPetriNetOnSmt\DataPetriNetOnSmt.csproj" />
+		<ProjectReference Include="..\ToGraphParser\DataPetriNetParsers.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
