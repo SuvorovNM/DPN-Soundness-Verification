@@ -29,6 +29,11 @@
 
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click"/>
 
+                <MenuItem x:Name="CheckSoundnessItem" Header="Check soundness">
+                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Direct approach" Click="CheckSoundnessDirectItem_Click"/>
+                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Improved approach" Click="CheckSoundnessImprovedItem_Click"/>
+                </MenuItem>
+
             </MenuItem>
         </Menu>
         <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,26,0,0" />

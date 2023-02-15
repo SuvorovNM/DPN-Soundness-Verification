@@ -29,7 +29,6 @@ namespace DataPetriNetOnSmt.Visualization
         private readonly DPNToGraphParser dpnParser;
         private readonly PnmlParser pnmlParser;
         private readonly SampleDPNProvider dpnProvider;
-        //private readonly ITransformation dpnTransformation;
         private Context context;
 
         public MainWindow()
@@ -45,6 +44,8 @@ namespace DataPetriNetOnSmt.Visualization
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
         }
+
+
 
         private void OpenDpn_Click(object sender, RoutedEventArgs e)
         {
@@ -79,6 +80,44 @@ namespace DataPetriNetOnSmt.Visualization
             }
         }
 
+        private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
+        {
+            var dpnTransformation = new TransformationToRefined();
+            (var dpn, _) = dpnTransformation.Transform(currentDisplayedNet);
+
+            var constraintGraph = new ConstraintGraph(dpn,
+                    new ConstraintExpressionOperationServiceWithEqTacticConcat(dpn.Context));
+            var constraintGraphToVisualize = await CheckSoundness(dpn, constraintGraph);
+            VisualizeConstraintGraph(constraintGraphToVisualize);
+        }
+
+        private async void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
+        {
+            var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet, 
+                new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+
+            var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
+
+            if (ltsToVisualize.IsSound)
+            {
+                var cg = new ConstraintGraph(currentDisplayedNet,
+                    new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+                ltsToVisualize = await CheckSoundness(currentDisplayedNet, cg);
+
+                if (ltsToVisualize.IsSound)
+                {
+                    var dpnTransformation = new TransformationToRefined();
+                    (var dpn, _) = dpnTransformation.Transform(currentDisplayedNet);
+
+                    var constraintGraph = new ConstraintGraph(dpn,
+                        new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
+                    ltsToVisualize = await CheckSoundness(dpn, constraintGraph);
+                }
+            }
+
+            VisualizeConstraintGraph(ltsToVisualize);
+        }
+
         private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
         {
             currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
@@ -91,18 +130,10 @@ namespace DataPetriNetOnSmt.Visualization
         }
         private async void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            await DisplayConstraintGraphBasedOnQeConcat();
-        }
-
-        private async Task DisplayConstraintGraphBasedOnQeConcat()
-        {
-            if (currentDisplayedNet != null)
-            {
-                var constraintGraph = new ConstraintGraph(currentDisplayedNet, 
+            var constraintGraph = new ConstraintGraph(currentDisplayedNet,
                     new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
-                var constraintGraphToVisualize = await CheckSoundness(constraintGraph);
-                VisualizeConstraintGraph(constraintGraphToVisualize);
-            }
+            var constraintGraphToVisualize = await CheckSoundness(currentDisplayedNet, constraintGraph);
+            VisualizeConstraintGraph(constraintGraphToVisualize);
         }
 
         private void VisualizeConstraintGraph(LtsToVisualize constraintGraphToVisualize)
@@ -113,11 +144,10 @@ namespace DataPetriNetOnSmt.Visualization
         }
 
         private async Task<LtsToVisualize> CheckSoundness
-            (LabeledTransitionSystem lts)
+            (DataPetriNet dpn, LabeledTransitionSystem lts)
         {
-            //var constraintGraph = new ConstraintGraph(currentDisplayedNet, expressionService);
             await Task.Run(() => lts.GenerateGraph(true));
-            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(currentDisplayedNet, lts);
+            var soundnessProperties = ConstraintGraphAnalyzer.CheckSoundness(dpn, lts);
 
             return new LtsToVisualize(lts, soundnessProperties);
         }
@@ -142,12 +172,7 @@ namespace DataPetriNetOnSmt.Visualization
             {
                 var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(currentDisplayedNet.Context));
 
-                //lts.GenerateGraph();
-
-                //var check = new CyclesFinder().GetCycles(lts);
-
-
-                var ltsToVisualize = await CheckSoundness(lts);
+                var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
                 VisualizeConstraintGraph(ltsToVisualize);
             }
         }
