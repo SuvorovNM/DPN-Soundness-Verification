@@ -12,7 +12,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         bool Deadlocks,
         bool Soundness);
 
-    public static class ConstraintGraphAnalyzer
+    public static class LtsAnalyzer
     {
         public static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
         {

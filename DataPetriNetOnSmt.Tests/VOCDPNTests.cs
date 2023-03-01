@@ -343,23 +343,13 @@ namespace DataPetriNetOnSmt.Tests
             };
         }
 
-        [TestMethod]        
-        public void RunDPN()
-        {
-            bool canMakeNextStep;
-            do
-            {
-                canMakeNextStep = dataPetriNet.MakeStep();
-            } while (canMakeNextStep);
-        }
-
         [TestMethod]
         public void BuildConstraintGraphForBanking()
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            var constraintGraph = new ConstraintGraph(dataPetriNet);
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -369,7 +359,7 @@ namespace DataPetriNetOnSmt.Tests
 
             File.WriteAllText("VOC_man.txt", resultTime.ToString());
 
-            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
+            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(48, constraintGraph.ConstraintStates.Count);
             Assert.AreEqual(73, constraintGraph.ConstraintArcs.Count);

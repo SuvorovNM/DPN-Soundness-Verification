@@ -13,8 +13,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public abstract class LabeledTransitionSystem
     {
-        public Context Context { get; init; }
-        protected AbstractConstraintExpressionService expressionService;
+        protected ConstraintExpressionService expressionService;
         protected DataPetriNet DataPetriNet { get; init; }
         public ConstraintState InitialState { get; set; }
         public List<ConstraintState> ConstraintStates { get; set; }
@@ -24,10 +23,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
         protected Stack<ConstraintState> StatesToConsider { get; set; }
 
-        public LabeledTransitionSystem(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
+        public LabeledTransitionSystem(DataPetriNet dataPetriNet)
         {
-            expressionService = abstractConstraintExpressionService;
-            Context = dataPetriNet.Context;
+            expressionService = new ConstraintExpressionService(dataPetriNet.Context);
 
             DataPetriNet = dataPetriNet;
 
@@ -44,14 +42,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             StatesToConsider.Push(InitialState);
         }
 
-        public LabeledTransitionSystem()
-        {
-            ConstraintArcs = new List<ConstraintArc>();
-            ConstraintStates = new List<ConstraintState>();
-            StatesToConsider = new Stack<ConstraintState>();
-        }
-
-        public abstract void GenerateGraph(bool removeRedundantBlocks = false);
+        public abstract void GenerateGraph();
 
         protected void AddNewState(ConstraintState currentState,
                                 ConstraintTransition transition,
@@ -65,7 +56,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 ConstraintArcs.Add(new ConstraintArc(currentState, transition, equalStateInGraph));
                 equalStateInGraph.ParentStates = equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
                 equalStateInGraph.ParentStates.Add(currentState);
-                equalStateInGraph.PreviousStepStates.Add(currentState);
 
                 if (equalStateInGraph.ParentStates.Contains(equalStateInGraph))
                 {
@@ -81,7 +71,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             }
         }
 
-        protected IEnumerable<Transition> GetTransitionsWhichCanFire(Dictionary<Node, int> marking)
+        protected IEnumerable<Transition> GetEnabledTransitions(Dictionary<Node, int> marking)
         {
             var transitionsWhichCanFire = new List<Transition>();
 
@@ -100,7 +90,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             return transitionsWhichCanFire;
         }
 
-        protected bool IsMonotonicallyIncreasedWithUnchangedConstraints(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires, ConstraintState parentNode)
+        protected bool IsMonotonicallyIncreasedWithSameConstraints(
+            Dictionary<Node, int> tokens, 
+            BoolExpr constraintsIfFires, 
+            ConstraintState parentNode)
         {
             foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
             {
@@ -116,7 +109,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             return false;
         }
 
-        protected ConstraintState FindEqualStateInGraph(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires)
+        private ConstraintState? FindEqualStateInGraph(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires)
         {
             foreach (var stateInGraph in ConstraintStates)
             {

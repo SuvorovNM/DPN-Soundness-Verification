@@ -276,8 +276,7 @@ namespace DataPetriNetOnSmt.Tests
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var constraintGraph = new ConstraintGraph(dataPetriNet, 
-                new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            var constraintGraph = new ConstraintGraph(dataPetriNet);
             //ConstraintExpressionServiceForRealsWithManualConcat
 
             var stopwatch = new Stopwatch();
@@ -287,7 +286,7 @@ namespace DataPetriNetOnSmt.Tests
             var resultTime = stopwatch.Elapsed;
 
             File.WriteAllText("VOV_man.txt", resultTime.ToString());
-            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
+            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(69, constraintGraph.ConstraintStates.Count);
             Assert.AreEqual(88, constraintGraph.ConstraintArcs.Count);
@@ -312,8 +311,7 @@ namespace DataPetriNetOnSmt.Tests
 
             var dpn = pnmlParser.DeserializeDpn(xDoc);
 
-            var constraintGraph = new ConstraintGraph(dpn, 
-                new ConstraintExpressionOperationServiceWithEqTacticConcat(dataPetriNet.Context));
+            var constraintGraph = new ConstraintGraph(dpn);
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -323,7 +321,7 @@ namespace DataPetriNetOnSmt.Tests
 
             File.WriteAllText("VOV_new_man.txt", resultTime.ToString());
 
-            var typedStates = ConstraintGraphAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
+            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
         }
     }
 }

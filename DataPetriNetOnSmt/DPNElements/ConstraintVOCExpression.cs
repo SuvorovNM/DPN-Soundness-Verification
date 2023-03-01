@@ -14,29 +14,6 @@ namespace DataPetriNetOnSmt.DPNElements
         public BinaryPredicate Predicate { get; set; }
         public DefinableValue<T> Constant { get; set; }
 
-        public bool Equals(IConstraintExpression other)
-        {
-            var otherExpression = other as ConstraintVOCExpression<T>;
-            if (otherExpression == null)
-            {
-                return false;
-            }
-
-            return ConstraintVariable == otherExpression.ConstraintVariable &&
-                Predicate == otherExpression.Predicate &&
-                Constant.Equals(otherExpression.Constant);
-        }
-
-        public IConstraintExpression GetInvertedExpression()
-        {
-            var expression = new ConstraintVOCExpression<T>();
-            expression.Constant = Constant;
-            expression.Predicate = (BinaryPredicate)(-(long)Predicate);
-            expression.LogicalConnective = (LogicalConnective)(-(long)LogicalConnective);
-            expression.ConstraintVariable = ConstraintVariable;
-
-            return expression;
-        }
 
         public IConstraintExpression Clone()
         {
@@ -77,22 +54,6 @@ namespace DataPetriNetOnSmt.DPNElements
                 BinaryPredicate.LessThanOrEqual => ctx.MkLe((ArithExpr)variable, (ArithExpr)constToCompare),
                 BinaryPredicate.GreaterThan => ctx.MkGt((ArithExpr)variable, (ArithExpr)constToCompare),
                 BinaryPredicate.GreaterThanOrEqual => ctx.MkGe((ArithExpr)variable, (ArithExpr)constToCompare),
-            };
-        }
-
-        public IConstraintExpression CloneAsReadExpression()
-        {
-            return new ConstraintVOCExpression<T>
-            {
-                Constant = this.Constant,
-                LogicalConnective = this.LogicalConnective,
-                Predicate = this.Predicate,
-                ConstraintVariable = new ConstraintVariable
-                {
-                    VariableType = VariableType.Read,
-                    Domain = this.ConstraintVariable.Domain,
-                    Name = this.ConstraintVariable.Name,
-                }
             };
         }
 

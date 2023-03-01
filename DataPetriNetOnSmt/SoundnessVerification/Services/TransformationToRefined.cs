@@ -1,4 +1,5 @@
-﻿using DataPetriNetOnSmt.DPNElements;
+﻿using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
@@ -12,10 +13,10 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public class TransformationToRefined
+    public class TransformerToRefined
     {
         private CyclesFinder cyclesFinder;
-        public TransformationToRefined()
+        public TransformerToRefined()
         {
             cyclesFinder = new CyclesFinder();
         }
@@ -118,7 +119,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn)
         {
-            var lts = new ClassicalLabeledTransitionSystem(sourceDpn, new ConstraintExpressionOperationServiceWithEqTacticConcat(sourceDpn.Context));
+            var lts = new ClassicalLabeledTransitionSystem(sourceDpn);
             lts.GenerateGraph();
 
             if (!lts.IsFullGraph)

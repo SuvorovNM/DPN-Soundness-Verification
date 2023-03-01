@@ -11,19 +11,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public class ConstraintGraph : LabeledTransitionSystem // TODO: insert Ids
     {
-        public ConstraintGraph(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
-        : base(dataPetriNet, abstractConstraintExpressionService)
+        public ConstraintGraph(DataPetriNet dataPetriNet)
+        : base(dataPetriNet)
         {
 
         }
 
-        public ConstraintGraph()
-        : base()
-        {
-
-        }
-
-        public override void GenerateGraph(bool removeRedundantBlocks = false)
+        public override void GenerateGraph()
         {
             IsFullGraph = false;
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -32,13 +26,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             {
                 var currentState = StatesToConsider.Pop();
 
-                foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
+                foreach (var transition in GetEnabledTransitions(currentState.PlaceTokens))
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
                         //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                    var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
 
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
@@ -49,7 +43,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         {
                             var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
 
-                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
+                            if (IsMonotonicallyIncreasedWithSameConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
                             {
                                 return; // The net is unbounded
                             }
@@ -58,7 +52,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         }
                     }
 
-                    var negatedGuardExpressions = Context.MkNot(readExpression);
+                    var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
 
                     if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
                     {
@@ -68,7 +62,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
-                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(currentState.PlaceTokens, constraintsIfSilentTransitionFires, currentState))
+                            if (IsMonotonicallyIncreasedWithSameConstraints(currentState.PlaceTokens, constraintsIfSilentTransitionFires, currentState))
                             {
                                 return; // The net is unbound
                             }

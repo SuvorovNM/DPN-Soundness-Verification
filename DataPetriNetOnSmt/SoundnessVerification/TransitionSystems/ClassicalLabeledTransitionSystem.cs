@@ -12,19 +12,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public class ClassicalLabeledTransitionSystem : LabeledTransitionSystem
     {
-        public ClassicalLabeledTransitionSystem()
-        : base()
+
+        public ClassicalLabeledTransitionSystem(DataPetriNet dataPetriNet)
+        : base(dataPetriNet)
         {
 
         }
 
-        public ClassicalLabeledTransitionSystem(DataPetriNet dataPetriNet, AbstractConstraintExpressionService abstractConstraintExpressionService)
-        : base(dataPetriNet, abstractConstraintExpressionService)
-        {
-
-        }
-
-        public override void GenerateGraph(bool removeRedundantBlocks = false)
+        public override void GenerateGraph()
         {
             IsFullGraph = false;
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -33,13 +28,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             {
                 var currentState = StatesToConsider.Pop();
 
-                foreach (var transition in GetTransitionsWhichCanFire(currentState.PlaceTokens))
+                foreach (var transition in GetEnabledTransitions(currentState.PlaceTokens))
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
                     //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                    var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
 
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
@@ -50,7 +45,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         {
                             var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
 
-                            if (IsMonotonicallyIncreasedWithUnchangedConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
+                            if (IsMonotonicallyIncreasedWithSameConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
                             {
                                 return; // The net is unbounded
                             }

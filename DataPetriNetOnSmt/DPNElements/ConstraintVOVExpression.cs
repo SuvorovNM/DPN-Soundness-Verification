@@ -12,30 +12,6 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public ConstraintVariable VariableToCompare { get; set; }
 
-        public bool Equals(IConstraintExpression other)
-        {
-            var otherExpression = other as ConstraintVOVExpression;
-            if (otherExpression == null)
-            {
-                return false;
-            }
-
-            return ConstraintVariable == otherExpression.ConstraintVariable &&
-                Predicate == otherExpression.Predicate &&
-                VariableToCompare == otherExpression.VariableToCompare;
-        }
-
-        public IConstraintExpression GetInvertedExpression()
-        {
-            var expression = new ConstraintVOVExpression();
-            expression.VariableToCompare = VariableToCompare;
-            expression.Predicate = (BinaryPredicate)(-(long)Predicate);
-            expression.LogicalConnective = (LogicalConnective)(-(long)LogicalConnective);
-            expression.ConstraintVariable = ConstraintVariable;
-
-            return expression;
-        }
-
         public IConstraintExpression Clone()
         {
             return new ConstraintVOVExpression
@@ -68,22 +44,6 @@ namespace DataPetriNetOnSmt.DPNElements
                 BinaryPredicate.LessThanOrEqual => ctx.MkLe((ArithExpr)variable, (ArithExpr)variableToCompare),
                 BinaryPredicate.GreaterThan => ctx.MkGt((ArithExpr)variable, (ArithExpr)variableToCompare),
                 BinaryPredicate.GreaterThanOrEqual => ctx.MkGe((ArithExpr)variable, (ArithExpr)variableToCompare),
-            };
-        }
-
-        public IConstraintExpression CloneAsReadExpression()
-        {
-            return new ConstraintVOVExpression
-            {
-                LogicalConnective = this.LogicalConnective,
-                Predicate = this.Predicate,
-                ConstraintVariable = new ConstraintVariable
-                {
-                    VariableType = VariableType.Read,
-                    Domain = this.ConstraintVariable.Domain,
-                    Name = this.ConstraintVariable.Name,
-                },
-                VariableToCompare = this.VariableToCompare
             };
         }
 

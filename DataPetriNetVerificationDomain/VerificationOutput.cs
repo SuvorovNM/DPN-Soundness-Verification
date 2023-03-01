@@ -106,7 +106,7 @@ namespace DataPetriNetVerificationDomain
             DataPetriNet dpn,
             bool satisfiesConditions,
             ClassicalLabeledTransitionSystem lts,
-            ConstraintGraph cgRefined,
+            ConstraintGraph? cgRefined,
             SoundnessProperties? soundnessProperties,
             long millisecondsForLts,
             long millisecondsForTransformation,
@@ -132,8 +132,8 @@ namespace DataPetriNetVerificationDomain
             LtsTime = millisecondsForLts.ToString();
             TransformationTime = millisecondsForTransformation.ToString();
             CgRefTime = millisecondsForCgRefined.ToString();
-            CgRefArcs = cgRefined.ConstraintArcs.Count;
-            CgRefStates = cgRefined.ConstraintStates.Count;
+            CgRefArcs = cgRefined?.ConstraintArcs.Count ?? -1;
+            CgRefStates = cgRefined?.ConstraintStates.Count ?? -1;
         }
         public BasicVerificationOutput()
         {
@@ -155,8 +155,8 @@ namespace DataPetriNetVerificationDomain
             DataPetriNet dpn, 
             bool satisfiesConditions,
             ClassicalLabeledTransitionSystem lts,
-            ConstraintGraph cg,
-            ConstraintGraph cgRefined,
+            ConstraintGraph? cg,
+            ConstraintGraph? cgRefined,
             SoundnessProperties? soundnessProperties,
             long millisecondsForLts,
             long millisecondsForCg,
@@ -173,8 +173,8 @@ namespace DataPetriNetVerificationDomain
             Boundedness = soundnessProperties?.Boundedness ?? false ;
             LtsStates = lts.ConstraintStates.Count;
             LtsArcs = lts.ConstraintArcs.Count;
-            CgStates = cg.ConstraintStates.Count;
-            CgArcs = cg.ConstraintArcs.Count;
+            CgStates = cg?.ConstraintStates.Count ?? -1;
+            CgArcs = cg?.ConstraintArcs.Count ?? -1;
             DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Count ?? 0);
             Deadlocks = soundnessProperties?.Deadlocks ?? false;
             Soundness = soundnessProperties?.Soundness ?? false;

@@ -10,10 +10,7 @@ namespace DataPetriNetOnSmt.Abstractions
         BinaryPredicate Predicate { get; set; }
         ConstraintVariable ConstraintVariable { get; set; }
 
-        bool Equals(IConstraintExpression other);
-        IConstraintExpression GetInvertedExpression();
         IConstraintExpression Clone();
-        IConstraintExpression CloneAsReadExpression();
 
         BoolExpr GetSmtExpression(Context ctx);
 

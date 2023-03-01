@@ -6,88 +6,12 @@ using System.Diagnostics;
 
 namespace DataPetriNetOnSmt.Abstractions
 {
-    public abstract class AbstractConstraintExpressionService
+    public class ConstraintExpressionService
     {
         public Context Context { get; private set; }
-        public AbstractConstraintExpressionService(Context context)
+        public ConstraintExpressionService(Context context)
         {
             Context = context;
-        }
-        public List<IConstraintExpression> GetInvertedReadExpression(List<IConstraintExpression> sourceExpression)
-        {
-            if (sourceExpression is null)
-            {
-                throw new ArgumentNullException(nameof(sourceExpression));
-            }
-            if (sourceExpression.Count == 0)
-            {
-                return sourceExpression;
-            }
-
-            var blocks = new List<List<IConstraintExpression>>();
-            var expressionDuringExecution = new List<IConstraintExpression>(sourceExpression);
-            do
-            {
-                var expressionBlock = CutFirstExpressionBlock(expressionDuringExecution)
-                    .GetExpressionsOfType(VariableType.Read)
-                    .Select(x => x.GetInvertedExpression())
-                    .ToList();
-
-                if (expressionBlock.Count > 0)
-                {
-                    blocks.Add(expressionBlock);
-                }
-            } while (expressionDuringExecution.Count > 0);
-
-            var allCombinations = GetAllPossibleCombos(blocks);
-            return MakeSingleExpressionListFromMultipleLists(allCombinations);
-        }
-
-        private static List<IConstraintExpression> MakeSingleExpressionListFromMultipleLists(List<List<IConstraintExpression>> allCombinations)
-        {
-            var resultExpression = new List<IConstraintExpression>();
-
-            foreach (var combination in allCombinations.Where(x => x.Count > 0))
-            {
-                var firstExpressionInBlock = combination[0].Clone();
-                firstExpressionInBlock.LogicalConnective = LogicalConnective.Or;
-                resultExpression.Add(firstExpressionInBlock);
-
-                for (int i = 1; i < combination.Count; i++)
-                {
-                    var currentExpression = combination[i].Clone();
-                    currentExpression.LogicalConnective = LogicalConnective.And;
-                    resultExpression.Add(currentExpression);
-                }
-            }
-            if (resultExpression.Count > 0)
-            {
-                resultExpression[0].LogicalConnective = LogicalConnective.Empty;
-            }
-
-            return resultExpression;
-        }
-
-        private static List<List<IConstraintExpression>> GetAllPossibleCombos(List<List<IConstraintExpression>> expressions)
-        {
-            IEnumerable<List<IConstraintExpression>> combos = new[] { new List<IConstraintExpression>() };
-
-            foreach (var inner in expressions)
-                combos = from c in combos
-                         from i in inner
-                         select c.Union(new List<IConstraintExpression> { i }).ToList();
-
-            return combos.ToList();
-        }
-
-        public BoolExpr ShortenExpression(BoolExpr expression)
-        {
-            if (expression is null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
-            return (BoolExpr)expression.Simplify();
         }
 
         public bool CanBeSatisfied(BoolExpr expression)
@@ -128,53 +52,55 @@ namespace DataPetriNetOnSmt.Abstractions
 
             return result;
         }
-        //public abstract BoolExpr ConcatExpressions(BoolExpr source, List<IConstraintExpression> target, bool removeRedundantBlocks = false);
 
-        public abstract BoolExpr ConcatExpressions(BoolExpr source, BoolExpr target, Dictionary<string,DomainType> overwrittenVars);
-
-
-        protected static List<IConstraintExpression> CutFirstExpressionBlock(List<IConstraintExpression> sourceConstraintsDuringEvaluation)
+        public BoolExpr ConcatExpressions(
+            BoolExpr source,
+            BoolExpr target,
+            Dictionary<string, DomainType> overwrittenVars)
         {
-            if (sourceConstraintsDuringEvaluation.Count == 0)
+            if (source is null)
             {
-                return new List<IConstraintExpression>();
+                throw new ArgumentNullException(nameof(source));
+            }
+            if (target is null)
+            {
+                throw new ArgumentNullException(nameof(target));
             }
 
-            List<IConstraintExpression> currentBlock;
-            var delimiter = Guard.GetDelimiter(sourceConstraintsDuringEvaluation);
 
-            currentBlock = new List<IConstraintExpression>(sourceConstraintsDuringEvaluation.GetRange(0, delimiter));
-            sourceConstraintsDuringEvaluation.RemoveRange(0, delimiter);
-            return currentBlock;
-        }
+            var andExpression = Context.MkAnd(source, target);
+            BoolExpr resultBlockExpression = andExpression;
 
-        protected static IEnumerable<BoolExpr[]> SplitSourceExpressionByOrDelimiter(BoolExpr source)
-        {
-            if (source.IsAnd)
+            if (overwrittenVars.Count > 0)
             {
-                var expressions = source.Args.Select(x => x as BoolExpr).ToArray();
-                return new List<BoolExpr[]> { expressions };
-            }
-
-            if (source.IsOr)
-            {
-                var expressionList = new List<BoolExpr[]>();
-                foreach (var expression in source.Args)
+                var variablesToOverwrite = new Expr[overwrittenVars.Count];
+                var currentArrayIndex = 0;
+                foreach (var keyValuePair in overwrittenVars)
                 {
-                    if (expression.Args.Any(x => x as BoolExpr == null))
-                    {
-                        expressionList.Add(new BoolExpr[] { (BoolExpr)expression });
-                    }
-                    else
-                    {
-                        expressionList.Add(expression.Args.Select(x => (BoolExpr)x).ToArray());
-                    }
+                    variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
                 }
 
-                return expressionList;
+                var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
+
+                Goal g = Context.MkGoal(true, true, false);
+                g.Assert(existsExpression);
+                Tactic tac = Context.MkTactic("qe");
+                ApplyResult a = tac.Apply(g);
+                var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
+
+
+                foreach (var keyValuePair in overwrittenVars)
+                {
+                    var sourceVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+                    var targetVar = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+
+                    expressionWithRemovedOverwrittenVars = (BoolExpr)expressionWithRemovedOverwrittenVars.Substitute(sourceVar, targetVar);
+                }
+                resultBlockExpression = expressionWithRemovedOverwrittenVars;
             }
 
-            return new List<BoolExpr[]>() { new BoolExpr[] { source } };
+
+            return resultBlockExpression;
         }
     }
 }

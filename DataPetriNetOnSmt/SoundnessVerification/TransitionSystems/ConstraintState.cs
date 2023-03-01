@@ -9,7 +9,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         public Dictionary<Node, int> PlaceTokens { get; }
         public BoolExpr Constraints { get; set; }
         public HashSet<ConstraintState> ParentStates { get; set; }
-        public HashSet<ConstraintState> PreviousStepStates { get; set; }
         public int Id { get; }
         public bool IsCyclic { get; set; }
 
@@ -18,7 +17,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             PlaceTokens = new Dictionary<Node, int>();
             Constraints = context.MkTrue();
             ParentStates = new HashSet<ConstraintState>();
-            PreviousStepStates = new HashSet<ConstraintState>();
             Id = Interlocked.Increment(ref stateCounter);
             IsCyclic = false;
         }
@@ -30,7 +28,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             ParentStates = new HashSet<ConstraintState> { parent };
             ParentStates = ParentStates.Union(parent.ParentStates).ToHashSet();
             Id = Interlocked.Increment(ref stateCounter);
-            PreviousStepStates = new HashSet<ConstraintState>() { parent };
+            //PreviousStepStates = new HashSet<ConstraintState>() { parent };
             IsCyclic = false;
         }
     }

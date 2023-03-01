@@ -36,21 +36,6 @@ namespace DataPetriNetOnSmt
 
         }
 
-        public bool MakeStep()
-        {
-            var canMakeStep = false; // TODO: Find a more quicker way to get random elements?
-            foreach (var transition in Transitions)//.OrderBy(x => randomGenerator.Next())
-            {
-                canMakeStep = transition.TryFire(Variables, Arcs, Context);
-                if (canMakeStep)
-                {
-                    return canMakeStep;
-                }
-            }
-
-            return canMakeStep;
-        }
-
         public ConstraintState GenerateInitialConstraintState()
         {
             var state = new ConstraintState(Context);
