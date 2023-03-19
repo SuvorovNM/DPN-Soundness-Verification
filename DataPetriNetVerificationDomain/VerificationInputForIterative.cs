@@ -9,7 +9,6 @@ namespace DataPetriNetVerificationDomain
     public class VerificationInputForIterative : VerificationInputBasis
     {
         public DpnToGenerateInfo DpnInfo;
-        public VerificationTypeEnum VerificationType;
         public IterationsInfo IterationsInfo;
     }
 }

@@ -56,7 +56,6 @@ namespace DataPetriNetIterativeVerificationApplication
             VariablesNumberTb.Text = "0.5";
             ConditionsNumberTb.Text = "1";
             MaxDtTb.Text = "60";
-            QEWithoutTransChb.IsChecked = true;
             BoundnessCmb.SelectedIndex = 0;
             SoundnessCmb.SelectedIndex = 0;
             InitialValueTb.Text = "5";
@@ -140,13 +139,6 @@ namespace DataPetriNetIterativeVerificationApplication
                     Variables = double.Parse(VariablesNumberTb.Text, CultureInfo.InvariantCulture)
                 };
 
-                var verificationType =
-                    (QEWithTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithTransformation : VerificationTypeEnum.None) |
-                    (QEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.QeWithoutTransformation : VerificationTypeEnum.None) |
-                    (nSQEWithTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithTransformation : VerificationTypeEnum.None) |
-                    (nSQEWithoutTransChb.IsChecked.Value ? VerificationTypeEnum.NsqeWithoutTransformation : VerificationTypeEnum.None);
-
-
                 var iterationsInfo = new IterationsInfo
                 {
                     DpnsPerConfiguration = ushort.Parse(DpnNumberTb.Text),
@@ -157,7 +149,6 @@ namespace DataPetriNetIterativeVerificationApplication
                 {
                     DpnInfo = dpnInfo,
                     ConditionsInfo = conditionsInfo,
-                    VerificationType = verificationType,
                     IterationsInfo = iterationsInfo,
                     OutputDirectory = DirectoryTb.Text,
                 };

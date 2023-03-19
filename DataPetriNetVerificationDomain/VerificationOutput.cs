@@ -185,8 +185,8 @@ namespace DataPetriNetVerificationDomain
             LtsTime = millisecondsForLts.ToString();
             CgTime = millisecondsForCg.ToString();
             CgRefTime = millisecondsForCgRefined.ToString();
-            CgRefArcs = cgRefined.ConstraintArcs.Count;
-            CgRefStates= cgRefined.ConstraintStates.Count;
+            CgRefArcs = cgRefined?.ConstraintArcs?.Count ?? -1;
+            CgRefStates= cgRefined?.ConstraintStates?.Count ?? -1;
         }
     }
     public class VerificationOutputWithNumber : MainVerificationInfo
