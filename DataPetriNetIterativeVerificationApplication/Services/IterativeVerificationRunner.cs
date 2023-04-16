@@ -86,7 +86,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                         using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
                         {
                             // Consider here base version as well?
-                            var processInfo = FormProcessInfo(verificationInput, VerificationAlgorithmTypeEnum.OptimizedVersion, dpnPath, pipeServer, processPath);
+                            var processInfo = FormProcessInfo(verificationInput, VerificationAlgorithmTypeEnum.ImprovedVersion, dpnPath, pipeServer, processPath);
                             var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
                             proc = Process.Start(processInfo);
                             pipeServer.DisposeLocalCopyOfClientHandle();
@@ -148,8 +148,8 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                     var successfulCase = false;
                     var verificationTypes = new List<VerificationAlgorithmTypeEnum> 
                     {
-                        VerificationAlgorithmTypeEnum.OptimizedVersion,
-                        VerificationAlgorithmTypeEnum.BaseVersion                        
+                        VerificationAlgorithmTypeEnum.ImprovedVersion,
+                        VerificationAlgorithmTypeEnum.DirectVersion                        
                     };
 
                     do

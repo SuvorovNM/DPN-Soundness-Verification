@@ -9,7 +9,7 @@ namespace DataPetriNetVerificationDomain
     [Flags]
     public enum VerificationAlgorithmTypeEnum
     {
-        BaseVersion = 2,
-        OptimizedVersion = 4
+        DirectVersion = 2,
+        ImprovedVersion = 4
     }
 }

@@ -15,11 +15,11 @@ namespace DataPetriNetOnSmt.DPNElements
             IsSplitted = false;
             BaseTransitionId = Id;// null;
         }
-        public Transition(string label, Guard guard, string? baseTransitionId = null)
+        public Transition(string id, Guard guard, string? baseTransitionId = null)
         {
             Guard = guard;
-            Label = label;
-            Id = label;
+            Label = id;
+            Id = id;
             IsSplitted = baseTransitionId != null;
             BaseTransitionId = baseTransitionId;
         }
@@ -81,7 +81,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public object Clone()
         {
-            return new Transition(Label, (Guard)Guard.Clone());
+            return new Transition(Id, (Guard)Guard.Clone()) { Label = this.Label};
         }
     }
 }

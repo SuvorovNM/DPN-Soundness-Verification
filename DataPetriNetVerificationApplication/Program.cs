@@ -40,7 +40,7 @@ namespace DataPetriNetVerificationApplication
 
             //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetVerificationApplication\bin\Debug\net6.0\Error_vars.pnmlx PipeClientHandle 896 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum BaseVersion".Split(" ");
 
-            //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\sound\b2877e38-5428-4ee0-8c67-9946ad356d84.pnmlx PipeClientHandle 2052 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\sound VerificationAlgorithmTypeEnum OptimizedVersion Soundness True".Split(" "); ;
+            //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Release\net6.0-windows\Output\0a41b746-7a47-44b8-b9b0-2831de858668.pnmlx PipeClientHandle 2052 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum DirectVersion".Split(" "); ;
 
             bool? soundness = null;
             bool? boundedness = null;
@@ -121,7 +121,7 @@ namespace DataPetriNetVerificationApplication
                 timer.Stop();
                 ltsTime = timer.ElapsedMilliseconds;
 
-                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.OptimizedVersion)
+                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.ImprovedVersion)
                 {
                     satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
                     if (satisfiesConditions && soundnessProps.Soundness)
@@ -162,7 +162,7 @@ namespace DataPetriNetVerificationApplication
                         cgTime,
                         cgRefinedTime);
                 }
-                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.BaseVersion)
+                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.DirectVersion)
                 {
                     long transformationTime = 0;
                     if (lts.IsFullGraph)
@@ -242,13 +242,13 @@ namespace DataPetriNetVerificationApplication
             using (var writer = new StreamWriter(outputDirectory + "/" + verificationType.ToString() + ".csv", true))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
-                if (verificationType == VerificationAlgorithmTypeEnum.OptimizedVersion)
+                if (verificationType == VerificationAlgorithmTypeEnum.ImprovedVersion)
                 {
                     csv.Context.RegisterClassMap<OptimizedVerificationOutputClassMap>();
                     csv.WriteRecord(outputRow);
                     csv.NextRecord();
                 }
-                if (verificationType == VerificationAlgorithmTypeEnum.BaseVersion)
+                if (verificationType == VerificationAlgorithmTypeEnum.DirectVersion)
                 {
                     csv.Context.RegisterClassMap<BasicVerificationOutputClassMap>();
                     csv.WriteRecord(outputRow);

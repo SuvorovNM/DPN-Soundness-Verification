@@ -86,9 +86,9 @@
 
             </TabItem>
         </TabControl>
-        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,0,0,0" VerticalAlignment="Center" Width="90" Click="StartBtn_Click">
+        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,201,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
         </Button>
-        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="814,0,0,0" VerticalAlignment="Center" Width="30" Click="StopsBtn_Click">
+        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,201,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
             <StackPanel Orientation="Horizontal">
                 <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
             </StackPanel>
@@ -98,7 +98,7 @@
         <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="347,96,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
         <CheckBox Name="SoundnessChb" Content="Soundness" HorizontalAlignment="Left" Margin="347,121,0,0" VerticalAlignment="Top" Width="84" Checked="SoundnessChb_Checked" Unchecked="SoundnessChb_Unchecked"/>
         <TextBox Name="MaxDtTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="488,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="35"/>
-        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="523,90,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="523,67,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
         <ComboBox Name="BoundnessCmb" HorizontalAlignment="Left" Margin="446,93,0,0" VerticalAlignment="Top" Width="77" Height="20">
             <ComboBoxItem Content="True"/>
             <ComboBoxItem Content="False"/>
@@ -107,16 +107,15 @@
             <ComboBoxItem Content="True"/>
             <ComboBoxItem Content="False"/>
         </ComboBox>
-        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Center" Width="132" FontSize="14"/>
-        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,0,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Center" Width="487" MaxHeight="18" Height="18"/>
-        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,0,0,0" VerticalAlignment="Center" Height="18" Width="25"/>
+        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,197,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
+        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,202,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
+        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,202,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
         <Grid Margin="0,244,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
                 <DataGrid.Resources>
                     <ContextMenu x:Key="verificationContextMenu">
                         <ContextMenu.Items>
                             <MenuItem Header="Open DPN" Click="OpenDpn_Click"/>
-                            <MenuItem Header="Open CG" Click="OpenCg_Click"/>
                         </ContextMenu.Items>
                     </ContextMenu>
                 </DataGrid.Resources>

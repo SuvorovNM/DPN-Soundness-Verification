@@ -313,15 +313,19 @@ namespace DataPetriNetParsers
                     ? VariableType.Read
                     : VariableType.Written;
 
-                if (constraintBlocks[2].EndsWith("_r"))
+                if (constraintBlocks[2].EndsWith("_r") || constraintBlocks[2].EndsWith("_w"))
                 {
                     var secondVariableName = constraintBlocks[2][0..^2];
+                    var secondVariableType = constraintBlocks[2].EndsWith("_r")
+                    ? VariableType.Read
+                    : VariableType.Written;
 
                     return MakeVOVExpression(varTypeDict[variableName],
                         GetBinaryPredicate(constraintBlocks[1]),
                         variableName,
                         variableType,
-                        secondVariableName);
+                        secondVariableName,
+                        secondVariableType);
                 }
                 return varTypeDict[variableName] switch
                 {
@@ -380,7 +384,8 @@ namespace DataPetriNetParsers
             BinaryPredicate predicate,
             string firstVariableName,
             VariableType firstVariableType,
-            string secondVariableName)
+            string secondVariableName,
+            VariableType secondVariableType)
         {
             return new ConstraintVOVExpression
             {
@@ -394,7 +399,7 @@ namespace DataPetriNetParsers
                 Predicate = predicate,
                 VariableToCompare = new ConstraintVariable
                 {
-                    VariableType = VariableType.Read,
+                    VariableType = secondVariableType,
                     Name = secondVariableName,
                     Domain = domainType
                 }
