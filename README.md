@@ -28,3 +28,27 @@ To run the app, download SoundnessVerifier.zip of the last release, extract the 
 1. Import a DPN choosing File -> Open DPN...
 2. Choose Model -> Check Soundness. Here two algorithms for soundness verification are proposed: direct and improved. The direct approach reveals all the sources of unsoundness and highlights them on the LTS but may take more time than the improved approach. The improved approach checks whether or not the DPN is sound and present the least detailed LTS that can justify it, which generally allows to verify soundness quicker although not all the sources of unsoundness may be highlighted on the LTS. Select the approach which better corresponds to your task.
 3. When the verification is done, the corresponding LTS is constructed. Green nodes represent final states. Red nodes represent deadlocks. White nodes with red border represent states from which no final state is reachable. Blue nodes represent states with markings strictly greater than the final marking.
+
+## Examples
+
+A DPN with a livelock that occurs when $t_1$ sets $a \ge 3$ and $t_3$ fires at least once:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterDPN.png?raw=true)</kbd>
+
+Result of its soundness verification:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterResult.png?raw=true)</kbd>
+
+-----
+
+A bounded DPN with a deadlock if $t_1$ fires:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/BoundedDPN.png?raw=true)</kbd>
+
+Result of its soundness verification:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/BoundedResult.png?raw=true)</kbd>
+
+-----
+
+A bounded DPN with a reachable marking that strictly covers a final marking:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/UnboundedDPN.png?raw=true)</kbd>
+
+Result of its soundness verification:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/UnboundedResult.png?raw=true)</kbd>
