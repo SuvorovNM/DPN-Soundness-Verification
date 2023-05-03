@@ -32,7 +32,23 @@ To run the app, download SoundnessVerifier.zip of the last release, extract the 
 ## Examples
 
 A DPN with a livelock that occurs when $t_1$ sets $a \ge 3$ and $t_3$ fires at least once:
-![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterDPN.png?raw=true)
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterDPN.png?raw=true)</kbd>
 
 Result of its soundness verification:
-![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterResult.png?raw=true)
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CounterResult.png?raw=true)</kbd>
+
+-----
+
+A bounded DPN with a deadlock if $t_1$ fires:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/BoundedDPN.png?raw=true)</kbd>
+
+Result of its soundness verification:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/BoundedResult.png?raw=true)</kbd>
+
+-----
+
+A bounded DPN with a reachable marking that strictly covers a final marking:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/UnboundedDPN.png?raw=true)</kbd>
+
+Result of its soundness verification:
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/UnboundedResult.png?raw=true)</kbd>
