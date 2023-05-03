@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Boundness check</text>
+      </name>
+      <page id="n0">
+         <place id="i">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p0">
+            <name>
+               <text>p0</text>
+            </name>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="o">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>
+         
+         <transition id="t0" guard="a_w &gt; 0">
+            <name>
+               <text>t0</text>
+            </name>
+         </transition>
+         <transition guard="a_w &gt; 0" id="t1">
+            <name>
+               <text>t1</text>
+            </name>
+         </transition>
+         <transition id="t2">
+            <name>
+               <text>t2</text>
+            </name>
+         </transition>
+         
+         <arc id="arc0" source="i" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="i" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="t0" target="p0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc3" source="t0" target="p1">
+            <name>
+               <text>2</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="t1" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc5" source="p0" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc6" source="p1" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc7" source="t2" target="o">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>	          
+      </page>
+      <variables>
+         <variable type="Integer">
+            <name>a</name>
+         </variable>
+         <variable type="Integer">
+            <name>b</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>
