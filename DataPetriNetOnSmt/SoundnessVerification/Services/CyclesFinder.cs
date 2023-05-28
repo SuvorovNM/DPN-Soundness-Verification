@@ -12,26 +12,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
     public record Cycle(HashSet<ConstraintArc> CycleArcs, HashSet<ConstraintArc> OutputArcs);
     public class CyclesFinder
     {
-        private long pathsNumber = 0;
         public List<Cycle> GetCycles(LabeledTransitionSystem lts)
         {
-            /*List<ConstraintArc> initialPath = new List<ConstraintArc>();
-            HashSet<ConstraintState> visitedStates = new HashSet<ConstraintState>();
-
-            var arcsDict = new Dictionary<ConstraintState, List<ConstraintArc>>();
-
-            foreach (var state in lts.ConstraintStates)
-            {
-                arcsDict[state] = new List<ConstraintArc>();
-            }
-            foreach (var arc in lts.ConstraintArcs)
-            {
-                arcsDict[arc.SourceState].Add(arc);
-            }
-             // Previously used search algo:
-            RecursiveDFSToFindCycles(lts, initialPath, arcsDict);
-            */
-
             var cycles = FindElementaryCycles(lts);           
 
             var intersectingCycles = CompoundIntersectingCycles(cycles);
@@ -176,10 +158,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             {
                 availableArcs = arcsDict[currentPath[^1].TargetState];
             }
-            if (availableArcs.Count == 0)
-            {
-                pathsNumber++;
-            }
 
             foreach (var arc in availableArcs)
             {
@@ -202,7 +180,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 isCycle |= arc.SourceState == arc.TargetState;
                 if (isCycle)
                 {
-                    pathsNumber++;
                     arcsInCycle.Add(arc);
                     var outArcs = arcsDict[arc.SourceState]
                         .Where(x => x != arc);

@@ -21,7 +21,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             cyclesFinder = new CyclesFinder();
         }
 
-        public DataPetriNet Transform(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem lts)
+        private DataPetriNet PerformTransformationStep(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem lts)
         {
             var newDPN = (DataPetriNet)sourceDpn.Clone();
             var context = sourceDpn.Context;
@@ -117,20 +117,29 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return newDPN;
         }
 
-        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn)
+        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem sourceLts = null)
         {
-            var lts = new ClassicalLabeledTransitionSystem(sourceDpn);
-            lts.GenerateGraph();
+            DataPetriNet transformedDpn = sourceDpn;
+            int sourceDpnTransitionCount;
 
-            if (!lts.IsFullGraph)
+            do
             {
-                return (sourceDpn, lts);
-            }
+                sourceLts = new ClassicalLabeledTransitionSystem(transformedDpn);
+                sourceLts.GenerateGraph();
 
-            var newDPN = Transform(sourceDpn, lts);
+                if (!sourceLts.IsFullGraph)
+                {
+                    return (transformedDpn, sourceLts);
+                }
 
-            return (newDPN, lts);
+                sourceDpnTransitionCount = transformedDpn.Transitions.Count;
+                transformedDpn = PerformTransformationStep(transformedDpn, sourceLts);
+            } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
+
+            return (transformedDpn, sourceLts);
         }
+
+
 
         private static void FillTransitionsArcs(DataPetriNet sourceDpn, Dictionary<Transition, List<(Place place, int weight)>> transitionsPreset, Dictionary<Transition, List<(Place place, int weight)>> transitionsPostset)
         {

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Credit Bank Request</text>
+      </name>
+      <page id="n0">
+         <place id="p0">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>    
+		<place id="p4">
+            <name>
+               <text>p4</text>
+            </name>
+         </place> 
+		<place id="p5">
+            <name>
+               <text>p5</text>
+            </name>
+         </place> 
+		<place id="p6">
+            <name>
+               <text>p6</text>
+            </name>
+         </place> 
+		<place id="p7">
+            <name>
+               <text>p7</text>
+            </name>
+         </place> 		 
+         <place id="p8">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>		 
+         <transition id="t0" guard="amount_w &gt; 0 &amp;&amp; length_w &gt; 0">
+            <name>
+               <text>Loan Request</text>
+            </name>
+         </transition>
+		 <transition id="t1">
+            <name>
+               <text>AndS</text>
+            </name>
+         </transition>
+         <transition guard="age_w &gt; 0 &amp;&amp; salary_w &gt; 0" id="t2">
+            <name>
+               <text>Get Application Info</text>
+            </name>
+         </transition>
+		 <transition guard="repayment_w &gt; 0" id="t3">
+            <name>
+               <text>Compute Repayment</text>
+            </name>
+         </transition>
+		 <transition id="t4">
+            <name>
+               <text>AndJ</text>
+            </name>
+         </transition>
+         <transition id="t5" guard="age_r &gt; 55 || salary_r &lt; 15000 || salary_r &lt; repayment_r">
+            <name>
+               <text>Reject Request</text>
+            </name>
+         </transition>
+		 <transition id="t6" guard="age_r &lt; 60 &amp;&amp; salary_r &gt;= 15000 &amp;&amp; salary_r &gt; repayment_r &amp;&amp; amount_r &gt; 5000">
+            <name>
+               <text>Accept Request</text>
+            </name>
+         </transition>
+		 <transition id="t7" guard="signed_w == True">
+            <name>
+               <text>Sign Contract</text>
+            </name>
+         </transition>
+		       
+         <arc id="arc0" source="p0" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc3" source="t1" target="p2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="t1" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+		 <arc id="arc5" source="p2" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc6" source="p3" target="t3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc7" source="t3" target="p5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc8" source="t2" target="p4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 
+		 
+		 <arc id="arc9" source="p4" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc10" source="p5" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc11" source="t4" target="p6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc12" source="p6" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc13" source="p6" target="t6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc14" source="t5" target="p8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc15" source="t6" target="p7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc16" source="p7" target="t7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc14" source="t7" target="p8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>	 
+      </page>
+      <variables>
+         <variable type="Real">
+            <name>amount</name>
+         </variable>
+		 <variable type="Real">
+            <name>length</name>
+         </variable>
+		 <variable type="Real">
+            <name>age</name>
+         </variable>
+		 <variable type="Real">
+            <name>salary</name>
+         </variable>
+		 <variable type="Real">
+            <name>repayment</name>
+         </variable>
+         <variable type="Boolean">
+            <name>signed</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>

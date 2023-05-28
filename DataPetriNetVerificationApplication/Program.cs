@@ -140,7 +140,7 @@ namespace DataPetriNetVerificationApplication
                             {
                                 timer.Restart();
 
-                                var dpnRefined = transformation.Transform(dpnToVerify, lts);
+                                (var dpnRefined, _) = transformation.Transform(dpnToVerify, lts);
                                 cgRefined = new ConstraintGraph(dpnRefined);
                                 cgRefined.GenerateGraph();
                                 soundnessProps = LtsAnalyzer.CheckSoundness(dpnRefined, cgRefined);
@@ -168,7 +168,7 @@ namespace DataPetriNetVerificationApplication
                     if (lts.IsFullGraph)
                     {
                         timer.Restart();
-                        var dpnRefined = transformation.Transform(dpnToVerify, lts);
+                        (var dpnRefined,_) = transformation.Transform(dpnToVerify, lts);
                         timer.Stop();
                         transformationTime = timer.ElapsedMilliseconds;
 
