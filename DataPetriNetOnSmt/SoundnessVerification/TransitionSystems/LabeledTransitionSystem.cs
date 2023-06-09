@@ -11,49 +11,30 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
-    public abstract class LabeledTransitionSystem
+    public abstract class LabeledTransitionSystem : AbstractStateSpaceStructure<LtsState, LtsTransition, LtsArc>
     {
-        protected ConstraintExpressionService expressionService;
-        protected DataPetriNet DataPetriNet { get; init; }
-        public ConstraintState InitialState { get; set; }
-        public List<ConstraintState> ConstraintStates { get; set; }
-        public List<ConstraintArc> ConstraintArcs { get; set; }
         public bool IsFullGraph { get; set; }
         public long Milliseconds { get; set; }
 
-        protected Stack<ConstraintState> StatesToConsider { get; set; }
+        protected Stack<LtsState> StatesToConsider { get; set; }
 
-        public LabeledTransitionSystem(DataPetriNet dataPetriNet)
+        public LabeledTransitionSystem(DataPetriNet dataPetriNet) : base(dataPetriNet)
         {
-            expressionService = new ConstraintExpressionService(dataPetriNet.Context);
-
-            DataPetriNet = dataPetriNet;
-
-            InitialState = dataPetriNet.GenerateInitialConstraintState();
-
-            ConstraintStates = new List<ConstraintState> { InitialState };
-
-            ConstraintArcs = new List<ConstraintArc>();
-
             IsFullGraph = false;
             Milliseconds = 0;
 
-            StatesToConsider = new Stack<ConstraintState>();
+            StatesToConsider = new Stack<LtsState>();
             StatesToConsider.Push(InitialState);
         }
 
-        public abstract void GenerateGraph();
-
-        protected void AddNewState(ConstraintState currentState,
-                                ConstraintTransition transition,
-                                Dictionary<Node, int> marking,
-                                BoolExpr constraintsIfFires)
-        // TODO: Consider using less parameters
+        protected override void AddNewState(LtsState currentState,
+                                LtsTransition transition,
+                                BaseStateInfo stateInfo)
         {
-            var equalStateInGraph = FindEqualStateInGraph(marking, constraintsIfFires);
+            var equalStateInGraph = FindEqualStateInGraph(stateInfo.Marking, stateInfo.Constraints);
             if (equalStateInGraph != null)
             {
-                ConstraintArcs.Add(new ConstraintArc(currentState, transition, equalStateInGraph));
+                ConstraintArcs.Add(new LtsArc(currentState, transition, equalStateInGraph));
                 equalStateInGraph.ParentStates = equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
                 equalStateInGraph.ParentStates.Add(currentState);
 
@@ -64,57 +45,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             }
             else
             {
-                var stateIfTransitionFires = new ConstraintState(marking, constraintsIfFires, currentState);
-                ConstraintArcs.Add(new ConstraintArc(currentState, transition, stateIfTransitionFires));
+                var stateIfTransitionFires = new LtsState(stateInfo, currentState);
+                ConstraintArcs.Add(new LtsArc(currentState, transition, stateIfTransitionFires));
                 ConstraintStates.Add(stateIfTransitionFires);
                 StatesToConsider.Push(stateIfTransitionFires);
             }
         }
 
-        protected IEnumerable<Transition> GetEnabledTransitions(Dictionary<Node, int> marking)
-        {
-            var transitionsWhichCanFire = new List<Transition>();
-
-            foreach (var transition in DataPetriNet.Transitions)
-            {
-                var preSetArcs = DataPetriNet.Arcs.Where(x => x.Destination == transition).ToList();
-
-                var canFire = preSetArcs.All(x => marking[x.Source] >= x.Weight);
-
-                if (canFire)
-                {
-                    transitionsWhichCanFire.Add(transition);
-                }
-            }
-
-            return transitionsWhichCanFire;
-        }
-
-        protected bool IsMonotonicallyIncreasedWithSameConstraints(
-            Dictionary<Node, int> tokens, 
-            BoolExpr constraintsIfFires, 
-            ConstraintState parentNode)
-        {
-            foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
-            {
-                var isConsideredStateTokensGreater = stateInGraph.PlaceTokens.Values.Sum() < tokens.Values.Sum() &&
-                    tokens.Keys.All(key => tokens[key] >= stateInGraph.PlaceTokens[key]);
-
-                if (isConsideredStateTokensGreater && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private ConstraintState? FindEqualStateInGraph(Dictionary<Node, int> tokens, BoolExpr constraintsIfFires)
+        private LtsState? FindEqualStateInGraph(Marking tokens, BoolExpr constraintsIfFires)
         {
             foreach (var stateInGraph in ConstraintStates)
             {
-                var isConsideredStateTokensEqual = tokens.Keys
-                    .All(key => tokens[key] == stateInGraph.PlaceTokens[key]);
+                var isConsideredStateTokensEqual = 
+                    tokens.CompareTo(stateInGraph.Marking) == MarkingComparisonResult.Equal;
 
                 if (isConsideredStateTokensEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
                 {

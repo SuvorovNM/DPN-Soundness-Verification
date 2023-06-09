@@ -3,16 +3,12 @@ using DataPetriNetOnSmt.DPNElements;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
-    public class ConstraintTransition : Node
+    public class LtsTransition : AbstractTransition
     {
-        public bool IsSilent { get; set; }
         public string NonRefinedTransitionId { get; set; }
 
-        public ConstraintTransition(Transition transition, bool isSilent = false)
-        {
-            IsSilent = isSilent;
-            Label = transition.Label;
-            Id = transition.Id;
+        public LtsTransition(Transition transition, bool isSilent = false) : base(transition, isSilent)
+        {         
             NonRefinedTransitionId = transition.IsSplitted 
                 ? transition.BaseTransitionId
                 : transition.Id;

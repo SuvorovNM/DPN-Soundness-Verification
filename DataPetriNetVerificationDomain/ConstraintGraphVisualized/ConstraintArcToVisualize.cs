@@ -14,7 +14,7 @@ namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
         public int SourceStateId { get; set; }
         public int TargetStateId { get; set; }
 
-        public ConstraintArcToVisualize(ConstraintArc arc)
+        public ConstraintArcToVisualize(LtsArc arc)
         {
             TransitionName = arc.Transition.Label;
             IsSilent = arc.Transition.IsSilent;

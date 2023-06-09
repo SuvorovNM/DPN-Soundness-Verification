@@ -2,7 +2,7 @@
 {
     public interface IDefinableValue
     {
-        //bool IsDefined { get; }
+        string? GetStringValue();
     }
     public class DefinableValue<T> : IDefinableValue//, IEquatable<DefinableValue<T>>
         where T : IEquatable<T>, IComparable<T>
@@ -28,6 +28,11 @@
             }
         }
         private T definableValue;
-       
+
+        public string? GetStringValue()
+        {
+            return definableValue.ToString();
+        }
+        
     }
 }

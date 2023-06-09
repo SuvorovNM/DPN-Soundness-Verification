@@ -8,7 +8,7 @@ namespace DataPetriNetOnSmt.DPNElements
     {
         public Guard Guard { get; set; }
         public bool IsSplitted { get; set; }
-        public string? BaseTransitionId { get; set; }
+        public string BaseTransitionId { get; set; }
         public Transition(Guard guard)
         {
             Guard = guard;
@@ -21,7 +21,7 @@ namespace DataPetriNetOnSmt.DPNElements
             Label = id;
             Id = id;
             IsSplitted = baseTransitionId != null;
-            BaseTransitionId = baseTransitionId;
+            BaseTransitionId = baseTransitionId ?? id;
         }
 
         public (Transition? positive, Transition? negative) Split(BoolExpr formulaToConjunct, string secondTransitionId) // Context context,
@@ -45,19 +45,19 @@ namespace DataPetriNetOnSmt.DPNElements
             {
                 var positiveTransition = new Transition(
                     Id + "+" + secondTransitionId,
-                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, positiveConstraint), BaseTransitionId ?? Id);
+                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, positiveConstraint), BaseTransitionId);
 
                 var negativeTransition = new Transition(
                     Id + "-" + secondTransitionId,
-                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, negativeConstraint), BaseTransitionId ?? Id);
+                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, negativeConstraint), BaseTransitionId);
 
                 return (positiveTransition, negativeTransition);
             }
         }
 
-        public Dictionary<Node, int> FireOnGivenMarking(Dictionary<Node, int> tokens, IEnumerable<Arc> arcs)
+        public Marking FireOnGivenMarking(Marking tokens, IEnumerable<Arc> arcs)
         {
-            var updatedMarking = new Dictionary<Node, int>(tokens);
+            var updatedMarking = new Marking(tokens);
             var arcsDict = arcs.ToDictionary(x => (x.Source, x.Destination), y => y.Weight);
 
             var presetPlaces = arcsDict.Where(x => x.Key.Destination == this).Select(x => (Place)x.Key.Source).ToList();

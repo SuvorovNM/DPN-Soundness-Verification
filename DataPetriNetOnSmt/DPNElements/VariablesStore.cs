@@ -1,5 +1,6 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SourceServices;
+using System.Linq;
 
 namespace DataPetriNetOnSmt.DPNElements
 {
@@ -25,13 +26,15 @@ namespace DataPetriNetOnSmt.DPNElements
             }
         }
 
-        public List<string> GetAllVariables()
+        public List<(DomainType domain, string name)> GetAllVariables()
         {
-            return variableSources[DomainType.Boolean].GetKeys()
-                .Union(variableSources[DomainType.Integer].GetKeys())
-                .Union(variableSources[DomainType.Real].GetKeys())
-                .Union(variableSources[DomainType.String].GetKeys())
-                .ToList();
+            var variables = new List<(DomainType, string)> ();
+            foreach (var domainType in variableSources.Keys)
+            {
+                variables.AddRange(variableSources[domainType].GetKeys().Select(x => (domainType, x)));
+            }
+
+            return variables;
         }
 
         public void Clear()

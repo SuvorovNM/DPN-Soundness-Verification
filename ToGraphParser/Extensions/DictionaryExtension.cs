@@ -6,7 +6,7 @@ namespace ToGraphParser.Extensions
 {
     public static class DictionaryExtension
     {
-        public static void AddStatesForType(this Dictionary<ConstraintState, StateType> resultDictionary, KeyValuePair<StateType, List<ConstraintState>> statesToAdd)
+        public static void AddStatesForType(this Dictionary<LtsState, StateType> resultDictionary, KeyValuePair<StateType, List<LtsState>> statesToAdd)
         {
             var stateType = statesToAdd.Key;
 

@@ -15,13 +15,13 @@ namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
         public string ConstraintFormula { get; set; }
         public ConstraintStateType StateType { get; set; }
 
-        public ConstraintStateToVisualize(ConstraintState constraintState, ConstraintStateType stateType)
+        public ConstraintStateToVisualize(LtsState constraintState, ConstraintStateType stateType)
         {
             Id = constraintState.Id;
 
             ConstraintFormula = constraintState.Constraints.ToString();
 
-            Tokens = constraintState.PlaceTokens.ToDictionary(x=>x.Key.Id, y=>y.Value);
+            Tokens = constraintState.Marking.AsDictionary();
 
             StateType = stateType;
         }

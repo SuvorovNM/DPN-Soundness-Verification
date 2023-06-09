@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
 using System;
@@ -28,10 +29,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             {
                 var currentState = StatesToConsider.Pop();
 
-                foreach (var transition in GetEnabledTransitions(currentState.PlaceTokens))
+                foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
-                    //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
                     var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
@@ -43,14 +43,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
-                            var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
+                            var updatedMarking = (Marking)transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
+                            var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                            if (IsMonotonicallyIncreasedWithSameConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
+                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
                             {
                                 return; // The net is unbounded
                             }
 
-                            AddNewState(currentState, new ConstraintTransition(transition), updatedMarking, constraintsIfTransitionFires);
+                            AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
                         }
                     }
                 }

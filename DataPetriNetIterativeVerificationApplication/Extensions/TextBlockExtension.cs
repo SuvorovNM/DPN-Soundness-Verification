@@ -37,7 +37,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
                 textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
             }
         }
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<ConstraintState>> analysisResult)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<LtsState>> analysisResult)
         {
             if (textBlock == null)
             {
@@ -143,7 +143,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
             return stateInfoLines;
         }
 
-        private static string FormStatesInfoLines(Dictionary<StateType, List<ConstraintState>> analysisResult)
+        private static string FormStatesInfoLines(Dictionary<StateType, List<LtsState>> analysisResult)
         {
             var stateInfoLines = string.Empty;
             foreach (var stateType in analysisResult.Keys)

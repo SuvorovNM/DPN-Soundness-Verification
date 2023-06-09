@@ -26,7 +26,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             {
                 var currentState = StatesToConsider.Pop();
 
-                foreach (var transition in GetEnabledTransitions(currentState.PlaceTokens))
+                foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
                         //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
@@ -41,17 +41,18 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
-                            var updatedMarking = transition.FireOnGivenMarking(currentState.PlaceTokens, DataPetriNet.Arcs);
+                            var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
+                            var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                            if (IsMonotonicallyIncreasedWithSameConstraints(updatedMarking, constraintsIfTransitionFires, currentState))
+                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
                             {
                                 return; // The net is unbounded
                             }
 
-                            AddNewState(currentState, new ConstraintTransition(transition), updatedMarking, constraintsIfTransitionFires);
+                            AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
                         }
                     }
-
+                    
                     var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
 
                     if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
@@ -62,12 +63,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
-                            if (IsMonotonicallyIncreasedWithSameConstraints(currentState.PlaceTokens, constraintsIfSilentTransitionFires, currentState))
+                            var stateToAddInfo = new BaseStateInfo(currentState.Marking, constraintsIfSilentTransitionFires);
+
+                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
                             {
-                                return; // The net is unbound
+                                return; // The net is unbounded
                             }
 
-                            AddNewState(currentState, new ConstraintTransition(transition, true), currentState.PlaceTokens, constraintsIfSilentTransitionFires);
+                            AddNewState(currentState, new LtsTransition(transition, true), stateToAddInfo);                           
                         }
                     }
                 }

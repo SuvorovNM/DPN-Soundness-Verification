@@ -36,46 +36,6 @@ namespace DataPetriNetOnSmt
 
         }
 
-        public ConstraintState GenerateInitialConstraintState()
-        {
-            var state = new ConstraintState(Context);
-            Places.ForEach(x => state.PlaceTokens.Add(x, x.Tokens));
-            //state.Constraints, 
-            state.Constraints = Context.MkAnd(
-                AddTypedExpressions<string>(DomainType.String)
-                .Union(AddTypedExpressions<bool>(DomainType.Boolean))
-                .Union(AddTypedExpressions<long>(DomainType.Integer))
-                .Union(AddTypedExpressions<double>(DomainType.Real)));
-
-            if (state.Constraints.Args.Length == 0)
-            {
-                state.Constraints = Context.MkTrue();
-            }
-            return state;
-        }
-
-        private IEnumerable<BoolExpr> AddTypedExpressions<T>(DomainType domain)
-            where T : IEquatable<T>, IComparable<T>
-        {
-            var varKeys = Variables[domain].GetKeys();
-            var expressionList = new List<BoolExpr>();
-
-            foreach (var varKey in varKeys)
-            {
-                var variable = Variables[domain].Read(varKey) as DefinableValue<T>;
-
-                expressionList.Add(domain switch
-                {
-                    DomainType.Real => Context.MkEq(Context.MkRealConst(varKey + "_r"), Context.MkReal(variable.Value.ToString())),
-                    DomainType.Integer => Context.MkEq(Context.MkIntConst(varKey + "_r"), Context.MkInt(variable.Value.ToString())),
-                    DomainType.Boolean => Context.MkEq(Context.MkBoolConst(varKey + "_r"), Context.MkBool(variable.Value as bool? == true)),
-                    _ => throw new NotImplementedException("The domain type is not supported")
-                });
-            }
-
-            return expressionList;
-        }
-
         public void Dispose()
         {
             //Context.Dispose();

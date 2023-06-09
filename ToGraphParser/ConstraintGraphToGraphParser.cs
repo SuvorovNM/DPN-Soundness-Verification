@@ -81,7 +81,7 @@ namespace ToGraphParser
             }
         }
 
-        public Graph FormGraphBasedOnCG(ConstraintGraph constraintGraph, Dictionary<StateType, List<ConstraintState>> typedStates)
+        public Graph FormGraphBasedOnCG(ConstraintGraph constraintGraph, Dictionary<StateType, List<LtsState>> typedStates)
         {
             Graph graph = new Graph();
 
@@ -93,7 +93,7 @@ namespace ToGraphParser
             return graph;
         }
 
-        private static void AddArcsToGraph(ConstraintGraph constraintGraph, Graph graph, Dictionary<ConstraintState, string> addedStates)
+        private static void AddArcsToGraph(ConstraintGraph constraintGraph, Graph graph, Dictionary<LtsState, string> addedStates)
         {
             foreach (var transition in constraintGraph.ConstraintArcs)
             {
@@ -104,16 +104,12 @@ namespace ToGraphParser
             }
         }
 
-        private Dictionary<ConstraintState, string> AddStatesToGraph(ConstraintGraph constraintGraph, Graph graph, Dictionary<ConstraintState, StateType> correctedTypedStates)
+        private Dictionary<LtsState, string> AddStatesToGraph(ConstraintGraph constraintGraph, Graph graph, Dictionary<LtsState, StateType> correctedTypedStates)
         {
-            var addedStates = new Dictionary<ConstraintState, string>();
+            var addedStates = new Dictionary<LtsState, string>();
             foreach (var state in constraintGraph.ConstraintStates)
             {
-                var tokens = string.Join(", ", state.PlaceTokens
-                    .Where(x => x.Value > 0)
-                    .Select(x => x.Value > 1
-                        ? x.Value.ToString() + x.Key.Label
-                        : x.Key.Label));
+                var tokens = state.Marking.ToString();
 
                 var formulaString = state.Constraints.ToString();
 
@@ -143,9 +139,9 @@ namespace ToGraphParser
             return addedStates;
         }
 
-        private static Dictionary<ConstraintState, StateType> SetSingleStateTypeForState(Dictionary<StateType, List<ConstraintState>> typedStates)
+        private static Dictionary<LtsState, StateType> SetSingleStateTypeForState(Dictionary<StateType, List<LtsState>> typedStates)
         {
-            var correctedTypedStates = new Dictionary<ConstraintState, StateType>();
+            var correctedTypedStates = new Dictionary<LtsState, StateType>();
 
             foreach (var statesOfType in typedStates.OrderBy(x => x.Key))
             {

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
-    public record Cycle(HashSet<ConstraintArc> CycleArcs, HashSet<ConstraintArc> OutputArcs);
+    public record Cycle(HashSet<LtsArc> CycleArcs, HashSet<LtsArc> OutputArcs);
     public class CyclesFinder
     {
         public List<Cycle> GetCycles(LabeledTransitionSystem lts)
@@ -65,13 +65,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         private List<Cycle> FindElementaryCycles(LabeledTransitionSystem lts)
         {
-            var invertedArcsDict = new Dictionary<ConstraintState, List<ConstraintArc>>();
-            var arcsDict = new Dictionary<ConstraintState, List<ConstraintArc>>();
+            var invertedArcsDict = new Dictionary<LtsState, List<LtsArc>>();
+            var arcsDict = new Dictionary<LtsState, List<LtsArc>>();
 
             foreach (var state in lts.ConstraintStates)
             {
-                invertedArcsDict[state] = new List<ConstraintArc>();
-                arcsDict[state] = new List<ConstraintArc>();
+                invertedArcsDict[state] = new List<LtsArc>();
+                arcsDict[state] = new List<LtsArc>();
             }
             foreach (var arc in lts.ConstraintArcs)
             {
@@ -84,21 +84,21 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             foreach (var node in lts.ConstraintStates
                                         .Where(x => x.IsCyclic))
             {
-                cycles.AddRange(RecursiveInvertedDFSToFindCycles(node, new List<ConstraintArc>(), invertedArcsDict, arcsDict));//, ref cycleCount
+                cycles.AddRange(RecursiveInvertedDFSToFindCycles(node, new List<LtsArc>(), invertedArcsDict, arcsDict));//, ref cycleCount
             }
 
             return cycles;
         }
 
         public List<Cycle> RecursiveInvertedDFSToFindCycles(
-            ConstraintState basisState,
-            List<ConstraintArc> currentPath,
-            Dictionary<ConstraintState, List<ConstraintArc>> invertedArcsDict,
-            Dictionary<ConstraintState, List<ConstraintArc>> arcsDict)
+            LtsState basisState,
+            List<LtsArc> currentPath,
+            Dictionary<LtsState, List<LtsArc>> invertedArcsDict,
+            Dictionary<LtsState, List<LtsArc>> arcsDict)
         {
             var cycles = new List<Cycle>();
 
-            List<ConstraintArc> availableArcs;
+            List<LtsArc> availableArcs;
 
             if (currentPath.Count == 0)
             {
@@ -119,14 +119,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                 if (arc.SourceState == basisState)
                 {
-                    var outputArcs = new HashSet<ConstraintArc>();
+                    var outputArcs = new HashSet<LtsArc>();
                     foreach (var element in currentPath)
                     {
                         var outArcs = arcsDict[element.SourceState]
                             .Where(x => x != element);
                         outputArcs.AddRange(outArcs);
                     }
-                    var inputArcs = new HashSet<ConstraintArc>(currentPath);
+                    var inputArcs = new HashSet<LtsArc>(currentPath);
 
                     cycles.Add(new Cycle(inputArcs, outputArcs));
                 }
@@ -144,12 +144,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
         private List<Cycle> RecursiveDFSToFindCycles(
             LabeledTransitionSystem lts,
-            List<ConstraintArc> currentPath,
-            Dictionary<ConstraintState, List<ConstraintArc>> arcsDict)
+            List<LtsArc> currentPath,
+            Dictionary<LtsState, List<LtsArc>> arcsDict)
         {
             List<Cycle> cycles = new List<Cycle>();
 
-            List<ConstraintArc> availableArcs;
+            List<LtsArc> availableArcs;
             if (currentPath.Count == 0)
             {
                 availableArcs = arcsDict[lts.InitialState];
@@ -162,8 +162,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             foreach (var arc in availableArcs)
             {
                 var isCycle = false;
-                var arcsInCycle = new HashSet<ConstraintArc>();
-                var arcsOutCycle = new HashSet<ConstraintArc>();
+                var arcsInCycle = new HashSet<LtsArc>();
+                var arcsOutCycle = new HashSet<LtsArc>();
 
                 for (int i = 0; i < currentPath.Count; i++)
                 {

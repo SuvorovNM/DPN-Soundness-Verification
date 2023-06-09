@@ -29,7 +29,7 @@ namespace DataPetriNetOnSmt.Abstractions
             return result;
         }
 
-        public bool AreEqual(BoolExpr expressionSource, BoolExpr expressionTarget)
+        public bool AreEqual(BoolExpr? expressionSource, BoolExpr? expressionTarget)
         {
             if (expressionSource is null)
             {
@@ -54,8 +54,8 @@ namespace DataPetriNetOnSmt.Abstractions
         }
 
         public BoolExpr ConcatExpressions(
-            BoolExpr source,
-            BoolExpr target,
+            BoolExpr? source,
+            BoolExpr? target,
             Dictionary<string, DomainType> overwrittenVars)
         {
             if (source is null)
