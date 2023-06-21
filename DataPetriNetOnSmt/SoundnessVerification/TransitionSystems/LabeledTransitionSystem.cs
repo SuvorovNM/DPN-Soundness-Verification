@@ -52,6 +52,23 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             }
         }
 
+        protected override LtsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+            (BaseStateInfo stateInfo, LtsState parentNode, MarkingComparisonResult comparisonResult)
+        {
+            foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
+            {
+                var isConditionHoldsForTokens =
+                    stateInfo.Marking.CompareTo(parentNode.Marking) == comparisonResult;
+
+                if (isConditionHoldsForTokens && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
+                {
+                    return stateInGraph;
+                }
+            }
+
+            return null;
+        }
+
         private LtsState? FindEqualStateInGraph(Marking tokens, BoolExpr constraintsIfFires)
         {
             foreach (var stateInGraph in ConstraintStates)

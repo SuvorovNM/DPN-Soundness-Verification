@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public abstract class AbstractArc<AbsState,AbsTransition> 
-        where AbsState : AbstractState<AbsState>
+        where AbsState : AbstractState
         where AbsTransition : AbstractTransition
     {
         public AbsTransition Transition { get; set; }

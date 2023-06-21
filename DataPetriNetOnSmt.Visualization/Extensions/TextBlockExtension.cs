@@ -13,7 +13,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, LtsToVisualize graph)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -102,7 +102,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             return "Process model is UNSOUND: \n\n";
         }
 
-        private static string FormGraphInfoLines(LtsToVisualize graph)
+        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
         {
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
         }

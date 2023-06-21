@@ -20,6 +20,8 @@ namespace DataPetriNetOnSmt
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public VariablesStore Variables { get; set; }
 
+        public Marking FinalMarking => Marking.FinalMarkingFromDpnPlaces(Places);
+
         public DataPetriNet(Context context)
         {
             Context = context;

@@ -3,6 +3,7 @@ using DataPetriNetOnSmt.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,6 +50,11 @@ namespace DataPetriNetOnSmt.DPNElements
             return new Marking(places.ToDictionary(x => x, y => y.Tokens));
         }
 
+        public static Marking FinalMarkingFromDpnPlaces(List<Place> places)
+        {
+            return new Marking(places.ToDictionary(x => x, y => y.IsFinal ? 1 : 0));
+        }
+
         public override string ToString()
         {
             return string.Join(", ", markingDictionary
@@ -78,7 +84,7 @@ namespace DataPetriNetOnSmt.DPNElements
             return transitionsWhichCanFire;
         }
 
-        public MarkingComparisonResult CompareTo(Marking other)
+        public MarkingComparisonResult CompareTo(Marking? other)
         {
             if (other == null)
                 return MarkingComparisonResult.Incomparable;

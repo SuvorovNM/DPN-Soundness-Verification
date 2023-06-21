@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 {
     public abstract class AbstractStateSpaceStructure<AbsState,AbsTransition, AbsArc>
-        where AbsState : AbstractState<AbsState>, new()
+        where AbsState : AbstractState, new()
         where AbsTransition : AbstractTransition
         where AbsArc : AbstractArc<AbsState,AbsTransition>
     {
@@ -40,21 +40,36 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                                 AbsTransition transition,
                                 BaseStateInfo stateInfo);
 
-        protected bool CheckStrictCoverageOfParentStates(BaseStateInfo stateInfo, AbsState parentNode)
+        /*protected bool TryGetSrictlyCoveredNode(BaseStateInfo stateInfo, AbsState parentNode, out AbsState? coveredNode)
         {
+            coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                (stateInfo, parentNode, MarkingComparisonResult.GreaterThan);
+            return coveredNode != null;
+        }
+
+        protected bool TryGetCoveredNode(BaseStateInfo stateInfo, AbsState parentNode, out AbsState? coveredNode)
+        {
+            coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                (stateInfo, parentNode, MarkingComparisonResult.GreaterThan | MarkingComparisonResult.Equal);
+            return coveredNode != null;
+        }*/
+
+        protected abstract AbsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+            (BaseStateInfo stateInfo, AbsState parentNode, MarkingComparisonResult comparisonResult);
+        /*{
             foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
             {
-                var isConsideredStateTokensGreater = 
-                    stateInfo.Marking.CompareTo(parentNode.Marking) == MarkingComparisonResult.GreaterThan;
+                var isConditionHoldsForTokens =
+                    stateInfo.Marking.CompareTo(parentNode.Marking) == comparisonResult;
 
-                if (isConsideredStateTokensGreater && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
+                if (isConditionHoldsForTokens && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
                 {
-                    return true;
+                    return stateInGraph;
                 }
             }
 
-            return false;
-        }
+            return null;
+        }*/
 
         private static AbsState FormInitialState(DataPetriNet dpn)
         {

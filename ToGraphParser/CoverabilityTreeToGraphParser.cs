@@ -1,34 +1,36 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
-using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
+using DataPetriNetVerificationDomain.CoverabilityTreeVisualized;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ToGraphParser.Extensions;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ToGraphParser
+namespace DataPetriNetParsers
 {
-    public class LtsToGraphParser
+    // Refactor
+    public class CoverabilityTreeToGraphParser
     {
-        public Graph FormGraphBasedOnCG(ConstraintGraphToVisualize constraintGraph)
+        public Graph FormGraphBasedOnCt(CoverabilityTreeToVisualize coverabilityTree)
         {
             Graph graph = new Graph();
 
-            var states = AddStatesToGraph(constraintGraph, graph);
-            AddArcsToGraph(constraintGraph, graph, states);
+            var states = AddStatesToGraph(coverabilityTree, graph);
+            AddArcsToGraph(coverabilityTree, graph, states);
 
             return graph;
         }
 
         private Dictionary<int, string> AddStatesToGraph
-            (ConstraintGraphToVisualize constraintGraph, 
+            (CoverabilityTreeToVisualize coverabilityTree,
             Graph graph)
         {
             var addedStates = new Dictionary<int, string>();
-            foreach (var state in constraintGraph.ConstraintStates)
+            foreach (var state in coverabilityTree.CtStates)
             {
                 var tokens = string.Join(", ", state.Tokens
                     .Where(x => x.Value > 0)
@@ -42,31 +44,10 @@ namespace ToGraphParser
 
                 var nodeToAdd = new Node($"Id:{state.Id} [{tokens}] ({constraintFormula})");
                 nodeToAdd.Attr.Shape = Shape.Box;
+                nodeToAdd.Attr.FillColor = state.StateColor == CtStateColor.Green 
+                    ? Color.LightGreen 
+                    : state.StateColor == CtStateColor.Red ? Color.Pink : Color.White;
 
-                if (state.StateType.HasFlag(ConstraintStateType.Initial))
-                {
-                    nodeToAdd.Attr.FillColor = Color.LightGray;
-                }
-                if (state.StateType.HasFlag(ConstraintStateType.Deadlock))
-                {
-                    nodeToAdd.Attr.FillColor = Color.Pink;
-                }
-                if (state.StateType.HasFlag(ConstraintStateType.Final))
-                {
-                    nodeToAdd.Attr.FillColor = Color.LightGreen;
-                }
-                if (state.StateType.HasFlag(ConstraintStateType.UncleanFinal))
-                {
-                    nodeToAdd.Attr.FillColor = Color.LightBlue;
-                }
-                if (state.StateType.HasFlag(ConstraintStateType.NoWayToFinalMarking))
-                {
-                    nodeToAdd.Attr.Color = Color.Red;
-                }
-                if (state.StateType.HasFlag(ConstraintStateType.StrictlyCovered))
-                {
-                    nodeToAdd.Attr.FillColor = Color.Red;
-                }
                 addedStates.Add(state.Id, nodeToAdd.LabelText);
                 graph.AddNode(nodeToAdd);
             }
@@ -74,9 +55,9 @@ namespace ToGraphParser
             return addedStates;
         }
 
-        private static void AddArcsToGraph(ConstraintGraphToVisualize constraintGraph, Graph graph, Dictionary<int, string> addedStates)
+        private static void AddArcsToGraph(CoverabilityTreeToVisualize coverabilityTree, Graph graph, Dictionary<int, string> addedStates)
         {
-            foreach (var transition in constraintGraph.ConstraintArcs)
+            foreach (var transition in coverabilityTree.CtArcs)
             {
                 var transitionLabel = transition.IsSilent
                     ? $"τ({transition.TransitionName})"

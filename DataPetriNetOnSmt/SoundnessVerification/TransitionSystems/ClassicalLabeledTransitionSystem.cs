@@ -46,7 +46,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                             var updatedMarking = (Marking)transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                             var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
+                            var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+                            if (coveredNode != null)
                             {
                                 return; // The net is unbounded
                             }

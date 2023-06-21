@@ -9,32 +9,40 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
 {
-    public class LtsToVisualize
+    public class ConstraintGraphToVisualize
     {
         public List<ConstraintStateToVisualize> ConstraintStates { get; init; }
         public List<ConstraintArcToVisualize> ConstraintArcs { get; init; }
         public bool IsBounded { get; init; }
         public bool IsSound { get; init; }
         public List<string> DeadTransitions { get; init; }
-        
 
-        public LtsToVisualize(LabeledTransitionSystem lts, SoundnessProperties soundnessProperties)
+
+        public static ConstraintGraphToVisualize FromStateSpaceStructure<AbsState, AbsTransition, AbsArc>
+            (AbstractStateSpaceStructure<AbsState, AbsTransition, AbsArc> lts, SoundnessProperties soundnessProperties)
+            where AbsState : AbstractState, new()
+            where AbsTransition : AbstractTransition
+            where AbsArc : AbstractArc<AbsState, AbsTransition>
         {
-            IsBounded = soundnessProperties.Boundedness;
-            IsSound = soundnessProperties.Soundness;
+            return new ConstraintGraphToVisualize
+            {
+                IsBounded = soundnessProperties.Boundedness,
+                IsSound = soundnessProperties.Soundness,
 
-            ConstraintStates = lts.ConstraintStates
-                .Select(x => new ConstraintStateToVisualize(x, soundnessProperties.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default)))
-                .ToList();
+                ConstraintStates = lts.ConstraintStates
+                .Select(x => ConstraintStateToVisualize.FromNode(x,
+                    soundnessProperties.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default)))
+                .ToList(),
 
-            ConstraintArcs = lts.ConstraintArcs
-                .Select(x => new ConstraintArcToVisualize(x))
-                .ToList();
+                ConstraintArcs = lts.ConstraintArcs
+                .Select(x => ConstraintArcToVisualize.FromArc(x))
+                .ToList(),
 
-            DeadTransitions = soundnessProperties.DeadTransitions;
+                DeadTransitions = soundnessProperties.DeadTransitions
+            };
         }
 
-        public LtsToVisualize()
+        public ConstraintGraphToVisualize()
         {
             ConstraintStates = new List<ConstraintStateToVisualize>();
             ConstraintArcs = new List<ConstraintArcToVisualize>();

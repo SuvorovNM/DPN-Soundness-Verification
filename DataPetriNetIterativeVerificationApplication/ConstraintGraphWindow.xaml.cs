@@ -22,7 +22,7 @@ namespace DataPetriNetIterativeVerificationApplication
     /// </summary>
     public partial class LtsWindow : Window
     {
-        public LtsWindow(LtsToVisualize constraintGraph)
+        public LtsWindow(ConstraintGraphToVisualize constraintGraph)
         {
             InitializeComponent();
 

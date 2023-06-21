@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace DataPetriNetOnSmt.Enums
 {
-    [Flags]
-    public enum MarkingComparisonResult
+    public enum CtStateType
     {
-        Incomparable = 1,
-        LessThan = 2,
-        Equal = 4,
-        GreaterThan = 8
+        NonCovered = 1,
+        StrictlyCovered = 2,
+        NonstrictlyCovered = 3
     }
 }

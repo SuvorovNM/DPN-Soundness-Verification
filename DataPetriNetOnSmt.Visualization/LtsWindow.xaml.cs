@@ -18,7 +18,7 @@ namespace DataPetriNetOnSmt.Visualization
     {
         private readonly LtsToGraphParser constraintGraphToGraphParser;
 
-        public ConstraintGraphWindow(LtsToVisualize constraintGraph)
+        public ConstraintGraphWindow(ConstraintGraphToVisualize constraintGraph)
         {
             InitializeComponent();
 

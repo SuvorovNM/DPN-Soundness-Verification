@@ -1,35 +1,30 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
+using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
+namespace DataPetriNetVerificationDomain.CoverabilityTreeVisualized
 {
-    public class ConstraintStateToVisualize
+    public class CoverabilityStateToVisualize
     {
         public int Id { get; set; }
         public Dictionary<string, int> Tokens { get; set; }
         public string ConstraintFormula { get; set; }
-        public ConstraintStateType StateType { get; set; }
+        public CtStateColor StateColor { get; set; }
 
-        public static ConstraintStateToVisualize FromNode<AbsState>(AbsState state, ConstraintStateType stateType)
-            where AbsState : AbstractState
+        public static CoverabilityStateToVisualize FromNode(CtState state)
         {
-            return new ConstraintStateToVisualize
+            return new CoverabilityStateToVisualize
             {
                 Id = state.Id,
                 ConstraintFormula = state.Constraints.ToString(),
                 Tokens = state.Marking.AsDictionary(),
-                StateType = stateType
+                StateColor = state.StateColor
             };
-        }
-
-        public ConstraintStateToVisualize()
-        {
-
         }
     }
 }

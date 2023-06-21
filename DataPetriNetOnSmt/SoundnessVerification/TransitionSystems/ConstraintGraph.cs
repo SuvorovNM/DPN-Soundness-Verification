@@ -29,7 +29,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
-                        //Context.GetSmtExpression(transition.Guard.BaseConstraintExpressions);
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
                     var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
@@ -44,7 +43,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                             var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                             var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
+                            var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+                            if (coveredNode != null)
                             {
                                 return; // The net is unbounded
                             }
@@ -65,7 +66,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         {
                             var stateToAddInfo = new BaseStateInfo(currentState.Marking, constraintsIfSilentTransitionFires);
 
-                            if (CheckStrictCoverageOfParentStates(stateToAddInfo, currentState))
+                            var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+                            if (coveredNode != null)
                             {
                                 return; // The net is unbounded
                             }

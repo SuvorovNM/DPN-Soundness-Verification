@@ -2,11 +2,12 @@
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public record SoundnessProperties(
-        Dictionary<LtsState, ConstraintStateType> StateTypes,
+        Dictionary<AbstractState, ConstraintStateType> StateTypes,
         bool Boundedness,
         List<string> DeadTransitions,
         bool Deadlocks,
@@ -14,11 +15,60 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
     public static class LtsAnalyzer
     {
-        public static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
+        public static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityTree ct)
         {
-            var stateTypes = GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+            var bounded = ct.ConstraintStates.All(x => x.StateType != CtStateType.StrictlyCovered);
+
+            Dictionary<AbstractState, ConstraintStateType> stateTypes = 
+                GetStatesDividedByTypesNew(ct, dpn.Places.Where(x => x.IsFinal).ToArray());
+            foreach (var state in ct.ConstraintStates)
+            {
+                if (state.StateType == CtStateType.StrictlyCovered)
+                {
+                    stateTypes[state] = ConstraintStateType.StrictlyCovered;
+                }
+            }
+
+
+            var deadTransitions = dpn.Transitions
+                .Select(x => x.BaseTransitionId)
+                .Except(ct.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
+                .ToList();
+
+            var hasDeadlocks = false;
+            var isFinalMarkingAlwaysReachable = true;
+            var isFinalMarkingClean = true;
+
+            foreach (var constraintState in ct.ConstraintStates)
+            {
+                hasDeadlocks |= stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock);
+                isFinalMarkingAlwaysReachable &= !stateTypes[constraintState].HasFlag(ConstraintStateType.NoWayToFinalMarking);
+                isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(ConstraintStateType.UncleanFinal);
+            }
+
+            var isSound = bounded
+                && !hasDeadlocks
+                && isFinalMarkingAlwaysReachable
+                && isFinalMarkingClean
+                && deadTransitions.Count == 0;
+
+            return new SoundnessProperties(stateTypes, bounded, deadTransitions, hasDeadlocks, isSound);
+        }
+
+        public static SoundnessProperties CheckSoundness
+            (DataPetriNet dpn, LabeledTransitionSystem cg)
+        {
+            Dictionary<AbstractState, ConstraintStateType> stateTypes;
 
             var boundedness = cg.IsFullGraph;
+            if (boundedness)
+            {
+                stateTypes = GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+            }
+            else
+            {
+                stateTypes = cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
+            }
 
             var deadTransitions = dpn.Transitions
                 .Select(x => x.BaseTransitionId)
@@ -45,44 +95,65 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
         }
 
-        public static Dictionary<LtsState, ConstraintStateType> GetStatesDividedByTypesNew(LabeledTransitionSystem graph, IEnumerable<Place> terminalNodes)
+        public static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypesNew<AbsState, AbsTransition, AbsArc>
+            (AbstractStateSpaceStructure<AbsState, AbsTransition, AbsArc> graph, IEnumerable<Place> finalMarking)
+            where AbsState : AbstractState, new()
+            where AbsTransition : AbstractTransition
+            where AbsArc : AbstractArc<AbsState, AbsTransition>
         {
-            var stateDictionary = graph.ConstraintStates.ToDictionary(x => x, y => ConstraintStateType.Default);
+            var stateDictionary = graph.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
 
-            if (graph.IsFullGraph)
-            {
-                DefineInitialState(graph, stateDictionary);
-                DefineDeadlocks(graph, terminalNodes, stateDictionary);
+            DefineInitialState(stateDictionary);
+            DefineDeadlocks(finalMarking, stateDictionary);
 
-                var finalStates = graph.ConstraintStates
-                        .Where(x => x.Marking.Keys.Intersect(terminalNodes).All(y => x.Marking[y] > 0));
+            var finalStates = graph.ConstraintStates
+                    .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] > 0));
 
-                DefineFinals(stateDictionary, finalStates);
-                DefineUncleanFinals(terminalNodes, stateDictionary, finalStates);
-                DefineStatesWithNoWayToFinals(graph, stateDictionary, finalStates);
-            }
+            DefineFinals(stateDictionary, finalStates);
+            DefineUncleanFinals(finalMarking, stateDictionary, finalStates);
+            DefineStatesWithNoWayToFinals(stateDictionary, finalStates);
 
             return stateDictionary;
 
 
-            static void DefineDeadlocks(LabeledTransitionSystem graph, IEnumerable<Place> terminalNodes, Dictionary<LtsState, ConstraintStateType> stateDictionary)
+
+            void DefineDeadlocks(IEnumerable<Place> terminalNodes, Dictionary<AbstractState, ConstraintStateType> stateDictionary)
             {
                 graph.ConstraintStates
                                 .Where(x => x.Marking.Keys.Except(terminalNodes).Any(y => x.Marking[y] > 0)
-                                    && !graph.ConstraintArcs.Any(y => y.SourceState == x))
+                                    && !graph.ConstraintArcs.Any(y => y.SourceState == x)
+                                    && !(x is CtState state && state.StateType != CtStateType.NonCovered))
                                 .ToList()
                                 .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.Deadlock);
             }
 
-            static void DefineStatesWithNoWayToFinals(LabeledTransitionSystem graph, Dictionary<LtsState, ConstraintStateType> stateDictionary, IEnumerable<LtsState> finalStates)
+            // Доработать
+            void DefineStatesWithNoWayToFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary, IEnumerable<AbsState> finalStates)
+                
             {
-                var statesLeadingToFinals = new List<LtsState>(finalStates);
-                var intermediateStates = new List<LtsState>(finalStates);
+                var statesLeadingToFinals = new List<AbsState>(finalStates);
+                var intermediateStates = new List<AbsState>(finalStates);
                 var stateIncidenceDict = graph.ConstraintArcs
                     .GroupBy(x => x.TargetState)
                     .ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
 
-                do
+                //AbsState state = null;
+
+                if (typeof(AbsState) == typeof(CtState))
+                {
+                    foreach (var state in stateIncidenceDict.Keys)
+                    {
+                        if (state is CtState ctState && ctState.StateType != CtStateType.NonCovered)
+                        {
+                            if (stateIncidenceDict.ContainsKey(ctState.CoveredNode as AbsState))
+                            {
+                                stateIncidenceDict[ctState.CoveredNode as AbsState].Add(ctState as AbsState);
+                            }
+                        }
+                    }
+                }
+
+                do//check for covered
                 {
                     var nextStates = intermediateStates
                         .Where(x => stateIncidenceDict.ContainsKey(x))
@@ -90,7 +161,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         .Where(x => !statesLeadingToFinals.Contains(x))
                         .Distinct();
                     statesLeadingToFinals.AddRange(intermediateStates);
-                    intermediateStates = new List<LtsState>(nextStates);
+                    intermediateStates = new List<AbsState>(nextStates);
                 } while (intermediateStates.Count > 0);
 
                 graph.ConstraintStates
@@ -99,7 +170,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.NoWayToFinalMarking);
             }
 
-            static void DefineUncleanFinals(IEnumerable<Place> terminalNodes, Dictionary<LtsState, ConstraintStateType> stateDictionary, IEnumerable<LtsState> finalStates)
+            static void DefineUncleanFinals(IEnumerable<Place> terminalNodes, Dictionary<AbstractState, ConstraintStateType> stateDictionary, IEnumerable<AbsState> finalStates)
             {
                 finalStates
                                 .Where(x => x.Marking.Keys.Any(y => x.Marking[y] > 1) || x.Marking.Keys.Except(terminalNodes).Any(y => x.Marking[y] > 0))
@@ -107,14 +178,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                                 .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.UncleanFinal);
             }
 
-            static void DefineFinals(Dictionary<LtsState, ConstraintStateType> stateDictionary, IEnumerable<LtsState> finalStates)
+            void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary, IEnumerable<AbsState> finalStates)
             {
                 finalStates
                                 .ToList()
                                 .ForEach(x => stateDictionary[x] = stateDictionary[x] | ConstraintStateType.Final);
             }
 
-            static void DefineInitialState(LabeledTransitionSystem graph, Dictionary<LtsState, ConstraintStateType> stateDictionary)
+            void DefineInitialState(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
             {
                 stateDictionary[graph.InitialState] = stateDictionary[graph.InitialState] | ConstraintStateType.Initial;
             }

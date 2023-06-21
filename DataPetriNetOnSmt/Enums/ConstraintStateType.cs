@@ -21,6 +21,8 @@ namespace DataPetriNetOnSmt.Enums
         [Description("Unclean final state")]
         UncleanFinal = 8,
         [Description("Deadlock")]
-        Deadlock = 16
+        Deadlock = 16,
+        [Description("StrictlyCovered")]
+        StrictlyCovered = 32
     }
 }
