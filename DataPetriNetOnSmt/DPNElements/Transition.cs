@@ -81,7 +81,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
         public object Clone()
         {
-            return new Transition(Id, (Guard)Guard.Clone()) { Label = this.Label};
+            return new Transition(Id, (Guard)Guard.Clone(), string.IsNullOrEmpty(BaseTransitionId) ? null : BaseTransitionId) { Label = this.Label};
         }
     }
 }

@@ -26,11 +26,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             var dpnToConsider = (DataPetriNet)sourceDpn.Clone();
             var repairmentFinished = false;
-            (dpnToConsider,_) = transformerToRefined.Transform(dpnToConsider);
+
+            (dpnToConsider, _) = transformerToRefined.Transform(dpnToConsider);
             var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
 
+            // Не справляется с формулами
+            // Изменить структуру дерева? - уменьшить количество вершин
             do
             {
+                // Perform only when output transition is modified
+                // OR - refine only if all green
+                //(dpnToConsider, _) = transformerToRefined.Transform(dpnToConsider);
+                //var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+
                 var ct = new CoverabilityTree(dpnToConsider);
                 ct.GenerateGraph();
                 repairmentFinished = ct.ConstraintStates.All(x => x.StateColor == CtStateColor.Green)
@@ -42,19 +50,25 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             return dpnToConsider;
         }
-        public DataPetriNet MakeRepairStep(DataPetriNet sourceDpn, CoverabilityTree ct, Dictionary<string,Transition> transitionsDict)
+        public DataPetriNet MakeRepairStep(DataPetriNet sourceDpn, CoverabilityTree ct, Dictionary<string, Transition> transitionsDict)
         {
             var arcsDict = ct.ConstraintArcs.ToDictionary(x => (x.SourceState, x.TargetState), y => y.Transition);
 
             // Find green nodes which contain red nodes
             var criticalNodes = ct.ConstraintStates
                 .Where(x => x.StateColor == CtStateColor.Red && x.ParentNode != null && x.ParentNode.StateColor == CtStateColor.Green)
+                //.Distinct(new CtStateEqualityComparer())
                 .GroupBy(x => x.ParentNode)
                 .ToList();
-            
-            foreach(var nodeGroup in criticalNodes)
+
+            //var a1 = new CtState(new BaseStateInfo(new Marking(), sourceDpn.Context.MkTrue()),null);
+            //var a2 = new CtState(new BaseStateInfo(new Marking(), sourceDpn.Context.MkTrue()), null);
+
+            //var test = new HashSet<CtState>(new CtStateEqualityComparer()) { a1, a2 };
+
+            foreach (var nodeGroup in criticalNodes)
             {
-                foreach(var childNode in nodeGroup)
+                foreach (var childNode in nodeGroup)
                 {
                     var arcBetweenNodes = arcsDict[(nodeGroup.Key, childNode)];
                     if (arcBetweenNodes.IsSilent)
@@ -76,7 +90,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         var overwrittenVars = predecessorTransition.Guard.WriteVars;
                         var formulaToConjunct = sourceDpn.Context.MkNot(childNode.Constraints);
 
-                        foreach(var overwrittenVar in overwrittenVars)
+                        foreach (var overwrittenVar in overwrittenVars)
                         {
                             var readVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
                             var writeVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
@@ -84,22 +98,48 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
                         }
 
-                        var updatedConstraint = 
-                            sourceDpn.Context.MkAnd(predecessorTransition.Guard.ActualConstraintExpression, formulaToConjunct);
+                        var isUpdateNeeded = !formulaToConjunct.Equals(
+                            sourceDpn.Context.MkAnd(
+                            predecessorTransition.Guard.ActualConstraintExpression,
+                            formulaToConjunct));
 
-                        predecessorTransition.Guard = new Guard(sourceDpn.Context, predecessorTransition.Guard.BaseConstraintExpressions, updatedConstraint);
+                        if (isUpdateNeeded)
+                        {
+                            var updatedConstraint =
+                                sourceDpn.Context.MkAnd(predecessorTransition.Guard.ActualConstraintExpression, formulaToConjunct);
+
+                            predecessorTransition.Guard = new Guard(sourceDpn.Context, predecessorTransition.Guard.BaseConstraintExpressions, updatedConstraint);
+                        }
                     }
                     else
                     {
                         var transitionToUpdate = transitionsDict[arcBetweenNodes.Id];
+                        var formulaToConjunct = sourceDpn.Context.MkNot(childNode.Constraints);
 
-                        var updatedConstraint = sourceDpn.Context.MkAnd(
-                            sourceDpn.Context.MkNot(childNode.Constraints),
-                            transitionToUpdate.Guard.ActualConstraintExpression
-                            );
+                        var overwrittenVars = transitionToUpdate.Guard.WriteVars;
 
-                        transitionToUpdate.Guard = new Guard
-                            (sourceDpn.Context, transitionToUpdate.Guard.BaseConstraintExpressions, updatedConstraint);
+                        foreach (var overwrittenVar in overwrittenVars)
+                        {
+                            var readVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
+                            var writeVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
+
+                            formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
+                        }
+
+                        var isUpdateNeeded = !formulaToConjunct.Equals(
+                            sourceDpn.Context.MkAnd(transitionToUpdate.Guard.ActualConstraintExpression,
+                            formulaToConjunct));
+
+                        if (isUpdateNeeded)
+                        {
+                            var updatedConstraint = sourceDpn.Context.MkAnd(
+                                formulaToConjunct,
+                                transitionToUpdate.Guard.ActualConstraintExpression
+                                );
+
+                            transitionToUpdate.Guard = new Guard
+                                (sourceDpn.Context, transitionToUpdate.Guard.BaseConstraintExpressions, updatedConstraint);
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 ﻿using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
+using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
                             var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
-                            var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
+                            var stateToAddInfo = new BaseStateInfo(updatedMarking, (BoolExpr)constraintsIfTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition), stateToAddInfo);
                         }
@@ -66,7 +67,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
-                            var stateToAddInfo = new BaseStateInfo(currentState.Marking, constraintsIfSilentTransitionFires);
+                            var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
                         }
