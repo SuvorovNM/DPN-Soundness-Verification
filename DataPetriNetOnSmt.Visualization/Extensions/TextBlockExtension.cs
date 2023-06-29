@@ -115,14 +115,17 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         private static string FormStatesInfoLines(List<ConstraintStateToVisualize> states)
         {
             var stateTypes = new Dictionary<ConstraintStateType, int>();
-            foreach(var stateType in Enum.GetValues<ConstraintStateType>())
+            var consideredStateTypes = Enum.GetValues<ConstraintStateType>()
+                    .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered });
+
+            foreach (var stateType in consideredStateTypes)
             {
                 stateTypes.Add(stateType, 0);
             }
 
             foreach (var state in states)
             {
-                foreach (var stateType in Enum.GetValues<ConstraintStateType>())
+                foreach (var stateType in consideredStateTypes)
                 {
                     if (state.StateType.HasFlag(stateType))
                     {
