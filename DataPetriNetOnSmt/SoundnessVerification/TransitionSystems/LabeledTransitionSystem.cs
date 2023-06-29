@@ -76,7 +76,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 var isConsideredStateTokensEqual = 
                     tokens.CompareTo(stateInGraph.Marking) == MarkingComparisonResult.Equal;
 
-                if (isConsideredStateTokensEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
+                if (isConsideredStateTokensEqual && constraintsIfFires == stateInGraph.Constraints)
                 {
                     return stateInGraph;
                 }

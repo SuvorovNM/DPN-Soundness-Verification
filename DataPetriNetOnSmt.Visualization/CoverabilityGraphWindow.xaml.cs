@@ -30,6 +30,8 @@ namespace DataPetriNetOnSmt.Visualization
 
             graphControl.Graph = ctParser.FormGraphBasedOnCt(coverabilityTree);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+            logControl.Text = $"Nodes: {coverabilityTree.CtStates.Count}. Arcs: {coverabilityTree.CtArcs.Count}.";
         }
     }
 }

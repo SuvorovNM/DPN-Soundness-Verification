@@ -21,7 +21,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             cyclesFinder = new CyclesFinder();
         }
 
-        private DataPetriNet PerformTransformationStep(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem lts)
+        private DataPetriNet PerformTransformationStep<AbsState, AbsTransition, AbsArc, TSelf>
+            (DataPetriNet sourceDpn, List<TSelf> cycles)
+            where AbsArc : AbstractArc<AbsState, AbsTransition>
+            where AbsState : AbstractState
+            where AbsTransition : AbstractTransition
+            where TSelf : Cycle<AbsArc, AbsState, AbsTransition, TSelf>
+
         {
             var newDPN = (DataPetriNet)sourceDpn.Clone();
             var context = sourceDpn.Context;
@@ -30,7 +36,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var transitionsPostset = new Dictionary<Transition, List<(Place place, int weight)>>();
             FillTransitionsArcs(newDPN, transitionsPreset, transitionsPostset);
 
-            var cycles = cyclesFinder.GetCycles(lts);
+            //var cycles = cyclesFinder.GetCycles(lts);
 
             var refinedTransitions = new List<Transition>();
             var refinedArcs = new List<Arc>();
@@ -50,10 +56,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     var cyclesWithTransition = cycles
                         .Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
 
-                    // TODO: Не очень верно проверять на read "BaseConstraintExpressions"
                     var outputTransitions = cyclesWithTransition
                         .SelectMany(x => x.OutputArcs)
-                        .Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars//BaseConstraintExpressions
+                        .Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars
                             .Intersect(writeVarsInSourceTransition).Any())
                         .Select(x => transitionsDict[x.Transition.Id])
                         .Distinct();
@@ -98,6 +103,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                 foreach (var updatedTransition in updatedTransitions)
                 {
+                    var tactic = sourceDpn.Context.MkTactic("ctx-solver-simplify");
+                    var goal = sourceDpn.Context.MkGoal();
+                    goal.Assert(updatedTransition.Guard.ActualConstraintExpression);
+
+                    var result = tactic.Apply(goal);
+                    var updatedConstraint = result.Subgoals[0].AsBoolExpr();
+                    updatedTransition.Guard = new Guard(newDPN.Context, updatedTransition.Guard.BaseConstraintExpressions, updatedConstraint);
+                    
+
                     foreach (var arc in transitionsPreset[sourceTransition])
                     {
                         refinedArcs.Add(new Arc(arc.place, updatedTransition, arc.weight));
@@ -117,15 +131,45 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             return newDPN;
         }
 
-        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) Transform(DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem sourceLts = null)
+        public (DataPetriNet dpn, CoverabilityTree ct) TransformUsingCt(DataPetriNet sourceDpn, CoverabilityTree sourceCt = null)
         {
             DataPetriNet transformedDpn = sourceDpn;
             int sourceDpnTransitionCount;
 
             do
             {
-                sourceLts = new ClassicalLabeledTransitionSystem(transformedDpn);
-                sourceLts.GenerateGraph();
+                if (sourceCt == null)
+                {
+                    sourceCt = new CoverabilityTree(transformedDpn);
+                    sourceCt.GenerateGraph();
+                }
+
+                if (sourceCt.LeafStates.Any(x=>x.StateType == CtStateType.StrictlyCovered))
+                {
+                    return (transformedDpn, sourceCt);
+                }
+
+                sourceDpnTransitionCount = transformedDpn.Transitions.Count;
+                transformedDpn = PerformTransformationStep<CtState, CtTransition, CtArc, CtCycle>
+                    (transformedDpn, cyclesFinder.GetCycles(sourceCt));
+            } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
+
+            return (transformedDpn, sourceCt);
+        }
+
+        public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) TransformUsingLts
+            (DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem sourceLts = null)
+        {
+            DataPetriNet transformedDpn = sourceDpn;
+            int sourceDpnTransitionCount;
+
+            do
+            {
+                if (sourceLts == null)
+                {
+                    sourceLts = new ClassicalLabeledTransitionSystem(transformedDpn);
+                    sourceLts.GenerateGraph();
+                }
 
                 if (!sourceLts.IsFullGraph)
                 {
@@ -133,7 +177,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
 
                 sourceDpnTransitionCount = transformedDpn.Transitions.Count;
-                transformedDpn = PerformTransformationStep(transformedDpn, sourceLts);
+                transformedDpn = PerformTransformationStep<LtsState,LtsTransition,LtsArc,LtsCycle>
+                    (transformedDpn, cyclesFinder.GetCycles(sourceLts));
             } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
 
             return (transformedDpn, sourceLts);

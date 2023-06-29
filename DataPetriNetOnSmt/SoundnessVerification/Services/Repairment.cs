@@ -25,28 +25,45 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             // Termination - either if all are green or all are red
 
             var dpnToConsider = (DataPetriNet)sourceDpn.Clone();
-            var repairmentFinished = false;
+            var repairmentSuccessfullyFinished = false;
+            var repairmentFailed = false;
+            var allGreenOnPreviousStep = true;
 
-            (dpnToConsider, _) = transformerToRefined.Transform(dpnToConsider);
-            var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+            //(dpnToConsider, _) = transformerToRefined.Transform(dpnToConsider);
+            //var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
 
-            // Не справляется с формулами
-            // Изменить структуру дерева? - уменьшить количество вершин
             do
             {
+                (dpnToConsider, _) = transformerToRefined.TransformUsingCt(dpnToConsider);
+                var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+                
                 // Perform only when output transition is modified
                 // OR - refine only if all green
-                //(dpnToConsider, _) = transformerToRefined.Transform(dpnToConsider);
-                //var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+                /*if (allGreenOnPreviousStep)
+                {
+                    (var refinedDpn, _) = transformerToRefined.Transform(dpnToConsider);
+                    if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
+                    {
+                        dpnToConsider = refinedDpn;
+                        transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+                    }
+                }*/
 
-                var ct = new CoverabilityTree(dpnToConsider);
+                var ct = new CoverabilityTree(dpnToConsider, withTauTransitions: true);
                 ct.GenerateGraph();
-                repairmentFinished = ct.ConstraintStates.All(x => x.StateColor == CtStateColor.Green)
-                    || ct.ConstraintStates.All(x => x.StateColor == CtStateColor.Red);
 
-                if (!repairmentFinished)
+                var allNodesGreen = ct.ConstraintStates.All(x => x.StateColor == CtStateColor.Green);
+                var allNodesRed = ct.ConstraintStates.All(x => x.StateColor == CtStateColor.Red);
+
+                repairmentSuccessfullyFinished = allNodesGreen;
+                repairmentFailed = allNodesRed;                
+
+                if (!repairmentSuccessfullyFinished && !repairmentFailed)
                     dpnToConsider = MakeRepairStep(dpnToConsider, ct, transitionsDict);
-            } while (!repairmentFinished);
+
+                allGreenOnPreviousStep = allNodesGreen;
+
+            } while (!repairmentSuccessfullyFinished && !repairmentFailed);
 
             return dpnToConsider;
         }
@@ -60,11 +77,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 //.Distinct(new CtStateEqualityComparer())
                 .GroupBy(x => x.ParentNode)
                 .ToList();
-
-            //var a1 = new CtState(new BaseStateInfo(new Marking(), sourceDpn.Context.MkTrue()),null);
-            //var a2 = new CtState(new BaseStateInfo(new Marking(), sourceDpn.Context.MkTrue()), null);
-
-            //var test = new HashSet<CtState>(new CtStateEqualityComparer()) { a1, a2 };
 
             foreach (var nodeGroup in criticalNodes)
             {
@@ -107,6 +119,12 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         {
                             var updatedConstraint =
                                 sourceDpn.Context.MkAnd(predecessorTransition.Guard.ActualConstraintExpression, formulaToConjunct);
+                            var tactic = sourceDpn.Context.MkTactic("ctx-solver-simplify");
+                            var goal = sourceDpn.Context.MkGoal();
+                            goal.Assert(updatedConstraint);
+                            
+                            var result = tactic.Apply(goal);
+                            updatedConstraint = result.Subgoals[0].AsBoolExpr();
 
                             predecessorTransition.Guard = new Guard(sourceDpn.Context, predecessorTransition.Guard.BaseConstraintExpressions, updatedConstraint);
                         }
@@ -136,6 +154,13 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                                 formulaToConjunct,
                                 transitionToUpdate.Guard.ActualConstraintExpression
                                 );
+
+                            var tactic = sourceDpn.Context.MkTactic("ctx-solver-simplify");
+                            var goal = sourceDpn.Context.MkGoal();
+                            goal.Assert(updatedConstraint);
+
+                            var result = tactic.Apply(goal);
+                            updatedConstraint = result.Subgoals[0].AsBoolExpr();
 
                             transitionToUpdate.Guard = new Guard
                                 (sourceDpn.Context, transitionToUpdate.Guard.BaseConstraintExpressions, updatedConstraint);

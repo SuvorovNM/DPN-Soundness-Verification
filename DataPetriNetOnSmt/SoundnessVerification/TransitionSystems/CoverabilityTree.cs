@@ -14,13 +14,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
     // Покрасить все вершины, а затем обходить дерево в глубину до листьев или красных вершин
     {
         protected Stack<CtState> StatesToConsider { get; set; }
-        protected List<CtState> LeafStates { get; set; }
+        public List<CtState> LeafStates { get; protected set; }
+        protected bool WithTauTransitions { get; init; }
 
-        public CoverabilityTree(DataPetriNet dataPetriNet) : base(dataPetriNet)
+        public CoverabilityTree(DataPetriNet dataPetriNet, bool withTauTransitions = false) : base(dataPetriNet)
         {
             LeafStates = new List<CtState>();
             StatesToConsider = new Stack<CtState>();
             StatesToConsider.Push(InitialState);
+            WithTauTransitions = withTauTransitions;
         }
 
         public override void GenerateGraph()
@@ -57,19 +59,22 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         }
                     }
 
-                    var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
-
-                    if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
+                    if (WithTauTransitions)
                     {
-                        var constraintsIfSilentTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, new Dictionary<string, DomainType>());
+                        var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
 
-                        if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
-                            !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
+                        if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
                         {
-                            var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
+                            var constraintsIfSilentTransitionFires = expressionService
+                                .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, new Dictionary<string, DomainType>());
 
-                            AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
+                            if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
+                                !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
+                            {
+                                var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
+
+                                AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
+                            }
                         }
                     }
                 }

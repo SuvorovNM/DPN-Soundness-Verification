@@ -83,7 +83,7 @@ namespace DataPetriNetOnSmt.Visualization
 
         private async void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
         {
-            var coverabilityTree = new CoverabilityTree(currentDisplayedNet);
+            var coverabilityTree = new CoverabilityTree(currentDisplayedNet, withTauTransitions: true);
             var ctToVisualize = await ConstructAndAnalyzeCoverabilityTree(coverabilityTree);
             VisualizeCoverabilityTree(ctToVisualize);
         }
@@ -91,7 +91,7 @@ namespace DataPetriNetOnSmt.Visualization
         private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformerToRefined();
-            (var dpn, var lts) = dpnTransformation.Transform(currentDisplayedNet);
+            (var dpn, var lts) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
             if (lts.IsFullGraph)
             {
                 var constraintGraph = new ConstraintGraph(dpn);
@@ -119,7 +119,7 @@ namespace DataPetriNetOnSmt.Visualization
                 if (ltsToVisualize.IsSound)
                 {
                     var dpnTransformation = new TransformerToRefined();
-                    (var dpn, _) = dpnTransformation.Transform(currentDisplayedNet);
+                    (var dpn, _) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
 
                     var constraintGraph = new ConstraintGraph(dpn);
                     ltsToVisualize = await CheckSoundness(dpn, constraintGraph);
@@ -186,7 +186,7 @@ namespace DataPetriNetOnSmt.Visualization
         private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformerToRefined();
-            (currentDisplayedNet,_) = dpnTransformation.Transform(currentDisplayedNet);
+            (currentDisplayedNet,_) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 
