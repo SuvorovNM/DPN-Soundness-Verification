@@ -37,7 +37,7 @@ namespace ToGraphParser
 
                 graph.AddNode(nodeToAdd);
 
-                if (transition.Guard.BaseConstraintExpressions.Any())
+                //if (transition.Guard.BaseConstraintExpressions.Any())
                 {
                     var edgeToAdd = new Edge(nodeToAdd, nodeToAdd, ConnectionToGraph.Connected);
                     edgeToAdd.Attr.LineWidth = 0;

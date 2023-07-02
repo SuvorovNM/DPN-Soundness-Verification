@@ -9,6 +9,7 @@ using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CoverabilityTreeVisualized;
 using Microsoft.Win32;
 using Microsoft.Z3;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
@@ -40,6 +41,9 @@ namespace DataPetriNetOnSmt.Visualization
             pnmlParser = new PnmlParser();
             //dpnTransformation = new TransformationToAtomicConstraints();
             context = new Context();
+            Microsoft.Z3.Global.SetParameter("parallel.enable", "true");
+            Microsoft.Z3.Global.SetParameter("threads", "4");
+            Microsoft.Z3.Global.SetParameter("arith.propagation_mode", "2");
 
             currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
@@ -184,9 +188,21 @@ namespace DataPetriNetOnSmt.Visualization
         }
 
         private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
-        {
+        {                       
+
             var dpnTransformation = new TransformerToRefined();
-            (currentDisplayedNet,_) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
+            /*var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            (var currentDisplayedNet2, _) = dpnTransformation.TransformUsingCt(currentDisplayedNet);
+            stopWatch.Stop();
+            var resultTimeCT = stopWatch.ElapsedMilliseconds;            
+
+            stopWatch = new Stopwatch();
+            stopWatch.Start();*/
+            (currentDisplayedNet, _) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
+            /*stopWatch.Stop();
+            var resultTimeLTS = stopWatch.ElapsedMilliseconds;*/
+
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
 
@@ -226,7 +242,8 @@ namespace DataPetriNetOnSmt.Visualization
         private void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnRepairment = new Repairment();
-            currentDisplayedNet = dpnRepairment.RepairDpn(currentDisplayedNet);
+            (currentDisplayedNet, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
+            MessageBox.Show(result ? "Success!" : "Failure!");
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
     }

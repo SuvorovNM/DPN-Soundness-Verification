@@ -26,6 +26,30 @@ namespace DataPetriNetOnSmt.Extensions
             return result;
         }
 
+        public static bool AreEqual(this Context context, BoolExpr? expr1, BoolExpr? expr2)
+        {
+            if (expr1 is null)
+            {
+                throw new ArgumentNullException(nameof(expr1));
+            }
+            if (expr2 is null)
+            {
+                throw new ArgumentNullException(nameof(expr2));
+            }
+
+            // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
+            var exprWithSourceNegated = context.MkAnd(context.MkNot(expr1), expr2);
+            var exprWithTargetNegated = context.MkAnd(expr1, context.MkNot(expr2));
+            var expressionToCheck = context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
+
+            Solver s = context.MkSimpleSolver();
+            s.Assert(expressionToCheck);
+
+            var result = s.Check() == Status.UNSATISFIABLE;
+
+            return result;
+        }
+
         public static BoolExpr GetReadExpression(this Context context, BoolExpr smtExpression, Dictionary<string, DomainType> overwrittenVarNames)
         {
             var variablesToOverwrite = new Expr[overwrittenVarNames.Count];
@@ -44,7 +68,14 @@ namespace DataPetriNetOnSmt.Extensions
                 Tactic tac = context.MkTactic("qe");
                 ApplyResult a = tac.Apply(g);
 
-                return a.Subgoals[0].AsBoolExpr();
+                var tactic = context.MkTactic("ctx-simplify");
+
+                var goal = context.MkGoal();
+                goal.Assert(a.Subgoals[0].AsBoolExpr());
+
+                var result = tactic.Apply(goal);
+
+                return (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
             }
             else
             {

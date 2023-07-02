@@ -62,6 +62,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             .Intersect(writeVarsInSourceTransition).Any())
                         .Select(x => transitionsDict[x.Transition.Id])
                         .Distinct();
+                    
 
                     foreach (var outputTransition in outputTransitions)
                     {
@@ -101,15 +102,18 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     }
                 }
 
+
                 foreach (var updatedTransition in updatedTransitions)
                 {
-                    var tactic = sourceDpn.Context.MkTactic("ctx-solver-simplify");
+                    var tactic = sourceDpn.Context.MkTactic("ctx-simplify");
+
                     var goal = sourceDpn.Context.MkGoal();
                     goal.Assert(updatedTransition.Guard.ActualConstraintExpression);
 
                     var result = tactic.Apply(goal);
-                    var updatedConstraint = result.Subgoals[0].AsBoolExpr();
-                    updatedTransition.Guard = new Guard(newDPN.Context, updatedTransition.Guard.BaseConstraintExpressions, updatedConstraint);
+
+                    var updatedConstraint = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
+                    updatedTransition.Guard = new Guard(newDPN.Context, updatedTransition.Guard.BaseConstraintExpressions, updatedConstraint);                   
                     
 
                     foreach (var arc in transitionsPreset[sourceTransition])
@@ -138,13 +142,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             do
             {
-                if (sourceCt == null)
-                {
-                    sourceCt = new CoverabilityTree(transformedDpn);
-                    sourceCt.GenerateGraph();
-                }
+                sourceCt = new CoverabilityTree(transformedDpn);
+                sourceCt.GenerateGraph();
 
-                if (sourceCt.LeafStates.Any(x=>x.StateType == CtStateType.StrictlyCovered))
+                if (sourceCt.LeafStates.Any(x => x.StateType == CtStateType.StrictlyCovered))
                 {
                     return (transformedDpn, sourceCt);
                 }
@@ -152,6 +153,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 sourceDpnTransitionCount = transformedDpn.Transitions.Count;
                 transformedDpn = PerformTransformationStep<CtState, CtTransition, CtArc, CtCycle>
                     (transformedDpn, cyclesFinder.GetCycles(sourceCt));
+
             } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
 
             return (transformedDpn, sourceCt);
@@ -165,11 +167,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             do
             {
-                if (sourceLts == null)
-                {
-                    sourceLts = new ClassicalLabeledTransitionSystem(transformedDpn);
-                    sourceLts.GenerateGraph();
-                }
+                sourceLts = new ClassicalLabeledTransitionSystem(transformedDpn);
+                sourceLts.GenerateGraph();
 
                 if (!sourceLts.IsFullGraph)
                 {
@@ -177,7 +176,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
 
                 sourceDpnTransitionCount = transformedDpn.Transitions.Count;
-                transformedDpn = PerformTransformationStep<LtsState,LtsTransition,LtsArc,LtsCycle>
+                transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
                     (transformedDpn, cyclesFinder.GetCycles(sourceLts));
             } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
 
@@ -186,7 +185,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
 
 
-        private static void FillTransitionsArcs(DataPetriNet sourceDpn, Dictionary<Transition, List<(Place place, int weight)>> transitionsPreset, Dictionary<Transition, List<(Place place, int weight)>> transitionsPostset)
+        public static void FillTransitionsArcs(DataPetriNet sourceDpn, Dictionary<Transition, List<(Place place, int weight)>> transitionsPreset, Dictionary<Transition, List<(Place place, int weight)>> transitionsPostset)
         {
             foreach (var transition in sourceDpn.Transitions)
             {

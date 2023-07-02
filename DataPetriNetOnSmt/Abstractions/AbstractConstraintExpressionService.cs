@@ -99,6 +99,14 @@ namespace DataPetriNetOnSmt.Abstractions
                 resultBlockExpression = expressionWithRemovedOverwrittenVars;
             }
 
+            var tactic = Context.MkTactic("ctx-simplify");
+
+            var goal = Context.MkGoal();
+            goal.Assert(resultBlockExpression);
+
+            var result = tactic.Apply(goal);
+
+            resultBlockExpression = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
 
             return resultBlockExpression;
         }

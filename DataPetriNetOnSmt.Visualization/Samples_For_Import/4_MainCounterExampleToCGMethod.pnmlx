@@ -44,7 +44,7 @@
                <text>t0</text>
             </name>
          </transition>  
-		<transition id="t1_1" guard="b_w &gt; c_r">
+		<transition id="t1_1" guard="b_w &gt; 0">
             <name>
                <text>t1_1</text>
             </name>
@@ -54,12 +54,12 @@
                <text>t1_2</text>
             </name>
          </transition> 
-		 <transition id="t1_3" guard="a_w &gt;= a_r">
+		 <transition id="t1_3" guard="b_r &gt;= c_r">
             <name>
                <text>t1_3</text>
             </name>
          </transition>
-		<transition id="t2" guard="b_r &lt; a_r">
+		<transition id="t2" guard="b_r &lt; 3">
             <name>
                <text>t2</text>
             </name>

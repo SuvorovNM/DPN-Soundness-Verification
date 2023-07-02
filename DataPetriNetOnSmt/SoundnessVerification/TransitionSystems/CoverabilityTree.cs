@@ -5,6 +5,7 @@ using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,19 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
         public override void GenerateGraph()
         {
+            var transitionGuards = new Dictionary<Transition, BoolExpr>();
+            var tauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
+            foreach (var transition in DataPetriNet.Transitions)
+            {
+                var smtExpression = transition.Guard.ActualConstraintExpression;
+                var overwrittenVarNames = transition.Guard.WriteVars;
+                var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                transitionGuards.Add(transition, readExpression);
+
+                var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
+                tauTransitionsGuards.Add(transition, negatedGuardExpressions);
+            }
+
             while (StatesToConsider.Count > 0)
             {
                 var currentState = StatesToConsider.Pop();
@@ -41,46 +55,58 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 foreach (var transition in enabledTransitions)
                 {
                     var smtExpression = transition.Guard.ActualConstraintExpression;
-
                     var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                    var readExpression = transitionGuards[transition];
 
-                    if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
+                    if (expressionService.CanBeSatisfied(DataPetriNet.Context.MkAnd(currentState.Constraints, readExpression)))
                     {
                         var constraintsIfTransitionFires = expressionService
                             .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
 
-                        if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
+                        if (!constraintsIfTransitionFires.IsFalse)
                         {
+                            var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
+
+                            var goal = DataPetriNet.Context.MkGoal();
+                            goal.Assert(constraintsIfTransitionFires);
+
+                            var result = tactic.Apply(goal);
+
+                            constraintsIfTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
+
                             var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                             var stateToAddInfo = new BaseStateInfo(updatedMarking, (BoolExpr)constraintsIfTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition), stateToAddInfo);
                         }
+                        
                     }
 
                     if (WithTauTransitions)
                     {
-                        var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
+                        var negatedGuardExpressions = tauTransitionsGuards[transition];
 
-                        if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
+                        var constraintsIfSilentTransitionFires = DataPetriNet.Context.MkAnd(currentState.Constraints, negatedGuardExpressions);
+
+                        if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
+                            !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
-                            var constraintsIfSilentTransitionFires = expressionService
-                                .ConcatExpressions(currentState.Constraints, negatedGuardExpressions, new Dictionary<string, DomainType>());
+                            var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
 
-                            if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
-                                !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
-                            {
-                                var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
+                            var goal = DataPetriNet.Context.MkGoal();
+                            goal.Assert(constraintsIfSilentTransitionFires);
 
-                                AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
-                            }
+                            var result = tactic.Apply(goal);
+
+                            constraintsIfSilentTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
+
+                            var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
+
+                            AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
                         }
                     }
                 }
             }
-
-            // Вынести в отдельный метод
 
             AddColorsToNodes();
         }
@@ -96,7 +122,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
             void ColorSimplePathsThatLeadToFinalMarkingAsGreen()
             {
-                foreach (var leaf in LeafStates)
+                foreach (var leaf in ConstraintStates)//LeafStates
                 {
                     var isFinal = leaf.Marking.CompareTo(dpnFinalMarking) == MarkingComparisonResult.Equal;
                     if (isFinal)

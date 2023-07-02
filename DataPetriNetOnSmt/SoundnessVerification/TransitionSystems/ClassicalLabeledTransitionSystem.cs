@@ -2,6 +2,7 @@
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
+using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,6 +41,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                     {
                         var constraintsIfTransitionFires = expressionService
                             .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+
+                        var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
+
+                        var goal = DataPetriNet.Context.MkGoal();
+                        goal.Assert(constraintsIfTransitionFires);
+
+                        var result = tactic.Apply(goal);
+
+                        constraintsIfTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {
