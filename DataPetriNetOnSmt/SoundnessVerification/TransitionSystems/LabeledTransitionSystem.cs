@@ -58,7 +58,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
             {
                 var isConditionHoldsForTokens =
-                    stateInfo.Marking.CompareTo(parentNode.Marking) == comparisonResult;
+                    stateInfo.Marking.CompareTo(stateInGraph.Marking) == comparisonResult;
 
                 if (isConditionHoldsForTokens && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
                 {
@@ -76,7 +76,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 var isConsideredStateTokensEqual = 
                     tokens.CompareTo(stateInGraph.Marking) == MarkingComparisonResult.Equal;
 
-                if (isConsideredStateTokensEqual && constraintsIfFires == stateInGraph.Constraints)
+                if (isConsideredStateTokensEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
                 {
                     return stateInGraph;
                 }
