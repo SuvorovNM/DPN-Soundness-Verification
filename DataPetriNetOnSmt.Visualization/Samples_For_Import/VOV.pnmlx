@@ -258,10 +258,10 @@
          </arc>		 
       </page>
       <variables>
-         <variable type="Integer">
+         <variable type="Real">
             <name>reqd</name>
          </variable>
-		 <variable type="Integer">
+		 <variable type="Real">
             <name>granted</name>
          </variable>
          <variable type="Boolean">

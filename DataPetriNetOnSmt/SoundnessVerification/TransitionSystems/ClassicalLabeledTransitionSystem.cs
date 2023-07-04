@@ -40,16 +40,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                     if (expressionService.CanBeSatisfied(expressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
                         var constraintsIfTransitionFires = expressionService
-                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
-
-                        var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
-
-                        var goal = DataPetriNet.Context.MkGoal();
-                        goal.Assert(constraintsIfTransitionFires);
-
-                        var result = tactic.Apply(goal);
-
-                        constraintsIfTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
+                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);                      
 
                         if (expressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {

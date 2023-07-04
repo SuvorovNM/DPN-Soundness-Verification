@@ -16,6 +16,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         where AbsArc : AbstractArc<AbsState,AbsTransition>
     {
         protected ConstraintExpressionService expressionService;
+        private bool disposedValue;
+
         protected DataPetriNet DataPetriNet { get; init; }
         public AbsState InitialState { get; set; }
         public List<AbsState> ConstraintStates { get; set; }
@@ -40,36 +42,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                                 AbsTransition transition,
                                 BaseStateInfo stateInfo);
 
-        /*protected bool TryGetSrictlyCoveredNode(BaseStateInfo stateInfo, AbsState parentNode, out AbsState? coveredNode)
-        {
-            coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
-                (stateInfo, parentNode, MarkingComparisonResult.GreaterThan);
-            return coveredNode != null;
-        }
-
-        protected bool TryGetCoveredNode(BaseStateInfo stateInfo, AbsState parentNode, out AbsState? coveredNode)
-        {
-            coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
-                (stateInfo, parentNode, MarkingComparisonResult.GreaterThan | MarkingComparisonResult.Equal);
-            return coveredNode != null;
-        }*/
-
         protected abstract AbsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
             (BaseStateInfo stateInfo, AbsState parentNode, MarkingComparisonResult comparisonResult);
-        /*{
-            foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
-            {
-                var isConditionHoldsForTokens =
-                    stateInfo.Marking.CompareTo(parentNode.Marking) == comparisonResult;
-
-                if (isConditionHoldsForTokens && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
-                {
-                    return stateInGraph;
-                }
-            }
-
-            return null;
-        }*/
 
         private static AbsState FormInitialState(DataPetriNet dpn)
         {

@@ -65,19 +65,20 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                         if (!constraintsIfTransitionFires.IsFalse)
                         {
-                            var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
-
-                            var goal = DataPetriNet.Context.MkGoal();
-                            goal.Assert(constraintsIfTransitionFires);
-
-                            var result = tactic.Apply(goal);
-
-                            constraintsIfTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
+                            //constraintsIfTransitionFires = DataPetriNet.Context.SimplifyExpression(constraintsIfTransitionFires);
 
                             var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                             var stateToAddInfo = new BaseStateInfo(updatedMarking, (BoolExpr)constraintsIfTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition), stateToAddInfo);
+                        }
+                        else
+                        {
+
+                        }
+                        if (!expressionService.CanBeSatisfied(constraintsIfTransitionFires))
+                        {
+
                         }
                         
                     }
@@ -87,19 +88,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                         var negatedGuardExpressions = tauTransitionsGuards[transition];
 
                         var constraintsIfSilentTransitionFires = DataPetriNet.Context.MkAnd(currentState.Constraints, negatedGuardExpressions);
-
+                        
                         if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                             !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                         {
-                            var tactic = DataPetriNet.Context.MkTactic("ctx-simplify");
-
-                            var goal = DataPetriNet.Context.MkGoal();
-                            goal.Assert(constraintsIfSilentTransitionFires);
-
-                            var result = tactic.Apply(goal);
-
-                            constraintsIfSilentTransitionFires = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
-
                             var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition, true), stateToAddInfo);
@@ -140,18 +132,24 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
             void ColorCyclicPathsThatLeadToFinalMarkingAsGreen()
             {
-                foreach (var cycleLeaf in LeafStates.Where(x => x.StateType == CtStateType.NonstrictlyCovered))
+                var changeOnPreviousStep = true;
+                while (changeOnPreviousStep)
                 {
-                    var isCoveredNodeGreen = cycleLeaf.CoveredNode.StateColor == CtStateColor.Green;
-
-                    if (isCoveredNodeGreen)
+                    changeOnPreviousStep = false;
+                    foreach (var cycleLeaf in LeafStates.Where(x => x.StateType == CtStateType.NonstrictlyCovered && x.StateColor != CtStateColor.Green))
                     {
-                        cycleLeaf.StateColor = CtStateColor.Green;
-                        var parent = cycleLeaf.ParentNode;
-                        while (parent != null && parent.StateColor != CtStateColor.Green)
+                        var isCoveredNodeGreen = cycleLeaf.CoveredNode.StateColor == CtStateColor.Green;
+
+                        if (isCoveredNodeGreen)
                         {
-                            parent.StateColor = CtStateColor.Green;
-                            parent = parent.ParentNode;
+                            changeOnPreviousStep = true;
+                            cycleLeaf.StateColor = CtStateColor.Green;
+                            var parent = cycleLeaf.ParentNode;
+                            while (parent != null && parent.StateColor != CtStateColor.Green)
+                            {
+                                parent.StateColor = CtStateColor.Green;
+                                parent = parent.ParentNode;
+                            }
                         }
                     }
                 }

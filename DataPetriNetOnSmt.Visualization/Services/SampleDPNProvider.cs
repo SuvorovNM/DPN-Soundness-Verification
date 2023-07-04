@@ -27,22 +27,22 @@ namespace DataPetriNetOnSmt.Visualization.Services
             };
 
             var variables = new VariablesStore();
-            variables[DomainType.Integer].Write("reqd", new DefinableValue<long>(0));
-            variables[DomainType.Integer].Write("granted", new DefinableValue<long>(0));
+            variables[DomainType.Real].Write("reqd", new DefinableValue<double>(0));
+            variables[DomainType.Real].Write("granted", new DefinableValue<double>(0));
             variables[DomainType.Boolean].Write("ok", new DefinableValue<bool>(false));
 
             var transitionList = new List<Transition>
             {
                 new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                         {
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(0),
+                                Constant = new DefinableValue<double>(0),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThan,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "reqd",
                                     VariableType = VariableType.Written
                                 }
@@ -111,13 +111,13 @@ namespace DataPetriNetOnSmt.Visualization.Services
                             {
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "granted",
                                     VariableType = VariableType.Written
                                 },
                                 VariableToCompare = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "reqd",
                                     VariableType = VariableType.Read
                                 },
@@ -131,13 +131,13 @@ namespace DataPetriNetOnSmt.Visualization.Services
                             {
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "granted",
                                     VariableType = VariableType.Read
                                 },
                                 VariableToCompare = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "reqd",
                                     VariableType = VariableType.Read
                                 },
@@ -151,13 +151,13 @@ namespace DataPetriNetOnSmt.Visualization.Services
                             {
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "reqd",
                                     VariableType = VariableType.Written
                                 },
                                 VariableToCompare = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "reqd",
                                     VariableType = VariableType.Read
                                 },
@@ -168,15 +168,15 @@ namespace DataPetriNetOnSmt.Visualization.Services
                 new Transition("AND split",new Guard(context)),
                 new Transition("Inform acceptance VIP", new Guard(context, new List<IConstraintExpression>
                 {
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "granted",
                                     VariableType = VariableType.Read
                                 },
-                                Constant = new DefinableValue<long>(10000),
+                                Constant = new DefinableValue<double>(10000),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThan
                             }
@@ -270,21 +270,21 @@ namespace DataPetriNetOnSmt.Visualization.Services
             };
 
             var variables = new VariablesStore();
-            variables[DomainType.Integer].Write("amount", new DefinableValue<long>(0));
+            variables[DomainType.Real].Write("amount", new DefinableValue<double>(0));
             variables[DomainType.Boolean].Write("ok", new DefinableValue<bool>(false));
 
             var transitionList = new List<Transition>
             {
                 new Transition("Credit request", new Guard(context, new List<IConstraintExpression>
                 {
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(0),
+                                Constant = new DefinableValue<double>(0),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Written
                                 }
@@ -358,14 +358,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             },
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(5000),
+                                Constant = new DefinableValue<double>(5000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.LessThan,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }
@@ -397,14 +397,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Written
                                 }
                             },
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(5000),
+                                Constant = new DefinableValue<double>(5000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }
@@ -412,14 +412,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                         })),
                 new Transition("Renegotiate request", new Guard(context, new List<IConstraintExpression>
                 {
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(15000),
+                                Constant = new DefinableValue<double>(15000),
                                 LogicalConnective = LogicalConnective.Empty,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }
@@ -452,14 +452,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             },
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(10000),
+                                Constant = new DefinableValue<double>(10000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.LessThan,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }
@@ -479,14 +479,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             },
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(10000),
+                                Constant = new DefinableValue<double>(10000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }
@@ -506,14 +506,14 @@ namespace DataPetriNetOnSmt.Visualization.Services
                                     VariableType = VariableType.Read
                                 }
                             },
-                            new ConstraintVOCExpression<long>
+                            new ConstraintVOCExpression<double>
                             {
-                                Constant = new DefinableValue<long>(10000),
+                                Constant = new DefinableValue<double>(10000),
                                 LogicalConnective = LogicalConnective.And,
                                 Predicate = BinaryPredicate.GreaterThanOrEqual,
                                 ConstraintVariable = new ConstraintVariable
                                 {
-                                    Domain = DomainType.Integer,
+                                    Domain = DomainType.Real,
                                     Name = "amount",
                                     VariableType = VariableType.Read
                                 }

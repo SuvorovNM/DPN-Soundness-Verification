@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
 using System;
@@ -11,6 +12,8 @@ namespace DataPetriNetOnSmt.Extensions
 {
     public static class ContextExtensions
     {
+        private delegate BoolExpr ConnectExpressions(params BoolExpr[] expr);
+
         public static bool CanBeSatisfied(this Context context, BoolExpr expression)
         {
             if (expression is null)
@@ -128,5 +131,70 @@ namespace DataPetriNetOnSmt.Extensions
             };
         }
 
+        private static BoolExpr Simplify(Context context, List<BoolExpr> simplifiedExpressions, ConnectExpressions connectAction)
+        {
+            var index = 0;
+
+            while (index < simplifiedExpressions.Count)
+            {
+                var totalExpression = connectAction(simplifiedExpressions.ToArray());
+                var cutExpression = connectAction(simplifiedExpressions.Except(new[] { simplifiedExpressions[index] }).ToArray());
+
+                if (context.AreEqual(totalExpression, cutExpression))
+                {
+                    simplifiedExpressions.RemoveAt(index);
+                }
+                else
+                {                    
+                    index++;
+                }
+            }
+
+            return connectAction(simplifiedExpressions.ToArray());
+        }
+
+        private static BoolExpr SimplifyDisjunction(Context context, List<BoolExpr> simplifiedExpressions)
+        {
+            return Simplify(context, simplifiedExpressions, context.MkOr);
+        }
+
+        private static BoolExpr SimplifyConjunction(Context context, List<BoolExpr> simplifiedExpressions)
+        {
+            return Simplify(context, simplifiedExpressions, context.MkAnd);
+        }
+
+        public static BoolExpr SimplifyRecursive(this Context context, BoolExpr expr)
+        {
+            if (expr.IsAnd || expr.IsOr)
+            {
+                var simplifiedExpressions = new List<BoolExpr>(expr.Args.Length);
+                foreach (BoolExpr arg in expr.Args)
+                {
+                    var simplifiedArgExpression = SimplifyRecursive(context, arg);
+                    simplifiedExpressions.Add(simplifiedArgExpression);
+                }
+
+                return expr.IsAnd
+                    ? SimplifyConjunction(context, simplifiedExpressions)
+                    : SimplifyDisjunction(context, simplifiedExpressions);
+            }
+
+            return expr;
+        }
+
+        public static BoolExpr SimplifyExpression(this Context context, BoolExpr expr)
+        {
+            var simplifyTactic = context.MkTactic("ctx-simplify");
+            var nnfTactic = context.MkTactic("nnf");
+
+            var goal = context.MkGoal();
+            goal.Assert(expr);
+            var conditionToSet = simplifyTactic.Apply(goal).Subgoals[0].Simplify().AsBoolExpr();
+            goal.Reset();
+            goal.Assert(conditionToSet);
+            conditionToSet = nnfTactic.Apply(goal).Subgoals[0].AsBoolExpr();
+
+            return context.SimplifyRecursive(conditionToSet);
+        }
     }
 }

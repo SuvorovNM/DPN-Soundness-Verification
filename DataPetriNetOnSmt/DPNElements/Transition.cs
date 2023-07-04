@@ -45,11 +45,11 @@ namespace DataPetriNetOnSmt.DPNElements
             {
                 var positiveTransition = new Transition(
                     Id + "+[" + secondTransitionId+"]",
-                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, positiveConstraint), BaseTransitionId);
+                    Guard.MakeRefined(Guard, positiveConstraint), BaseTransitionId);
 
                 var negativeTransition = new Transition(
                     Id + "-[" + secondTransitionId+"]",
-                    new Guard(Guard.Context, Guard.BaseConstraintExpressions, negativeConstraint), BaseTransitionId);
+                    Guard.MakeRefined(Guard, negativeConstraint), BaseTransitionId);
 
                 return (positiveTransition, negativeTransition);
             }

@@ -15,6 +15,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public class TransformerToRefined
     {
+        private static HashSet<Transition> outputTransitionsCheck= new HashSet<Transition>();
         private CyclesFinder cyclesFinder;
         public TransformerToRefined()
         {
@@ -29,6 +30,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             where TSelf : Cycle<AbsArc, AbsState, AbsTransition, TSelf>
 
         {
+
             var newDPN = (DataPetriNet)sourceDpn.Clone();
             var context = sourceDpn.Context;
 
@@ -62,7 +64,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                             .Intersect(writeVarsInSourceTransition).Any())
                         .Select(x => transitionsDict[x.Transition.Id])
                         .Distinct();
-                    
+
+                    outputTransitionsCheck.AddRange(outputTransitions);
 
                     foreach (var outputTransition in outputTransitions)
                     {
@@ -105,16 +108,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                 foreach (var updatedTransition in updatedTransitions)
                 {
-                    var tactic = sourceDpn.Context.MkTactic("ctx-simplify");
-
-                    var goal = sourceDpn.Context.MkGoal();
-                    goal.Assert(updatedTransition.Guard.ActualConstraintExpression);
-
-                    var result = tactic.Apply(goal);
-
-                    var updatedConstraint = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
-                    updatedTransition.Guard = new Guard(newDPN.Context, updatedTransition.Guard.BaseConstraintExpressions, updatedConstraint);                   
-                    
+                    var updatedConstraint = sourceDpn.Context.SimplifyExpression(updatedTransition.Guard.ActualConstraintExpression);
+                    updatedTransition.Guard = Guard.MakeRefined(updatedTransition.Guard, updatedConstraint);                                      
 
                     foreach (var arc in transitionsPreset[sourceTransition])
                     {
@@ -164,6 +159,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
         {
             DataPetriNet transformedDpn = sourceDpn;
             int sourceDpnTransitionCount;
+            outputTransitionsCheck = new HashSet<Transition>();
 
             do
             {
@@ -174,7 +170,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 {
                     return (transformedDpn, sourceLts);
                 }
-
+                
                 sourceDpnTransitionCount = transformedDpn.Transitions.Count;
                 transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
                     (transformedDpn, cyclesFinder.GetCycles(sourceLts));
