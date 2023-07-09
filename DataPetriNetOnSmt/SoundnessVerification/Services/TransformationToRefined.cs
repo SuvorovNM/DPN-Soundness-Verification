@@ -109,7 +109,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 foreach (var updatedTransition in updatedTransitions)
                 {
                     var updatedConstraint = sourceDpn.Context.SimplifyExpression(updatedTransition.Guard.ActualConstraintExpression);
-                    updatedTransition.Guard = Guard.MakeRefined(updatedTransition.Guard, updatedConstraint);                                      
+                    updatedTransition.Guard = Guard.MakeSimplified(updatedTransition.Guard, updatedConstraint);                                      
 
                     foreach (var arc in transitionsPreset[sourceTransition])
                     {

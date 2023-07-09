@@ -49,7 +49,7 @@
                <text>t2</text>
             </name>
          </transition>
-		 <transition id="t3" guard="a_w &gt;= 0">
+		 <transition id="t3" guard="a_w &gt; 0">
             <name>
                <text>t3</text>
             </name>

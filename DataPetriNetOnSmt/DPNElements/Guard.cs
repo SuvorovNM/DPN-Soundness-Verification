@@ -92,6 +92,22 @@ namespace DataPetriNetOnSmt.DPNElements
                 isRepaired = true
             };
         }
+        public static Guard MakeSimplified(Guard baseGuard, BoolExpr updatedConstraintExpression)
+        {
+            return new Guard
+            {
+                Context = baseGuard.Context,
+                BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
+                ActualConstraintExpression = updatedConstraintExpression,
+                ConstraintExpressionBeforeUpdate = baseGuard.isRepaired
+                    ? baseGuard.ConstraintExpressionBeforeUpdate
+                    : updatedConstraintExpression,
+
+                WriteVars = baseGuard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written),
+                readNeedsToBeRecalculated = true,
+                isRepaired = baseGuard.isRepaired
+            };
+        }
 
         public static Guard MakeMerged(Guard baseGuard, BoolExpr mergedConstraintExpression)
         {
@@ -119,6 +135,7 @@ namespace DataPetriNetOnSmt.DPNElements
 
             WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
             readNeedsToBeRecalculated = true;
+            isRepaired = baseGuard.isRepaired;
         }
 
         public void UndoRepairment()
@@ -148,7 +165,7 @@ namespace DataPetriNetOnSmt.DPNElements
         public object Clone()
         {
             var clonedGuard = new Guard(
-                this, 
+                this,
                 ActualConstraintExpression);
             return clonedGuard;
         }

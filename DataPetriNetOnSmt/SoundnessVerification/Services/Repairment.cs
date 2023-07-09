@@ -35,23 +35,32 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var allGreenOnPreviousStep = false;
             //CoverabilityTree currentCoverabilityTree = null;
             ColoredConstraintGraph coloredConstraintGraph = null;
-            HashSet<Transition> transitionsUpdatedAtPreviousStep= new HashSet<Transition>();
-            HashSet<Transition> transitionsToTrySimplify= new HashSet<Transition>();
+            HashSet<string> transitionsUpdatedAtPreviousStep= new HashSet<string>();
+            HashSet<string> transitionsToTrySimplify= new HashSet<string>();
 
-            var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);            
+            var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+            //var dpnBeforeLastRefinement = dpnToConsider;
 
             do
             {
-                if (firstIteration || allGreenOnPreviousStep)
+                if (firstIteration || allGreenOnPreviousStep) 
                 {
-                    if (allGreenOnPreviousStep)
+                    /*if (allGreenOnPreviousStep)
                     {
-                        //MergeTransitions(dpnToConsider);
-                    }
+                        MergeTransitions(dpnToConsider);
+                    }*/
+                    // Maybe merge using a tree?
+
+                    //dpnBeforeLastRefinement = dpnToConsider;
 
                     (var refinedDpn, _) = transformerToRefined.TransformUsingLts(dpnToConsider);
                     if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
                     {
+                        transitionsToTrySimplify = transitionsToTrySimplify
+                            .Intersect(refinedDpn.Transitions.Select(x=>x.Id))
+                            .ToHashSet();
+                        transitionsUpdatedAtPreviousStep.Clear();
+
                         dpnToConsider = refinedDpn;
                         transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
                     }
@@ -92,8 +101,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                         transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
                         (dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredConstraintGraph, transitionsDict);
                         transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
-                        // ROLLBACK TRANSITION GUARDS
-                        // TryRollbackTransitionGuards(sourceDpn, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
+                        
+                        TryRollbackTransitionGuards(dpnToConsider, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
                     }
                 }
 
@@ -103,6 +112,9 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                 firstIteration = false;
             } while (!repairmentSuccessfullyFinished && !repairmentFailed);
+
+            transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
+            TryRollbackTransitionGuards(dpnToConsider, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
 
 
             if (repairmentSuccessfullyFinished)
@@ -188,23 +200,23 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 || x.Destination is Transition && !transitionsInCt.Contains(x.Destination.Id));
         }
 
-        private static void TryRollbackTransitionGuards(DataPetriNet sourceDpn, CoverabilityTree currentCoverabilityTree, HashSet<Transition> transitionsToTrySimplify, Dictionary<string, Transition> transitionsDict)
+        private static void TryRollbackTransitionGuards(DataPetriNet sourceDpn, ConstraintGraph constraintGraph, HashSet<string> transitionsToTrySimplify, Dictionary<string, Transition> transitionsDict)
         {
             var expressionService = new ConstraintExpressionService(sourceDpn.Context);
 
-            var arcsToConsider = currentCoverabilityTree.ConstraintArcs
-                .Where(x => transitionsToTrySimplify.Select(x => x.Id).Contains(x.Transition.Id))
+            var arcsToConsider = constraintGraph.ConstraintArcs
+                .Where(x => transitionsToTrySimplify.Contains(x.Transition.Id))
                 .GroupBy(x => x.Transition.Id);
 
             var baseTauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
-            foreach (var transition in transitionsToTrySimplify)
+            foreach (var transitionId in transitionsToTrySimplify)
             {
-                var smtExpression = transition.Guard.ConstraintExpressionBeforeUpdate;
-                var overwrittenVarNames = transition.Guard.WriteVars;
+                var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate;
+                var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
                 var readExpression = sourceDpn.Context.GetReadExpression(smtExpression, overwrittenVarNames);
 
                 var negatedGuardExpressions = sourceDpn.Context.MkNot(readExpression);
-                baseTauTransitionsGuards.Add(transition, negatedGuardExpressions);
+                baseTauTransitionsGuards.Add(transitionsDict[transitionId], negatedGuardExpressions);
             }
 
             foreach (var arcGroup in arcsToConsider)
@@ -240,7 +252,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             }
         }
 
-        public (DataPetriNet dpn, HashSet<Transition> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, ColoredConstraintGraph cg, Dictionary<string, Transition> transitionsDict)
+        public (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, ColoredConstraintGraph cg, Dictionary<string, Transition> transitionsDict)
         {
             var arcsDict = cg.ConstraintArcs
                 .GroupBy(x=> (x.SourceState, x.TargetState))
@@ -315,7 +327,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
             }
 
-            var updatedTransitions = new HashSet<Transition>();
+            var updatedTransitions = new HashSet<string>();
             foreach (var transition in sourceDpn.Transitions)
             {
                 if (expressionsForTransitions[transition].Count > 0)
@@ -326,7 +338,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition);
 
-                    updatedTransitions.Add(transition);
+                    updatedTransitions.Add(transition.Id);
                 }
             }
 
@@ -379,7 +391,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             }
         }
 
-        public (DataPetriNet dpn, HashSet<Transition> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, CoverabilityTree ct, Dictionary<string, Transition> transitionsDict)
+        public (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, CoverabilityTree ct, Dictionary<string, Transition> transitionsDict)
         {
             var arcsDict = ct.ConstraintArcs.ToDictionary(x => (x.SourceState, x.TargetState), y => y.Transition);
 
@@ -450,7 +462,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 }
             }
 
-            var updatedTransitions = new HashSet<Transition>();
+            var updatedTransitions = new HashSet<string>();
             foreach (var transition in sourceDpn.Transitions)
             {
                 if (expressionsForTransitions[transition].Count > 0)
@@ -461,7 +473,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                     transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition);
 
-                    updatedTransitions.Add(transition);
+                    updatedTransitions.Add(transition.Id);
                 }
             }
 
