@@ -9,6 +9,7 @@ using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CoverabilityTreeVisualized;
 using Microsoft.Win32;
 using Microsoft.Z3;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -94,23 +95,37 @@ namespace DataPetriNetOnSmt.Visualization
 
         private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var dpnTransformation = new TransformerToRefined();
             (var dpn, var lts) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
             if (lts.IsFullGraph)
             {
                 var constraintGraph = new ConstraintGraph(dpn);
                 var constraintGraphToVisualize = await CheckSoundness(dpn, constraintGraph);
+
+                stopwatch.Stop();
+                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");
+
                 VisualizeConstraintGraph(constraintGraphToVisualize);
             }
             else
             {
                 var soundnessProperties = LtsAnalyzer.CheckSoundness(dpn, lts);
+
+                stopwatch.Stop();
+                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+
                 VisualizeConstraintGraph(ConstraintGraphToVisualize.FromStateSpaceStructure(lts, soundnessProperties));
             }
         }
 
         private async void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet);
 
             var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
@@ -129,6 +144,10 @@ namespace DataPetriNetOnSmt.Visualization
                     ltsToVisualize = await CheckSoundness(dpn, constraintGraph);
                 }
             }
+
+            stopwatch.Stop();
+
+            MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
 
             VisualizeConstraintGraph(ltsToVisualize);
         }
@@ -242,8 +261,15 @@ namespace DataPetriNetOnSmt.Visualization
         private void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnRepairment = new Repairment();
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             (currentDisplayedNet, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
-            MessageBox.Show(result ? "Success!" : "Failure!");
+
+            stopwatch.Stop();
+
+            MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds}ms" : "Failure!");
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
     }
