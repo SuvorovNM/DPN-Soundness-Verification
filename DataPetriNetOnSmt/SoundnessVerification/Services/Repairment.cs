@@ -114,8 +114,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             } while (!repairmentSuccessfullyFinished && !repairmentFailed);
 
             transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
-            TryRollbackTransitionGuards(dpnToConsider, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
-
+                        
 
             if (repairmentSuccessfullyFinished)
             {
