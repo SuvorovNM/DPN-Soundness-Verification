@@ -23,7 +23,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             transformerToRefined = new TransformerToRefined();
             
         }
-        public (DataPetriNet dpn, bool result) RepairDpn(DataPetriNet sourceDpn, bool mergeTransitionsBack = true)
+        public (DataPetriNet dpn, int repairSteps, bool result) RepairDpn(DataPetriNet sourceDpn, bool mergeTransitionsBack = true)
         {
             // Perform until stabilization
             // Termination - either if all are green or all are red
@@ -39,7 +39,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             HashSet<string> transitionsToTrySimplify= new HashSet<string>();
 
             var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
-            //var dpnBeforeLastRefinement = dpnToConsider;
+            var repairSteps = 0;
 
             do
             {
@@ -81,11 +81,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     if (!allNodesGreen && !allNodesRed)
                     {
                         (dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityTree, transitionsDict);
+                        repairSteps++;
                         transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
                     }
                     else
                     {
                         RemoveDeadTransitions(dpnToConsider, coloredCoverabilityTree);
+
+                        return (dpnToConsider,0, allNodesGreen);
                     }
                 }
                 else
@@ -100,6 +103,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                     {
                         transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
                         (dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredConstraintGraph, transitionsDict);
+                        repairSteps++;
                         transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
                         
                         TryRollbackTransitionGuards(dpnToConsider, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
@@ -131,7 +135,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 ? dpnToConsider
                 : sourceDpn;
 
-            return (resultDpn, repairmentSuccessfullyFinished);
+            return (resultDpn, repairSteps, repairmentSuccessfullyFinished);
             
 
             static void RemoveIsolatedPlaces(DataPetriNet sourceDpn)

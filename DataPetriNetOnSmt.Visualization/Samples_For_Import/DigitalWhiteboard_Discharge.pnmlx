@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Digital whiteboard: discharge</text>
+      </name>
+      <page id="n0">
+         <place id="start">
+            <name>
+               <text>start</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>
+         <place id="p4">
+            <name>
+               <text>p4</text>
+            </name>
+         </place>
+         <place id="end">
+            <name>
+               <text>end</text>
+            </name>
+            <finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>
+         <transition id="bed1" guard="statusLedig_w == True &amp;&amp; org1_w &gt;= 0">
+            <name>
+               <text>bed status</text>
+            </name>
+         </transition>
+         <transition id="bed2" guard="statusLedig_w == True &amp;&amp; org2_w &gt;= 0">
+            <name>
+               <text>bed status</text>
+            </name>
+         </transition>
+         <transition id="mth1" guard="org1_w == org1_r">
+            <name>
+               <text>move to history</text>
+            </name>
+         </transition>
+         <transition id="mth2" guard="org2_w == org2_r">
+            <name>
+               <text>move to history</text>
+            </name>
+         </transition>
+         <transition id="tra1" guard="org1_w == org1_r &amp;&amp; valueHistory_w == True">
+            <name>
+               <text>Transfer</text>
+            </name>
+         </transition>
+         <transition id="tra2" guard="org2_w == org2_r &amp;&amp; valueHistory_w == True">
+            <name>
+               <text>Transfer</text>
+            </name>
+         </transition>
+         <arc id="a0" source="start" target="bed1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a1" source="bed1" target="p1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a2" source="p1" target="bed2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a5" source="bed2" target="p2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a6" source="p2" target="tra1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a7" source="p2" target="mth1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a8" source="tra1" target="p3">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a9" source="p3" target="tra2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a10" source="tra2" target="end">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a11" source="mth1" target="p4">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a12" source="p4" target="mth2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a13" source="mth2" target="end">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+      </page>
+      <variables>
+      <variable type="Real">
+            <name>org1</name>
+         </variable>
+         <variable type="Real">
+            <name>org2</name>
+         </variable>
+		 <variable type="Boolean">
+            <name>statusLedig</name>
+         </variable>
+         <variable type="Boolean">
+            <name>valueHistory</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>

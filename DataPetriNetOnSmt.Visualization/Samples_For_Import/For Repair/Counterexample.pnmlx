@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Credit Bank Request</text>
+      </name>
+      <page id="n0">
+         <place id="i">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>    
+		<place id="p4">
+            <name>
+               <text>p4</text>
+            </name>
+         </place> 
+		<place id="p5">
+            <name>
+               <text>p5</text>
+            </name>
+         </place> 
+		<place id="p6">
+            <name>
+               <text>p6</text>
+            </name>
+         </place> 
+		<place id="p7">
+            <name>
+               <text>p7</text>
+            </name>
+         </place> 	
+         <place id="p8">
+            <name>
+               <text>p8</text>
+            </name>
+         </place> 	 
+         <place id="o">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>		 
+         <transition id="t1">
+            <name>
+               <text>t1</text>
+            </name>
+         </transition>
+		 <transition id="t2" guard="b_w == 5">
+            <name>
+               <text>t2</text>
+            </name>
+         </transition>
+         <transition guard="b_w == 3" id="t3">
+            <name>
+               <text>t3</text>
+            </name>
+         </transition>
+		 <transition guard="a_w == 5" id="t4">
+            <name>
+               <text>t4</text>
+            </name>
+         </transition>
+		 <transition guard="a_w == 3" id="t5">
+            <name>
+               <text>t5</text>
+            </name>
+         </transition>
+         <transition guard="b_w == 3" id="t6">
+            <name>
+               <text>t6</text>
+            </name>
+         </transition>
+		 <transition id="t7" guard="b_w == 5">
+            <name>
+               <text>t7</text>
+            </name>
+         </transition>
+         <transition id="t8" guard="a_r == 5 &amp;&amp; b_r == 3">
+            <name>
+               <text>t8</text>
+            </name>
+         </transition>
+		 <transition id="t9" guard="a_r == 3 &amp;&amp; b_r == 5">
+            <name>
+               <text>t9</text>
+            </name>
+         </transition>
+
+         <transition id="t10">
+            <name>
+               <text>t10</text>
+            </name>
+         </transition>
+		       
+         <arc id="arc0" source="i" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t1" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t1" target="p2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+		 <arc id="arc2" source="p1" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+      <arc id="arc2" source="p2" target="t3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t2" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t2" target="p4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t3" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t3" target="p5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+
+
+         <arc id="arc2" source="p3" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc2" source="p3" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc2" source="p4" target="t6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc2" source="p4" target="t8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc2" source="p5" target="t7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc2" source="p5" target="t9">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t4" target="p6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t5" target="p6">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t6" target="p4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t7" target="p5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc2" source="p6" target="t8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc2" source="p6" target="t9">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t8" target="p7">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc1" source="t9" target="p8">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc2" source="p7" target="t10">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+         <arc id="arc2" source="p8" target="t10">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+         <arc id="arc1" source="t10" target="o">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+      </page>
+      <variables>
+         <variable type="Real">
+            <name>a</name>
+         </variable>
+		 <variable type="Real">
+            <name>b</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>

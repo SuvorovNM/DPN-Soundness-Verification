@@ -29,6 +29,8 @@ namespace DataPetriNetVerificationDomain
         public string VerificationTime { get; init; }
         public string LtsTime { get; init; }
         public string CgRefTime { get; init; }
+        public string? RepairTime { get; init; }
+        public bool? RepairSuccess { get; init; }
         public string Id { get; init; }
         public MainVerificationInfo()
         {
@@ -53,6 +55,8 @@ namespace DataPetriNetVerificationDomain
             VerificationTime = verificationOutput.VerificationTime;
             LtsTime = verificationOutput.LtsTime;
             CgRefTime = verificationOutput.CgRefTime;
+            RepairTime = verificationOutput.RepairTime;
+            RepairSuccess = verificationOutput.RepairSuccess;
             Id = verificationOutput.Id;
         }
         public MainVerificationInfo(BasicVerificationOutput verificationOutput)
@@ -74,6 +78,8 @@ namespace DataPetriNetVerificationDomain
             VerificationTime = verificationOutput.VerificationTime;
             LtsTime = verificationOutput.LtsTime;
             CgRefTime = verificationOutput.CgRefTime;
+            RepairTime = verificationOutput.RepairTime;
+            RepairSuccess = verificationOutput.RepairSuccess;
             Id = verificationOutput.Id;
         }
         public MainVerificationInfo(OptimizedVerificationOutput verificationOutput)
@@ -95,6 +101,8 @@ namespace DataPetriNetVerificationDomain
             VerificationTime = verificationOutput.VerificationTime;
             LtsTime = verificationOutput.LtsTime;
             CgRefTime = verificationOutput.CgRefTime;
+            RepairTime = verificationOutput.RepairTime;
+            RepairSuccess = verificationOutput.RepairSuccess;
             Id = verificationOutput.Id;
         }
     }
@@ -110,7 +118,9 @@ namespace DataPetriNetVerificationDomain
             SoundnessProperties? soundnessProperties,
             long millisecondsForLts,
             long millisecondsForTransformation,
-            long millisecondsForCgRefined)
+            long millisecondsForCgRefined,
+            long millisecondsForRepair,
+            bool repairSuccess)
         {
             Places = (ushort)dpn.Places.Count;
             Transitions = (ushort)dpn.Transitions.Count;
@@ -134,6 +144,8 @@ namespace DataPetriNetVerificationDomain
             CgRefTime = millisecondsForCgRefined.ToString();
             CgRefArcs = cgRefined?.ConstraintArcs.Count ?? -1;
             CgRefStates = cgRefined?.ConstraintStates.Count ?? -1;
+            RepairTime = millisecondsForRepair.ToString();
+            RepairSuccess = repairSuccess;
         }
         public BasicVerificationOutput()
         {
@@ -160,7 +172,9 @@ namespace DataPetriNetVerificationDomain
             SoundnessProperties? soundnessProperties,
             long millisecondsForLts,
             long millisecondsForCg,
-            long millisecondsForCgRefined)
+            long millisecondsForCgRefined,
+            long millisecondsForRepair,
+            bool repairSuccess)
         {
             Places = (ushort)dpn.Places.Count;
             Transitions = (ushort)dpn.Transitions.Count;
@@ -187,6 +201,8 @@ namespace DataPetriNetVerificationDomain
             CgRefTime = millisecondsForCgRefined.ToString();
             CgRefArcs = cgRefined?.ConstraintArcs?.Count ?? -1;
             CgRefStates= cgRefined?.ConstraintStates?.Count ?? -1;
+            RepairTime = millisecondsForRepair.ToString();
+            RepairSuccess = repairSuccess;
         }
     }
     public class VerificationOutputWithNumber : MainVerificationInfo
@@ -216,6 +232,8 @@ namespace DataPetriNetVerificationDomain
             Id = verificationOutput.Id;
             LtsTime = verificationOutput.LtsTime;
             CgRefTime = verificationOutput.CgRefTime;
+            RepairTime = verificationOutput.RepairTime;
+            RepairSuccess = verificationOutput.RepairSuccess;
             //VerificationType = verificationOutput.VerificationType;
         }
     }

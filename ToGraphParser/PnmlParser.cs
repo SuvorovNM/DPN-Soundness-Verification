@@ -5,6 +5,7 @@ using DataPetriNetOnSmt.Enums;
 using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
@@ -145,6 +146,8 @@ namespace DataPetriNetParsers
             {
 
             }
+            var t = dpn.Arcs.GroupBy(x => x.Destination.Id);
+
             return dpn;
         }
 
@@ -342,7 +345,7 @@ namespace DataPetriNetParsers
                         GetBinaryPredicate(constraintBlocks[1]),
                         variableName,
                         variableType,
-                        double.Parse(constraintBlocks[2])),
+                        double.Parse(constraintBlocks[2], CultureInfo.InvariantCulture)),
                     DomainType.Boolean =>
                         MakeVOCConstraint(
                         varTypeDict[variableName],

@@ -149,7 +149,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                     var verificationTypes = new List<VerificationAlgorithmTypeEnum> 
                     {
                         VerificationAlgorithmTypeEnum.ImprovedVersion,
-                        VerificationAlgorithmTypeEnum.DirectVersion                        
+                        //VerificationAlgorithmTypeEnum.DirectVersion                        
                     };
 
                     do
@@ -162,11 +162,11 @@ namespace DataPetriNetIterativeVerificationApplication.Services
                         var soundnessPreference = verificationInput.ConditionsInfo.Soundness.GetValueOrDefault();
 
                         var dpn = dpnGenerator.Generate(
-                            (int)(verificationInput.DpnInfo.Places * n),
-                            (int)(verificationInput.DpnInfo.Transitions * n),
-                            (int)(verificationInput.DpnInfo.ExtraArcs * n),
-                            (int)(verificationInput.DpnInfo.Variables * n),
-                            (int)(verificationInput.DpnInfo.Conditions * n),
+                            (int)Math.Round(verificationInput.DpnInfo.Places * n),
+                            (int)Math.Round(verificationInput.DpnInfo.Transitions * n),
+                            (int)Math.Round(verificationInput.DpnInfo.ExtraArcs * n),
+                            (int)Math.Round(verificationInput.DpnInfo.Variables * n),
+                            (int)Math.Round(verificationInput.DpnInfo.Conditions * n),
                             soundnessPreference);
                         dpn.Name = Guid.NewGuid().ToString();
 

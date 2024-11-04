@@ -40,7 +40,7 @@ namespace DataPetriNetIterativeVerificationApplication
         private Dictionary<int, string> paths = new Dictionary<int, string>();
         private ObservableCollection<VerificationOutputWithNumber> verificationResults = new();
         private CancellationTokenSource source;
-        private VerificationRunner verificationRunner = new();
+        private VerificationRunner verificationRunner;
         public MainWindow()
         {
             InitializeComponent();
@@ -74,6 +74,8 @@ namespace DataPetriNetIterativeVerificationApplication
             MaxArcsTb.Text = "50";
             MaxConditionsTb.Text = "150";
             MaxVarsTb.Text = "150";
+
+            verificationRunner = new();
 
             VerificationDG.ItemsSource = verificationResults;
             verificationResults.CollectionChanged += listChanged;

@@ -207,7 +207,7 @@ namespace DataPetriNetOnSmt.Visualization
         }
 
         private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
-        {                       
+        {
 
             var dpnTransformation = new TransformerToRefined();
             /*var stopWatch = new Stopwatch();
@@ -265,11 +265,11 @@ namespace DataPetriNetOnSmt.Visualization
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            (currentDisplayedNet, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
+            (currentDisplayedNet, var repairSteps, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
 
             stopwatch.Stop();
 
-            MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds}ms" : "Failure!");
+            MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds} ms. Repair steps: {repairSteps}." : "Failure!");
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
     }

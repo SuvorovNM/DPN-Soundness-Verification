@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Abstractions;
+using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
@@ -151,6 +152,10 @@ namespace DataPetriNetVerificationApplication
                         }
                     }
 
+                    ConductSoundnessRepair(dpnToVerify, soundnessProps, out var repairTime, out var result);
+
+                    satisfiesConditions &= repairTime != -1;
+
                     outputRow = new OptimizedVerificationOutput(
                         dpnToVerify,
                         satisfiesConditions,
@@ -160,7 +165,9 @@ namespace DataPetriNetVerificationApplication
                         soundnessProps,
                         ltsTime,
                         cgTime,
-                        cgRefinedTime);
+                        cgRefinedTime,
+                        repairTime,
+                        result);
                 }
                 if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.DirectVersion)
                 {
@@ -186,7 +193,11 @@ namespace DataPetriNetVerificationApplication
                         soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, lts);
                         satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
                     }
-                    
+
+                    ConductSoundnessRepair(dpnToVerify, soundnessProps, out var repairTime, out var result);
+
+                    satisfiesConditions &= repairTime != -1;
+
                     outputRow = new BasicVerificationOutput(
                         dpnToVerify,
                         satisfiesConditions,
@@ -195,7 +206,9 @@ namespace DataPetriNetVerificationApplication
                         soundnessProps,
                         ltsTime,
                         transformationTime,
-                        cgRefinedTime);
+                        cgRefinedTime,
+                        repairTime,
+                        result);
                 }
             }, source.Token);
             if (!verificationTask.Wait(TimeSpan.FromMinutes(120)))
@@ -223,6 +236,25 @@ namespace DataPetriNetVerificationApplication
                 return 1;
             }
             return -1;
+        }
+
+        private static void ConductSoundnessRepair(DataPetriNet dpnToVerify, SoundnessProperties? soundnessProps, out long repairTime, out bool result)
+        {
+            repairTime = -1;
+            result = false;
+            if (soundnessProps.StateTypes.Any(state => state.Value == ConstraintStateType.Final))
+            {
+                var dpnRepairment = new Repairment();
+
+                var repairStopwatch = new Stopwatch();
+                repairStopwatch.Start();
+
+                (_, var repairSteps, result) = dpnRepairment.RepairDpn(dpnToVerify);
+
+                repairStopwatch.Stop();
+
+                repairTime = repairStopwatch.ElapsedMilliseconds;
+            }
         }
 
         private static DataPetriNet GetDpnToVerify(string dpnFilePath)
