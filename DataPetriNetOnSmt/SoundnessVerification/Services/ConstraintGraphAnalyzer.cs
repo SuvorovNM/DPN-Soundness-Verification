@@ -7,6 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {
     public record SoundnessProperties(
+        SoundnessType SoundnessType,
         Dictionary<AbstractState, ConstraintStateType> StateTypes,
         bool Boundedness,
         string[] DeadTransitions,
@@ -52,7 +53,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 && isFinalMarkingClean
                 && deadTransitions.Length == 0;
 
-            return new SoundnessProperties(stateTypes, bounded, deadTransitions, hasDeadlocks, isSound);
+            return new SoundnessProperties(SoundnessType.ClassicalSoundness, stateTypes, bounded, deadTransitions, hasDeadlocks, isSound);
         }
 
         public static SoundnessProperties CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
@@ -72,11 +73,10 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             var isSound = isFinalMarkingAlwaysReachable && isFinalMarkingClean;
             
-            return new SoundnessProperties(stateTypes, cg.IsFullGraph, GetDeadTransitions(dpn, cg), hasDeadlocks, isSound);
+            return new SoundnessProperties(SoundnessType.LazySoundness, stateTypes, cg.IsFullGraph, GetDeadTransitions(dpn, cg), hasDeadlocks, isSound);
         }
 
-        public static SoundnessProperties CheckSoundness
-            (DataPetriNet dpn, LabeledTransitionSystem cg)
+        public static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
         {
             Dictionary<AbstractState, ConstraintStateType> stateTypes;
 
@@ -109,7 +109,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 && isFinalMarkingClean
                 && deadTransitions.Length == 0;
 
-            return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
+            return new SoundnessProperties(SoundnessType.ClassicalSoundness, stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
         }
 
         private static string[] GetDeadTransitions(DataPetriNet dpn, LabeledTransitionSystem cg)

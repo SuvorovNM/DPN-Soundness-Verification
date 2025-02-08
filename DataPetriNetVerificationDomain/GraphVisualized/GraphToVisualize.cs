@@ -1,4 +1,5 @@
 ﻿using DataPetriNetOnSmt.Enums;
+using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 
@@ -7,10 +8,12 @@ namespace DataPetriNetVerificationDomain.GraphVisualized;
 public class SoundnessPropertiesToVisualize
 {
     public SoundnessPropertiesToVisualize(
+        SoundnessType soundnessType,
         bool boundedness,
         string[] deadTransitions,
         bool soundness)
     {
+        SoundnessType = soundnessType;
         Boundedness = boundedness;
         DeadTransitions = deadTransitions;
         Soundness = soundness;
@@ -24,6 +27,7 @@ public class SoundnessPropertiesToVisualize
     public static SoundnessPropertiesToVisualize FromSoundnessProperties(SoundnessProperties soundnessProperties)
     {
         return new SoundnessPropertiesToVisualize(
+            soundnessProperties.SoundnessType,
             soundnessProperties.Boundedness,
             soundnessProperties.DeadTransitions,
             soundnessProperties.Soundness);
@@ -54,8 +58,7 @@ public class GraphToVisualize
         };
     }
     
-    public static GraphToVisualize FromLts
-        (LabeledTransitionSystem lts, SoundnessProperties? soundnessProperties)
+    public static GraphToVisualize FromLts(LabeledTransitionSystem lts, SoundnessProperties? soundnessProperties)
     {
         return new GraphToVisualize
         {

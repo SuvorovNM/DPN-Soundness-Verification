@@ -1,4 +1,5 @@
-﻿using DataPetriNetVerificationDomain;
+﻿using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.GraphVisualized;
 using Microsoft.Msagl.Drawing;
 
@@ -6,11 +7,14 @@ namespace DataPetriNetParsers;
 
 public class CoverabilityGraphToGraphParser
 {
-    public Graph FormGraphBasedOnCg(GraphToVisualize coverabilityGraph, SoundnessType soundnessType)
+    public Graph FormGraphBasedOnCg(GraphToVisualize coverabilityGraph)
     {
         var graph = new Graph();
 
-        var states = AddStatesToGraph(coverabilityGraph.States, graph, soundnessType);
+        var states = AddStatesToGraph(
+            coverabilityGraph.States, 
+            graph, 
+            coverabilityGraph.SoundnessProperties?.SoundnessType ?? SoundnessType.None);
         AddArcsToGraph(coverabilityGraph, graph, states);
 
         return graph;

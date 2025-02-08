@@ -1,4 +1,4 @@
-﻿namespace DataPetriNetVerificationDomain;
+﻿namespace DataPetriNetOnSmt.SoundnessVerification;
 
 public enum SoundnessType
 {

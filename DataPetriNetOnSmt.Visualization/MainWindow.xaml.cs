@@ -13,7 +13,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
-using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.GraphVisualized;
 using ToGraphParser;
 
@@ -93,7 +92,7 @@ namespace DataPetriNetOnSmt.Visualization
         {
             var coverabilityGraph = new CoverabilityGraph(currentDisplayedNet);
             var cgToVisualize = await ConstructAndAnalyzeCoverabilityGraph(coverabilityGraph);
-            VisualizeCoverabilityGraph(cgToVisualize, SoundnessType.ClassicalSoundness);
+            VisualizeCoverabilityGraph(cgToVisualize);
         }
         
         private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -110,7 +109,7 @@ namespace DataPetriNetOnSmt.Visualization
             stopwatch.Stop();
             MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");
 
-            VisualizeCoverabilityGraph(cgToVisualize, SoundnessType.LazySoundness);
+            VisualizeCoverabilityGraph(cgToVisualize);
         }
 
         private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -198,9 +197,9 @@ namespace DataPetriNetOnSmt.Visualization
             coverabilityTreeWindow.Show();
         }
         
-        private void VisualizeCoverabilityGraph(GraphToVisualize coverabilityGraphToVisualize, SoundnessType soundnessType)
+        private void VisualizeCoverabilityGraph(GraphToVisualize coverabilityGraphToVisualize)
         {
-            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityGraphToVisualize, soundnessType)
+            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityGraphToVisualize)
             {
                 Owner = this
             };

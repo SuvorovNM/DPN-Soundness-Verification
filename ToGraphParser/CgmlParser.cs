@@ -1,5 +1,6 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using System.Xml.Linq;
+using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetParsers
@@ -73,12 +74,15 @@ namespace DataPetriNetParsers
 
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
             var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
+            
+            var soundnessType = SoundnessType.ClassicalSoundness;
+            Enum.TryParse(cgElement.Attribute("soundness_type").Value, out soundnessType);
 
             return new GraphToVisualize
             {
                 States = constraintStates,
                 Arcs = constraintArcs,
-                SoundnessProperties = new SoundnessPropertiesToVisualize(isBounded, deadTransitions.ToArray(), isSound)
+                SoundnessProperties = new SoundnessPropertiesToVisualize(soundnessType, isBounded, deadTransitions.ToArray(), isSound)
             };
         }
 
@@ -129,6 +133,7 @@ namespace DataPetriNetParsers
                 statesElement, arcsElement, deadTransitionsElement);
             cgElement.SetAttributeValue("is_bounded", cg.SoundnessProperties.Boundedness);
             cgElement.SetAttributeValue("is_sound", cg.SoundnessProperties.Soundness);
+            cgElement.SetAttributeValue("soundess_type",cg.SoundnessProperties.SoundnessType.ToString());
             //cgElement.SetAttributeValue("dead_transitions", cg.DeadTransitions);
 
             var srcTree = new XElement("cgml", cgElement);

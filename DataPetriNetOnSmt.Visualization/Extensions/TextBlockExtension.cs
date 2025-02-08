@@ -6,32 +6,31 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using DataPetriNetVerificationDomain;
+using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph, SoundnessType soundnessType)
+        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
-            
+
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
-            
-            switch (soundnessType)
+
+            switch (graph.SoundnessProperties?.SoundnessType)
             {
-                case SoundnessType.None:
+                case null or SoundnessType.None:
                     textBlock.Inlines.Add(FormGraphInfoLines(graph));
                     break;
                 case SoundnessType.ClassicalSoundness or SoundnessType.LazySoundness:
                     textBlock.FormSoundnessVerificationLog(graph);
                     break;
             }
-            
         }
-        
+
         public static void FormSoundnessVerificationLog(this TextBlock textBlock, GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
@@ -40,8 +39,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.Inlines.Clear();
 
             textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
-                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
+                ? new Run(FormSoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkRed }));
 
             textBlock.Inlines.Add(new Bold(graph.SoundnessProperties.Boundedness
                 ? new Run(FormBoundedLine())
@@ -68,14 +67,28 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             return "Process model is unbounded." + fragmentConstructed + "\n";
         }
 
-        private static string FormSoundLine()
+        private static string FormSoundLine(SoundnessType soundnessType)
         {
-            return "Process model is SOUND: \n\n";
+            return soundnessType switch
+            {
+                SoundnessType.ClassicalSoundness => "Classical Soundness is satisfied: \n\n",
+                SoundnessType.LazySoundness => "Lazy Soundness is satisfied: \n\n",
+                SoundnessType.None => string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
+                    "Unknown soundness type.")
+            };
         }
 
-        private static string FormUnsoundLine()
+        private static string FormUnsoundLine(SoundnessType soundnessType)
         {
-            return "Process model is UNSOUND: \n\n";
+            return soundnessType switch
+            {
+                SoundnessType.ClassicalSoundness => "Classical Soundness is not satisfied: \n\n",
+                SoundnessType.LazySoundness => "Lazy Soundness is not satisfied: \n\n",
+                SoundnessType.None => string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
+                    "Unknown soundness type.")
+            };
         }
 
         private static string FormGraphInfoLines(GraphToVisualize graph)
