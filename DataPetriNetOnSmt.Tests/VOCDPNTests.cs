@@ -359,7 +359,7 @@ namespace DataPetriNetOnSmt.Tests
 
             File.WriteAllText("VOC_man.txt", resultTime.ToString());
 
-            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
+            var typedStates = SoundnessAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(48, constraintGraph.ConstraintStates.Count);
             Assert.AreEqual(73, constraintGraph.ConstraintArcs.Count);

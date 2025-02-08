@@ -14,6 +14,7 @@ using System.IO.Pipes;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
+using DataPetriNetOnSmt.SoundnessVerification;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -113,7 +114,7 @@ namespace DataPetriNetVerificationApplication
             var verificationTask = Task.Run(() =>
             {
                 lts.GenerateGraph();
-                soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, lts);
+                soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnToVerify, lts);
                 timer.Stop();
                 ltsTime = timer.ElapsedMilliseconds;
 
@@ -125,7 +126,7 @@ namespace DataPetriNetVerificationApplication
                         timer.Restart();
                         cg = new ConstraintGraph(dpnToVerify);
                         cg.GenerateGraph();
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, cg);
+                        soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnToVerify, cg);
                         timer.Stop();
                         cgTime = timer.ElapsedMilliseconds;
 
@@ -139,7 +140,7 @@ namespace DataPetriNetVerificationApplication
                                 (var dpnRefined, _) = transformation.TransformUsingLts(dpnToVerify, lts);
                                 cgRefined = new ConstraintGraph(dpnRefined);
                                 cgRefined.GenerateGraph();
-                                soundnessProps = LtsAnalyzer.CheckSoundness(dpnRefined, cgRefined);
+                                soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnRefined, cgRefined);
                                 timer.Stop();
                                 satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
                                 cgRefinedTime = timer.ElapsedMilliseconds;
@@ -177,7 +178,7 @@ namespace DataPetriNetVerificationApplication
                         timer.Restart();
                         cgRefined = new ConstraintGraph(dpnRefined);
                         cgRefined.GenerateGraph();
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnRefined, cgRefined);
+                        soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnRefined, cgRefined);
                         timer.Stop();
                         cgRefinedTime = timer.ElapsedMilliseconds;
 
@@ -185,7 +186,7 @@ namespace DataPetriNetVerificationApplication
                     }
                     else
                     {
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, lts);
+                        soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnToVerify, lts);
                         satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
                     }
 

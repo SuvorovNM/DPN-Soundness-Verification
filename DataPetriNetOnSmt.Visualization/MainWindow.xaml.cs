@@ -131,7 +131,7 @@ namespace DataPetriNetOnSmt.Visualization
             }
             else
             {
-                var soundnessProperties = LtsAnalyzer.CheckSoundness(dpn, lts);
+                var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
 
                 stopwatch.Stop();
                 MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
@@ -218,7 +218,7 @@ namespace DataPetriNetOnSmt.Visualization
         private async Task<GraphToVisualize> CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem lts)
         {
             await Task.Run(lts.GenerateGraph);
-            var soundnessProperties = LtsAnalyzer.CheckSoundness(dpn, lts);
+            var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
 
             return GraphToVisualize.FromLts(lts, soundnessProperties);
         }
@@ -226,7 +226,7 @@ namespace DataPetriNetOnSmt.Visualization
         private async Task<GraphToVisualize> CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
         {
             await Task.Run(cg.GenerateGraph);
-            var soundnessProperties = LtsAnalyzer.CheckLazySoundness(dpn, cg);
+            var soundnessProperties = LazySoundnessAnalyzer.CheckLazySoundness(dpn, cg);
             
             return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
@@ -242,7 +242,7 @@ namespace DataPetriNetOnSmt.Visualization
             (CoverabilityGraph cg)
         {
             await Task.Run(cg.GenerateGraph);
-            var soundnessProperties = LtsAnalyzer.CheckSoundness(currentDisplayedNet, cg);
+            var soundnessProperties = SoundnessAnalyzer.CheckSoundness(currentDisplayedNet, cg);
             return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
 

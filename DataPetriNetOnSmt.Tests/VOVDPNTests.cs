@@ -286,7 +286,7 @@ namespace DataPetriNetOnSmt.Tests
             var resultTime = stopwatch.Elapsed;
 
             File.WriteAllText("VOV_man.txt", resultTime.ToString());
-            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
+            var typedStates = SoundnessAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
 
             Assert.AreEqual(69, constraintGraph.ConstraintStates.Count);
             Assert.AreEqual(88, constraintGraph.ConstraintArcs.Count);
@@ -321,7 +321,7 @@ namespace DataPetriNetOnSmt.Tests
 
             File.WriteAllText("VOV_new_man.txt", resultTime.ToString());
 
-            var typedStates = LtsAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
+            var typedStates = SoundnessAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dpn.Places[^1] });
         }
     }
 }
