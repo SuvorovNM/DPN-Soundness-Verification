@@ -19,6 +19,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml;
 using System.Xml.Linq;
+using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 using ToGraphParser;
 
@@ -98,7 +99,7 @@ namespace DataPetriNetOnSmt.Visualization
         {
             var coverabilityGraph = new CoverabilityGraph(currentDisplayedNet);
             var cgToVisualize = await ConstructAndAnalyzeCoverabilityGraph(coverabilityGraph);
-            VisualizeCoverabilityGraph(cgToVisualize);
+            VisualizeCoverabilityGraph(cgToVisualize, SoundnessType.ClassicalSoundness);
         }
         
         private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -107,7 +108,7 @@ namespace DataPetriNetOnSmt.Visualization
             stopwatch.Start();
 
             var dpnTransformation = new TransformerToRefined();
-            (var dpn, var cg) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
+            (var dpn, _) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
             
             var tauCoverabilityGraph = new CoverabilityGraph(dpn, withTauTransitions: true);
             var cgToVisualize = await CheckLazySoundness(dpn, tauCoverabilityGraph);
@@ -115,7 +116,7 @@ namespace DataPetriNetOnSmt.Visualization
             stopwatch.Stop();
             MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");
 
-            VisualizeCoverabilityGraph(cgToVisualize);
+            VisualizeCoverabilityGraph(cgToVisualize, SoundnessType.LazySoundness);
         }
 
         private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -196,16 +197,16 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void VisualizeCoverabilityTree(CoverabilityTreeToVisualize coverabilityTreeToVisualize)
         {
-            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityTreeToVisualize)
+            var coverabilityTreeWindow = new CoverabilityTreeWindow(coverabilityTreeToVisualize)
             {
                 Owner = this
             };
             coverabilityTreeWindow.Show();
         }
         
-        private void VisualizeCoverabilityGraph(CoverabilityGraphToVisualize coverabilityGraphToVisualize)
+        private void VisualizeCoverabilityGraph(CoverabilityGraphToVisualize coverabilityGraphToVisualize, SoundnessType soundnessType)
         {
-            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityGraphToVisualize)
+            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityGraphToVisualize, soundnessType)
             {
                 Owner = this
             };
@@ -214,7 +215,7 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void VisualizeConstraintGraph(ConstraintGraphToVisualize constraintGraphToVisualize)
         {
-            var constraintGraphWindow = new LazySoundnessWindow(constraintGraphToVisualize)
+            var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize)
             {
                 Owner = this
             };
@@ -233,6 +234,8 @@ namespace DataPetriNetOnSmt.Visualization
         {
             await Task.Run(cg.GenerateGraph);
             var soundnessProperties = LtsAnalyzer.CheckLazySoundness(dpn, cg);
+            
+            return CoverabilityGraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
 
         private async Task<CoverabilityTreeToVisualize> ConstructAndAnalyzeCoverabilityTree
@@ -246,7 +249,8 @@ namespace DataPetriNetOnSmt.Visualization
             (CoverabilityGraph cg)
         {
             await Task.Run(cg.GenerateGraph);
-            return CoverabilityGraphToVisualize.FromCoverabilityGraph(cg);
+            var soundnessProperties = LtsAnalyzer.CheckSoundness(currentDisplayedNet, cg);
+            return CoverabilityGraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
 
         private void TransformModelToAtomicItem_Click(object sender, RoutedEventArgs e)
@@ -291,7 +295,7 @@ namespace DataPetriNetOnSmt.Visualization
 
                     var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
 
-                    var constraintGraphWindow = new LazySoundnessWindow(constraintGraphToVisualize);
+                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize);
                     constraintGraphWindow.Owner = this;
                     constraintGraphWindow.Show();
                 }

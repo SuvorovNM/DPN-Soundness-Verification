@@ -1,8 +1,7 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 
-namespace DataPetriNetVerificationDomain.AbstractGraphVisualized;
+namespace DataPetriNetVerificationDomain.GraphVisualized;
 
 public class StateToVisualize
 {
@@ -14,7 +13,7 @@ public class StateToVisualize
     public static StateToVisualize FromNode<AbsState>(AbsState state, ConstraintStateType stateType)
         where AbsState : AbstractState
     {
-        return new ConstraintStateToVisualize
+        return new StateToVisualize
         {
             Id = state.Id,
             ConstraintFormula = state.Constraints.ToString(),

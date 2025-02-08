@@ -35,8 +35,9 @@
                 <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click"/>
 
                 <MenuItem x:Name="CheckSoundnessItem" Header="Check soundness">
-                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Direct approach" Click="CheckSoundnessDirectItem_Click"/>
-                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Improved approach" Click="CheckSoundnessImprovedItem_Click"/>
+                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)" Click="CheckSoundnessDirectItem_Click"/>
+                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)" Click="CheckSoundnessImprovedItem_Click"/>
+                    <MenuItem x:Name="CheckSoundnessLazyItem" Header="Lazy Soundness" Click="CheckLazySoundnessDirectItem_Click"/>
                 </MenuItem>
 
             </MenuItem>

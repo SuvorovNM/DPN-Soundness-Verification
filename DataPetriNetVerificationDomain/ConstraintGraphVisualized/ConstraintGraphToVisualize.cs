@@ -6,46 +6,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
 {
     public class ConstraintGraphToVisualize
     {
-        public List<ConstraintStateToVisualize> ConstraintStates { get; init; }
-        public List<ConstraintArcToVisualize> ConstraintArcs { get; init; }
-        public bool IsBounded { get; init; }
-        public bool IsSound { get; init; }
-        public string[] DeadTransitions { get; init; }
+        public List<StateToVisualize> ConstraintStates { get; init; }
+        public List<ArcToVisualize> ConstraintArcs { get; init; }
+        public SoundnessProperties SoundnessProperties { get; init; }
 
 
-        public static ConstraintGraphToVisualize FromStateSpaceStructure<AbsState, AbsTransition, AbsArc>
-            (AbstractStateSpaceStructure<AbsState, AbsTransition, AbsArc> lts, SoundnessProperties soundnessProperties)
-            where AbsState : AbstractState, new()
-            where AbsTransition : AbstractTransition
-            where AbsArc : AbstractArc<AbsState, AbsTransition>
+        public static ConstraintGraphToVisualize FromStateSpaceStructure
+            (LabeledTransitionSystem lts, SoundnessProperties soundnessProperties)
         {
             return new ConstraintGraphToVisualize
             {
-                IsBounded = soundnessProperties.Boundedness,
-                IsSound = soundnessProperties.Soundness,
-
                 ConstraintStates = lts.ConstraintStates
-                .Select(x => ConstraintStateToVisualize.FromNode(x,
+                .Select(x => StateToVisualize.FromNode(x,
                     soundnessProperties.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default)))
                 .ToList(),
 
                 ConstraintArcs = lts.ConstraintArcs
-                .Select(x => ConstraintArcToVisualize.FromArc(x))
+                .Select(ArcToVisualize.FromArc)
                 .ToList(),
 
-                DeadTransitions = soundnessProperties.DeadTransitions
+                SoundnessProperties = soundnessProperties
             };
         }
 
         public ConstraintGraphToVisualize()
         {
-            ConstraintStates = new List<ConstraintStateToVisualize>();
-            ConstraintArcs = new List<ConstraintArcToVisualize>();
+            ConstraintStates = new List<StateToVisualize>();
+            ConstraintArcs = new List<ArcToVisualize>();
         }
     }
 }

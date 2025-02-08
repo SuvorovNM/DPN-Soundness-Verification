@@ -16,13 +16,11 @@ namespace DataPetriNetOnSmt.Visualization
     /// </summary>
     public partial class LtsWindow : Window
     {
-        private readonly LtsToGraphParser constraintGraphToGraphParser;
-
         public LtsWindow(ConstraintGraphToVisualize constraintGraph)
         {
             InitializeComponent();
 
-            constraintGraphToGraphParser = new LtsToGraphParser();
+            var constraintGraphToGraphParser = new LtsToGraphParser();
 
             graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;

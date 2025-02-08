@@ -1,7 +1,6 @@
 ﻿using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 
-namespace DataPetriNetVerificationDomain.AbstractGraphVisualized;
+namespace DataPetriNetVerificationDomain.GraphVisualized;
 
 public class ArcToVisualize
 {
@@ -10,12 +9,9 @@ public class ArcToVisualize
     public int SourceStateId { get; set; }
     public int TargetStateId { get; set; }
 
-    public static CoverabilityArcToVisualize FromArc<AbsArc,AbsState,AbsTransition>(AbsArc arc)
-        where AbsArc : AbstractArc<AbsState,AbsTransition>
-        where AbsState : AbstractState
-        where AbsTransition : AbstractTransition
+    public static ArcToVisualize FromArc(LtsArc arc)
     {
-        return new CoverabilityArcToVisualize
+        return new ArcToVisualize
         {
             TransitionName = arc.Transition.Label,
             IsSilent = arc.Transition.IsSilent,

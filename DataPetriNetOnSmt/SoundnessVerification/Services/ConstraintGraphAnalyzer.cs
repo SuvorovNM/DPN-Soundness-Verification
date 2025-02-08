@@ -72,7 +72,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             var isSound = isFinalMarkingAlwaysReachable && isFinalMarkingClean;
             
-            return new SoundnessProperties(stateTypes, cg.IsFullGraph, Array.Empty<string>(), hasDeadlocks, isSound);
+            return new SoundnessProperties(stateTypes, cg.IsFullGraph, GetDeadTransitions(dpn, cg), hasDeadlocks, isSound);
         }
 
         public static SoundnessProperties CheckSoundness
@@ -90,10 +90,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 stateTypes = cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
             }
 
-            var deadTransitions = dpn.Transitions
-                .Select(x => x.BaseTransitionId)
-                .Except(cg.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
-                .ToArray();
+            var deadTransitions = GetDeadTransitions(dpn, cg);
 
             var hasDeadlocks = false;
             var isFinalMarkingAlwaysReachable = true;
@@ -113,6 +110,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 && deadTransitions.Length == 0;
 
             return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
+        }
+
+        private static string[] GetDeadTransitions(DataPetriNet dpn, LabeledTransitionSystem cg)
+        {
+            var deadTransitions = dpn.Transitions
+                .Select(x => x.BaseTransitionId)
+                .Except(cg.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
+                .ToArray();
+            return deadTransitions;
         }
 
         public static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypesNew<AbsState, AbsTransition, AbsArc>

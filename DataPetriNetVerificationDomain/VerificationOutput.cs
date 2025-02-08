@@ -133,7 +133,7 @@ namespace DataPetriNetVerificationDomain
             Boundedness = soundnessProperties?.Boundedness ?? false;
             LtsStates = lts.ConstraintStates.Count;
             LtsArcs = lts.ConstraintArcs.Count;
-            DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Count ?? 0);
+            DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Length ?? 0);
             Deadlocks = soundnessProperties?.Deadlocks ?? false;
             Soundness = soundnessProperties?.Soundness ?? false;
             VerificationTime = (millisecondsForLts + millisecondsForTransformation + millisecondsForCgRefined).ToString();
@@ -189,7 +189,7 @@ namespace DataPetriNetVerificationDomain
             LtsArcs = lts.ConstraintArcs.Count;
             CgStates = cg?.ConstraintStates.Count ?? -1;
             CgArcs = cg?.ConstraintArcs.Count ?? -1;
-            DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Count ?? 0);
+            DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Length ?? 0);
             Deadlocks = soundnessProperties?.Deadlocks ?? false;
             Soundness = soundnessProperties?.Soundness ?? false;
             VerificationTime = (millisecondsForLts + millisecondsForCg + millisecondsForCgRefined).ToString();

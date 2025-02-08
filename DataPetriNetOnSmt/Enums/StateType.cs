@@ -8,7 +8,7 @@ namespace DataPetriNetOnSmt.Enums
         Initial = 0,
         [Description("Sound intermediate state")]
         SoundIntermediate = 1,
-        [Description("State with no way to final states")]
+        [Description("Unfeasible (no way to final) state")]
         NoWayToFinalMarking = 2,
         [Description("Clean final state")]
         CleanFinal = 3,

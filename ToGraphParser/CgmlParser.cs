@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetParsers
 {
@@ -26,7 +27,7 @@ namespace DataPetriNetParsers
                 throw new Exception("Document is incorrect. Can't find tag <cg>");
             }
 
-            var constraintStates = new List<ConstraintStateToVisualize>();
+            var constraintStates = new List<StateToVisualize>();
             var statesElement = cgElement.Element("states");
             foreach (var xmlState in statesElement.Elements())
             {
@@ -42,7 +43,7 @@ namespace DataPetriNetParsers
                     placeTokensDict.Add(element.Name.ToString(), int.Parse(element.Value));
                 }
 
-                var constraintState = new ConstraintStateToVisualize
+                var constraintState = new StateToVisualize
                 {
                     ConstraintFormula = constraintFormula,
                     Id = stateId,
@@ -51,9 +52,9 @@ namespace DataPetriNetParsers
                 };
 
                 constraintStates.Add(constraintState);
-             }
+            }
 
-            var constraintArcs = new List<ConstraintArcToVisualize>();
+            var constraintArcs = new List<ArcToVisualize>();
             var arcsElement = cgElement.Element("arcs");
             foreach (var xmlArc in arcsElement.Elements())
             {
@@ -62,7 +63,7 @@ namespace DataPetriNetParsers
                 var sourceStateId = int.Parse(xmlArc.Attribute("source_id").Value);
                 var targetStateId = int.Parse(xmlArc.Attribute("target_id").Value);
 
-                var constraintArc = new ConstraintArcToVisualize
+                var constraintArc = new ArcToVisualize
                 {
                     TransitionName = transitionName,
                     SourceStateId = sourceStateId,
@@ -75,7 +76,7 @@ namespace DataPetriNetParsers
 
             var deadTransitions = new List<string>();
             var deadTransitionsElement = cgElement.Element("dead_transitions");
-            foreach(var xmlDeadTransition in deadTransitionsElement.Elements())
+            foreach (var xmlDeadTransition in deadTransitionsElement.Elements())
             {
                 deadTransitions.Add(xmlDeadTransition.Value);
             }
@@ -89,7 +90,7 @@ namespace DataPetriNetParsers
                 ConstraintArcs = constraintArcs,
                 IsBounded = isBounded,
                 IsSound = isSound,
-                DeadTransitions = deadTransitions
+                DeadTransitions = deadTransitions.ToArray()
             };
         }
 
@@ -131,13 +132,13 @@ namespace DataPetriNetParsers
             }
 
             var deadTransitionsElement = new XElement("dead_transitions");
-            foreach(var deadTransition in cg.DeadTransitions)
+            foreach (var deadTransition in cg.DeadTransitions)
             {
                 deadTransitionsElement.Add(new XElement("transition"), deadTransition);
             }
 
             var cgElement = new XElement("cg",
-                    statesElement, arcsElement, deadTransitionsElement);
+                statesElement, arcsElement, deadTransitionsElement);
             cgElement.SetAttributeValue("is_bounded", cg.IsBounded);
             cgElement.SetAttributeValue("is_sound", cg.IsSound);
             //cgElement.SetAttributeValue("dead_transitions", cg.DeadTransitions);

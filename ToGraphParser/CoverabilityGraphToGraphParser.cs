@@ -1,25 +1,30 @@
 ﻿using DataPetriNetOnSmt.Enums;
+using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
+using DataPetriNetVerificationDomain.GraphVisualized;
 using Microsoft.Msagl.Drawing;
 
 namespace DataPetriNetParsers;
 
 public class CoverabilityGraphToGraphParser
 {
-    public Graph FormGraphBasedOnCg(CoverabilityGraphToVisualize coverabilityGraph)
+    public Graph FormGraphBasedOnCg(CoverabilityGraphToVisualize coverabilityGraph, SoundnessType soundnessType)
     {
         var graph = new Graph();
 
-        var states = AddStatesToGraph(coverabilityGraph, graph);
+        var states = AddStatesToGraph(coverabilityGraph.CgStates, graph, soundnessType);
         AddArcsToGraph(coverabilityGraph, graph, states);
 
         return graph;
     }
 
-    private Dictionary<int, string> AddStatesToGraph(CoverabilityGraphToVisualize coverabilityGraph, Graph graph)
+    private Dictionary<int, string> AddStatesToGraph(
+        List<StateToVisualize> states, 
+        Graph graph,
+        SoundnessType soundnessType)
     {
         var addedStates = new Dictionary<int, string>();
-        foreach (var state in coverabilityGraph.CgStates)
+        foreach (var state in states)
         {
             var tokens = string.Join(", ", state.Tokens
                 .Where(x => x.Value > 0)
@@ -29,13 +34,7 @@ public class CoverabilityGraphToGraphParser
                 ? state.ConstraintFormula.Substring(0, 500) + "..."
                 : state.ConstraintFormula;
 
-            var nodeToAdd = new Node($"Id:{state.Id} [{tokens}] ({constraintFormula})");
-            nodeToAdd.Attr.Shape = Shape.Box;
-            nodeToAdd.Attr.FillColor = state.StateColor == CtStateColor.Green
-                ? Color.LightGreen
-                : state.StateColor == CtStateColor.Red
-                    ? Color.Pink
-                    : Color.White;
+            var nodeToAdd = TransitionSystemNodeFormer.FormNode(state, tokens, constraintFormula, soundnessType);
 
             addedStates.Add(state.Id, nodeToAdd.LabelText);
             graph.AddNode(nodeToAdd);
