@@ -15,7 +15,7 @@ namespace DataPetriNetVerificationDomain.ConstraintGraphVisualized
         public List<ConstraintArcToVisualize> ConstraintArcs { get; init; }
         public bool IsBounded { get; init; }
         public bool IsSound { get; init; }
-        public List<string> DeadTransitions { get; init; }
+        public string[] DeadTransitions { get; init; }
 
 
         public static ConstraintGraphToVisualize FromStateSpaceStructure<AbsState, AbsTransition, AbsArc>

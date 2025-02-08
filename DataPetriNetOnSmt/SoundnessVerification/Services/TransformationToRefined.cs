@@ -178,6 +178,26 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
             return (transformedDpn, sourceLts);
         }
+        
+        public (DataPetriNet dpn, CoverabilityGraph lts) TransformUsingCg
+            (DataPetriNet sourceDpn, CoverabilityGraph sourceCg = null)
+        {
+            DataPetriNet transformedDpn = sourceDpn;
+            int sourceDpnTransitionCount;
+            outputTransitionsCheck = new HashSet<Transition>();
+
+            do
+            {
+                sourceCg = new CoverabilityGraph(transformedDpn);
+                sourceCg.GenerateGraph();
+                
+                sourceDpnTransitionCount = transformedDpn.Transitions.Count;
+                transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
+                    (transformedDpn, cyclesFinder.GetCycles(sourceCg));
+            } while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
+
+            return (transformedDpn, sourceCg);
+        }
 
 
 

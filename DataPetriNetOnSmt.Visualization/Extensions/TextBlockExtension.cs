@@ -8,11 +8,38 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, CoverabilityGraphToVisualize graph)
+        {
+            ArgumentNullException.ThrowIfNull(graph);
+
+            textBlock.FontSize = 14;
+            textBlock.Inlines.Clear();
+
+            if (graph.IsSound != null)
+            {
+                textBlock.Inlines.Add(new Bold(graph.IsSound.Value
+                    ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
+                    : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
+            }
+
+            textBlock.Inlines.Add(new Bold(graph.IsBounded
+                ? new Run(FormBoundedLine())
+                : new Run(FormUnboundedLine())));
+
+            textBlock.Inlines.Add(FormGraphInfoLines(graph));
+
+            if (graph.IsBounded)
+            {
+                textBlock.Inlines.Add(FormStatesInfoLines(graph.CgStates));
+            }
+        }
+        
         public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
@@ -34,51 +61,6 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             {
                 textBlock.Inlines.Add(FormStatesInfoLines(graph.ConstraintStates));
                 textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
-            }
-        }
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<LtsState>> analysisResult)
-        {
-            if (textBlock == null)
-            {
-                throw new ArgumentNullException(nameof(textBlock));
-            }
-            if (graph == null)
-            {
-                throw new ArgumentNullException(nameof(graph));
-            }
-            if (analysisResult == null)
-            {
-                throw new ArgumentNullException(nameof(analysisResult));
-            }            
-
-            var deadTransitions = dpn.Transitions
-                    .Select(x => x.Id)
-                    .Except(graph.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
-                    .ToList();
-
-            var isSound = graph.IsFullGraph
-                && !analysisResult[StateType.NoWayToFinalMarking].Any()
-                && !analysisResult[StateType.UncleanFinal].Any()
-                && !analysisResult[StateType.Deadlock].Any()
-                && deadTransitions.Count == 0;
-
-            textBlock.FontSize = 14;
-            textBlock.Inlines.Clear();
-
-            textBlock.Inlines.Add(new Bold(isSound
-                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
-
-            textBlock.Inlines.Add(new Bold(graph.IsFullGraph
-                ? new Run(FormBoundedLine())
-                : new Run(FormUnboundedLine())));
-
-            textBlock.Inlines.Add(FormGraphInfoLines(graph));
-
-            if (graph.IsFullGraph)
-            {
-                textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(deadTransitions));
             }
         }
 
@@ -105,6 +87,10 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
         {
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
+        }
+        private static string FormGraphInfoLines(CoverabilityGraphToVisualize graph)
+        {
+            return $"Constraint states: {graph.CgStates.Count}. Constraint arcs: {graph.CgArcs.Count}\n";
         }
 
         private static string FormGraphInfoLines(ConstraintGraph graph)

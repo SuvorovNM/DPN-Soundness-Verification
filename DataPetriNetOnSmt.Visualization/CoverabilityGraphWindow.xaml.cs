@@ -14,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization
 {
@@ -22,16 +23,26 @@ namespace DataPetriNetOnSmt.Visualization
     /// </summary>
     public partial class CoverabilityGraphWindow : Window
     {
-        private readonly CoverabilityTreeToGraphParser ctParser;
         public CoverabilityGraphWindow(CoverabilityTreeToVisualize coverabilityTree)
         {
-            ctParser = new CoverabilityTreeToGraphParser();
+            var ctParser = new CoverabilityTreeToGraphParser();
             InitializeComponent();
 
             graphControl.Graph = ctParser.FormGraphBasedOnCt(coverabilityTree);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
             logControl.Text = $"Nodes: {coverabilityTree.CtStates.Count}. Arcs: {coverabilityTree.CtArcs.Count}.";
+        }
+        
+        public CoverabilityGraphWindow(CoverabilityGraphToVisualize coverabilityGraph)
+        {
+            var cgParser = new CoverabilityGraphToGraphParser();
+            InitializeComponent();
+
+            graphControl.Graph = cgParser.FormGraphBasedOnCg(coverabilityGraph);
+            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+            logControl.Text = $"Nodes: {coverabilityGraph.CgStates.Count}. Arcs: {coverabilityGraph.CgArcs.Count}.";
         }
     }
 }

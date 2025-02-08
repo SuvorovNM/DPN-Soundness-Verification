@@ -9,7 +9,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
     public record SoundnessProperties(
         Dictionary<AbstractState, ConstraintStateType> StateTypes,
         bool Boundedness,
-        List<string> DeadTransitions,
+        string[] DeadTransitions,
         bool Deadlocks,
         bool Soundness);
 
@@ -33,7 +33,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var deadTransitions = dpn.Transitions
                 .Select(x => x.BaseTransitionId)
                 .Except(ct.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
-                .ToList();
+                .ToArray();
 
             var hasDeadlocks = false;
             var isFinalMarkingAlwaysReachable = true;
@@ -50,9 +50,29 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 && !hasDeadlocks
                 && isFinalMarkingAlwaysReachable
                 && isFinalMarkingClean
-                && deadTransitions.Count == 0;
+                && deadTransitions.Length == 0;
 
             return new SoundnessProperties(stateTypes, bounded, deadTransitions, hasDeadlocks, isSound);
+        }
+
+        public static SoundnessProperties CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
+        {
+            var stateTypes = GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+            
+            var hasDeadlocks = false;
+            var isFinalMarkingAlwaysReachable = true;
+            var isFinalMarkingClean = true;
+
+            foreach (var constraintState in cg.ConstraintStates)
+            {
+                hasDeadlocks |= stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock);
+                isFinalMarkingAlwaysReachable &= !stateTypes[constraintState].HasFlag(ConstraintStateType.NoWayToFinalMarking);
+                isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(ConstraintStateType.UncleanFinal);
+            }
+
+            var isSound = isFinalMarkingAlwaysReachable && isFinalMarkingClean;
+            
+            return new SoundnessProperties(stateTypes, cg.IsFullGraph, Array.Empty<string>(), hasDeadlocks, isSound);
         }
 
         public static SoundnessProperties CheckSoundness
@@ -73,7 +93,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
             var deadTransitions = dpn.Transitions
                 .Select(x => x.BaseTransitionId)
                 .Except(cg.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
-                .ToList();
+                .ToArray();
 
             var hasDeadlocks = false;
             var isFinalMarkingAlwaysReachable = true;
@@ -90,7 +110,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
                 && !hasDeadlocks
                 && isFinalMarkingAlwaysReachable
                 && isFinalMarkingClean
-                && deadTransitions.Count == 0;
+                && deadTransitions.Length == 0;
 
             return new SoundnessProperties(stateTypes, cg.IsFullGraph, deadTransitions, hasDeadlocks, isSound);
         }

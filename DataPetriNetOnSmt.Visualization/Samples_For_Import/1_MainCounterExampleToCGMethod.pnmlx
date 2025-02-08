@@ -34,7 +34,7 @@
             </finalMarking>
          </place>
          
-         <transition id="t0" guard="a_w &gt; a_r &amp;&amp; a_w &lt; b_r">
+         <transition id="t0" guard="a_w &gt; 0">
             <name>
                <text>t0</text>
             </name>

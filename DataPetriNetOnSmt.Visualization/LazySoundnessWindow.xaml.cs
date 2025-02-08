@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using DataPetriNetParsers;
+using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 using ToGraphParser;
 
 namespace DataPetriNetOnSmt.Visualization
@@ -14,20 +16,17 @@ namespace DataPetriNetOnSmt.Visualization
     /// <summary>
     /// Логика взаимодействия для ConstraintGraphWindow.xaml
     /// </summary>
-    public partial class LtsWindow : Window
+    public partial class LazySoundnessWindow : Window
     {
-        private readonly LtsToGraphParser constraintGraphToGraphParser;
-
-        public LtsWindow(ConstraintGraphToVisualize constraintGraph)
+        public LazySoundnessWindow(CoverabilityGraphToVisualize coverabilityGraph)
         {
+            var cgToGraphParser = new CoverabilityGraphToGraphParser();
             InitializeComponent();
 
-            constraintGraphToGraphParser = new LtsToGraphParser();
-
-            graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph);
+            graphControl.Graph = cgToGraphParser.FormGraphBasedOnCg(coverabilityGraph);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
-            logControl.FormSoundnessVerificationLog(constraintGraph);
+            logControl.Text = $"Nodes: {coverabilityGraph.CgStates.Count}. Arcs: {coverabilityGraph.CgArcs.Count}.";
         }
     }
 }
