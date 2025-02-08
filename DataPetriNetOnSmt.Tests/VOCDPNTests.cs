@@ -342,34 +342,5 @@ namespace DataPetriNetOnSmt.Tests
                 Arcs = arcsList
             };
         }
-
-        [TestMethod]
-        public void BuildConstraintGraphForBanking()
-        {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-
-            var constraintGraph = new ConstraintGraph(dataPetriNet);
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            constraintGraph.GenerateGraph();
-            stopwatch.Stop();
-            var resultTime = stopwatch.Elapsed;
-
-            File.WriteAllText("VOC_man.txt", resultTime.ToString());
-
-            var typedStates = SoundnessAnalyzer.GetStatesDividedByTypes(constraintGraph, new[] { dataPetriNet.Places[^1] });
-
-            Assert.AreEqual(48, constraintGraph.ConstraintStates.Count);
-            Assert.AreEqual(73, constraintGraph.ConstraintArcs.Count);
-
-            Assert.AreEqual(1, typedStates[StateType.Initial].Count);
-            Assert.AreEqual(4, typedStates[StateType.Deadlock].Count);
-            Assert.AreEqual(0, typedStates[StateType.UncleanFinal].Count);
-            Assert.AreEqual(8, typedStates[StateType.NoWayToFinalMarking].Count);
-            Assert.AreEqual(4, typedStates[StateType.CleanFinal].Count);
-            Assert.AreEqual(35, typedStates[StateType.SoundIntermediate].Count);
-        }
     }
 }

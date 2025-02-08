@@ -86,13 +86,6 @@
 
             </TabItem>
         </TabControl>
-        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,201,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
-        </Button>
-        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,201,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
-            <StackPanel Orientation="Horizontal">
-                <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
-            </StackPanel>
-        </Button>
         <Label Content="Conditions" HorizontalAlignment="Left" Margin="333,31,0,0" VerticalAlignment="Top" Width="89" Height="30" FontSize="15"/>
         <CheckBox Name="MaxDtChb" Content="Max Dead Transitions" HorizontalAlignment="Left" Margin="347,71,0,0" VerticalAlignment="Top" Width="136" Checked="MaxDtChb_Checked" Unchecked="MaxDtChb_Unchecked"/>
         <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="347,96,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
@@ -110,6 +103,13 @@
         <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,197,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
         <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,202,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
         <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,202,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
+        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,201,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
+        </Button>
+        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,201,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
+            </StackPanel>
+        </Button>
         <Grid Margin="0,244,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
                 <DataGrid.Resources>

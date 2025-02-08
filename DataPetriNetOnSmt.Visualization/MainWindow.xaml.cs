@@ -125,7 +125,7 @@ namespace DataPetriNetOnSmt.Visualization
                 var constraintGraphToVisualize = await CheckSoundness(dpn, constraintGraph);
 
                 stopwatch.Stop();
-                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");
+                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
 
                 VisualizeConstraintGraph(constraintGraphToVisualize);
             }
