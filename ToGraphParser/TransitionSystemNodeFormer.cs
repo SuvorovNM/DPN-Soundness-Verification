@@ -15,8 +15,8 @@ public static class TransitionSystemNodeFormer
         return soundnessType switch
         {
             SoundnessType.None => CreateNodeDespiteSoundness(state, nodeName),
-            SoundnessType.ClassicalSoundness => CreateNodeForClassicalSoundness(state, nodeName),
-            SoundnessType.LazySoundness => CreateNodeForLazySoundness(state, nodeName),
+            SoundnessType.Classical => CreateNodeForClassicalSoundness(state, nodeName),
+            SoundnessType.Lazy => CreateNodeForLazySoundness(state, nodeName),
             _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType, "Unknown soundness type")
         };
     }

@@ -33,7 +33,7 @@ public static class LazySoundnessAnalyzer
 
         var isSound = isFinalMarkingAlwaysReachable && isFinalMarkingClean;
 
-        return new SoundnessProperties(SoundnessType.LazySoundness, stateTypes, cg.IsFullGraph,
+        return new SoundnessProperties(SoundnessType.Lazy, stateTypes, cg.IsFullGraph,
             GetDeadTransitions(dpn, cg), hasDeadlocks, isSound);
     }
 

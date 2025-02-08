@@ -36,7 +36,7 @@ namespace DataPetriNetParsers
                     state, 
                     tokens, 
                     constraintFormula,
-                    SoundnessType.ClassicalSoundness);
+                    SoundnessType.Classical);
 
                 addedStates.Add(state.Id, nodeToAdd.LabelText);
                 graph.AddNode(nodeToAdd);

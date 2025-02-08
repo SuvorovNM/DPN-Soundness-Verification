@@ -40,7 +40,7 @@ public static class SoundnessAnalyzer
                       && isFinalMarkingClean
                       && deadTransitions.Length == 0;
 
-        return new SoundnessProperties(SoundnessType.ClassicalSoundness, stateTypes, cg.IsFullGraph,
+        return new SoundnessProperties(SoundnessType.Classical, stateTypes, cg.IsFullGraph,
             deadTransitions, hasDeadlocks, isSound);
     }
 

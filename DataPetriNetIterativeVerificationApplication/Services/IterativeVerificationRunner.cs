@@ -18,6 +18,7 @@ using DataPetriNetIterativeVerificationApplication.Extensions;
 using DataPetriNetParsers;
 using System.Xml.Linq;
 using System.Collections.ObjectModel;
+using DataPetriNetOnSmt.SoundnessVerification;
 
 namespace DataPetriNetIterativeVerificationApplication.Services
 {
@@ -28,6 +29,8 @@ namespace DataPetriNetIterativeVerificationApplication.Services
         const string DeadTransitionsParameterName = nameof(ConditionsInfo.DeadTransitions);
         const string VerificationTypeParameterName = nameof(VerificationTypeEnum);
         const string VerificationAlgorithmTypeParameterName = nameof(VerificationAlgorithmTypeEnum);
+        const string SoundnessTypeParameterName = nameof(SoundnessType);
+        const string WithRepairParameterName = "WithRepair";
         const string PipeClientHandleParameterName = "PipeClientHandle";
         const string DpnFileParameterName = "DpnFile";
         const string OutputDirectoryParameterName = "OutputDirectory";
@@ -287,7 +290,9 @@ namespace DataPetriNetIterativeVerificationApplication.Services
             var argumentsString = DpnFileParameterName + " " + dpnFilePath +
                 " " + PipeClientHandleParameterName + " " + pipeHandle +
                 " " + OutputDirectoryParameterName + " " + outputDirectoryPath +
-                " " + VerificationAlgorithmTypeParameterName + " " + verificationAlgorithmType;
+                " " + VerificationAlgorithmTypeParameterName + " " + verificationAlgorithmType +
+                " " + SoundnessTypeParameterName + " " + verificationInput.SoundnessType +
+                " " + WithRepairParameterName + " " + verificationInput.WithRepair;
 
             if (verificationInput.ConditionsInfo.DeadTransitions != null)
             {

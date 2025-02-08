@@ -74,9 +74,11 @@ namespace DataPetriNetParsers
 
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
             var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
-            
-            var soundnessType = SoundnessType.ClassicalSoundness;
-            Enum.TryParse(cgElement.Attribute("soundness_type").Value, out soundnessType);
+
+            if (!Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
+            {
+                soundnessType = SoundnessType.Classical;
+            }
 
             return new GraphToVisualize
             {

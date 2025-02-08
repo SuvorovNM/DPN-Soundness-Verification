@@ -25,7 +25,7 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 case null or SoundnessType.None:
                     textBlock.Inlines.Add(FormGraphInfoLines(graph));
                     break;
-                case SoundnessType.ClassicalSoundness or SoundnessType.LazySoundness:
+                case SoundnessType.Classical or SoundnessType.Lazy:
                     textBlock.FormSoundnessVerificationLog(graph);
                     break;
             }
@@ -71,8 +71,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         {
             return soundnessType switch
             {
-                SoundnessType.ClassicalSoundness => "Classical Soundness is satisfied: \n\n",
-                SoundnessType.LazySoundness => "Lazy Soundness is satisfied: \n\n",
+                SoundnessType.Classical => "Classical Soundness is satisfied: \n\n",
+                SoundnessType.Lazy => "Lazy Soundness is satisfied: \n\n",
                 SoundnessType.None => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
                     "Unknown soundness type.")
@@ -83,8 +83,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         {
             return soundnessType switch
             {
-                SoundnessType.ClassicalSoundness => "Classical Soundness is not satisfied: \n\n",
-                SoundnessType.LazySoundness => "Lazy Soundness is not satisfied: \n\n",
+                SoundnessType.Classical => "Classical Soundness is not satisfied: \n\n",
+                SoundnessType.Lazy => "Lazy Soundness is not satisfied: \n\n",
                 SoundnessType.None => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
                     "Unknown soundness type.")

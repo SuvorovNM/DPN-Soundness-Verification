@@ -3,6 +3,6 @@
 public enum SoundnessType
 {
     None,
-    ClassicalSoundness,
-    LazySoundness
+    Classical,
+    Lazy
 }
