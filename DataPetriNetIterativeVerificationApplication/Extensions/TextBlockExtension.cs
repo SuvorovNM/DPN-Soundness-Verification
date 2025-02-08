@@ -1,7 +1,6 @@
 ﻿using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using EnumsNET;
 using System;
 using System.Collections.Generic;
@@ -9,32 +8,33 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetIterativeVerificationApplication.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            textBlock.Inlines.Add(new Bold(graph.IsSound
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
                 ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
                 : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
 
-            textBlock.Inlines.Add(new Bold(graph.IsBounded
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties.Boundedness
                 ? new Run(FormBoundedLine())
                 : new Run(FormUnboundedLine())));
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
-            if (graph.IsBounded)
+            if (graph.SoundnessProperties.Boundedness)
             {
-                textBlock.Inlines.Add(FormStatesInfoLines(graph.ConstraintStates));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
+                textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
             }
         }
         public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<LtsState>> analysisResult)
@@ -103,9 +103,9 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
             return "Process model is UNSOUND: \n\n";
         }
 
-        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
+        private static string FormGraphInfoLines(GraphToVisualize graph)
         {
-            return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
+            return $"Constraint states: {graph.States.Count}. Constraint arcs: {graph.Arcs.Count}\n";
         }
 
         private static string FormGraphInfoLines(ConstraintGraph graph)
@@ -113,7 +113,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
         }
 
-        private static string FormStatesInfoLines(List<ConstraintStateToVisualize> states)
+        private static string FormStatesInfoLines(List<StateToVisualize> states)
         {
             var stateTypes = new Dictionary<ConstraintStateType, int>();
             foreach (var stateType in Enum.GetValues<ConstraintStateType>())

@@ -2,22 +2,17 @@
 using DataPetriNetOnSmt;
 using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetParsers;
 using DataPetriNetVerificationDomain;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CsvClassMaps;
 using Microsoft.Z3;
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace DataPetriNetVerificationApplication
@@ -316,7 +311,7 @@ namespace DataPetriNetVerificationApplication
             }
             if (conditionsInfo.DeadTransitions.HasValue)
             {
-                satisfiesConditions &= soundnessProperties.DeadTransitions.Count < (conditionsInfo.DeadTransitions.Value * transitionsCount / 100);
+                satisfiesConditions &= soundnessProperties.DeadTransitions.Length < (conditionsInfo.DeadTransitions.Value * transitionsCount / 100);
             }
 
             return satisfiesConditions;

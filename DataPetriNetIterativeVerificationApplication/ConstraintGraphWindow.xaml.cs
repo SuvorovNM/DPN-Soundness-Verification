@@ -1,19 +1,8 @@
 ﻿using DataPetriNetIterativeVerificationApplication.Extensions;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using ToGraphParser;
+using DataPetriNetParsers;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
@@ -22,7 +11,7 @@ namespace DataPetriNetIterativeVerificationApplication
     /// </summary>
     public partial class LtsWindow : Window
     {
-        public LtsWindow(ConstraintGraphToVisualize constraintGraph)
+        public LtsWindow(GraphToVisualize constraintGraph)
         {
             InitializeComponent();
 

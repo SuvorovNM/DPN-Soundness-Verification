@@ -1,16 +1,9 @@
-﻿using DataPetriNetOnSmt.SoundnessVerification;
-using DataPetriNetOnSmt.SoundnessVerification.Services;
-using DataPetriNetOnSmt.Visualization.Extensions;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using DataPetriNetOnSmt.Visualization.Extensions;
 using System.Windows;
 using System.Windows.Controls;
 using DataPetriNetParsers;
 using DataPetriNetVerificationDomain;
-using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
-using ToGraphParser;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization
 {
@@ -19,7 +12,7 @@ namespace DataPetriNetOnSmt.Visualization
     /// </summary>
     public partial class CoverabilityGraphWindow : Window
     {
-        public CoverabilityGraphWindow(CoverabilityGraphToVisualize coverabilityGraph, SoundnessType soundnessType)
+        public CoverabilityGraphWindow(GraphToVisualize coverabilityGraph, SoundnessType soundnessType)
         {
             var cgToGraphParser = new CoverabilityGraphToGraphParser();
             InitializeComponent();

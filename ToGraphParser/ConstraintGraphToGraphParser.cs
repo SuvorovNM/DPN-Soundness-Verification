@@ -1,26 +1,16 @@
-﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.Extensions;
-using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
-using Microsoft.Msagl.Drawing;
-using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using DataPetriNetParsers;
-using DataPetriNetVerificationDomain;
+﻿using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.GraphVisualized;
-using ToGraphParser.Extensions;
+using Microsoft.Msagl.Drawing;
 
-namespace ToGraphParser
+namespace DataPetriNetParsers
 {
     public class LtsToGraphParser
     {
-        public Graph FormGraphBasedOnCG(ConstraintGraphToVisualize constraintGraph)
+        public Graph FormGraphBasedOnCG(GraphToVisualize constraintGraph)
         {
             Graph graph = new Graph();
 
-            var states = AddStatesToGraph(constraintGraph.ConstraintStates, graph);
+            var states = AddStatesToGraph(constraintGraph.States, graph);
             AddArcsToGraph(constraintGraph, graph, states);
 
             return graph;
@@ -54,10 +44,10 @@ namespace ToGraphParser
             return addedStates;
         }
 
-        private static void AddArcsToGraph(ConstraintGraphToVisualize constraintGraph, Graph graph,
+        private static void AddArcsToGraph(GraphToVisualize constraintGraph, Graph graph,
             Dictionary<int, string> addedStates)
         {
-            foreach (var transition in constraintGraph.ConstraintArcs)
+            foreach (var transition in constraintGraph.Arcs)
             {
                 var transitionLabel = transition.IsSilent
                     ? $"τ({transition.TransitionName})"

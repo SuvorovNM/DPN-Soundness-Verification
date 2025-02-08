@@ -1,6 +1,4 @@
-﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetVerificationDomain;
-using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
+﻿using DataPetriNetVerificationDomain;
 using DataPetriNetVerificationDomain.GraphVisualized;
 using Microsoft.Msagl.Drawing;
 
@@ -8,11 +6,11 @@ namespace DataPetriNetParsers;
 
 public class CoverabilityGraphToGraphParser
 {
-    public Graph FormGraphBasedOnCg(CoverabilityGraphToVisualize coverabilityGraph, SoundnessType soundnessType)
+    public Graph FormGraphBasedOnCg(GraphToVisualize coverabilityGraph, SoundnessType soundnessType)
     {
         var graph = new Graph();
 
-        var states = AddStatesToGraph(coverabilityGraph.CgStates, graph, soundnessType);
+        var states = AddStatesToGraph(coverabilityGraph.States, graph, soundnessType);
         AddArcsToGraph(coverabilityGraph, graph, states);
 
         return graph;
@@ -53,10 +51,10 @@ public class CoverabilityGraphToGraphParser
         };
     }
 
-    private static void AddArcsToGraph(CoverabilityGraphToVisualize coverabilityGraph, Graph graph,
+    private static void AddArcsToGraph(GraphToVisualize coverabilityGraph, Graph graph,
         Dictionary<int, string> addedStates)
     {
-        foreach (var transition in coverabilityGraph.CgArcs)
+        foreach (var transition in coverabilityGraph.Arcs)
         {
             var transitionLabel = transition.IsSilent
                 ? $"τ({transition.TransitionName})"

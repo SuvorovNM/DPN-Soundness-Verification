@@ -1,6 +1,5 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.Extensions;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CoverabilityTreeVisualized;
 using Microsoft.Msagl.Drawing;
 using Microsoft.Z3;

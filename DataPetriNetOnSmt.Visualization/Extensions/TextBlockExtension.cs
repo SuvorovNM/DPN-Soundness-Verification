@@ -1,6 +1,4 @@
 ﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using EnumsNET;
 using System;
 using System.Collections.Generic;
@@ -9,14 +7,13 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using DataPetriNetVerificationDomain;
-using DataPetriNetVerificationDomain.CoverabilityGraphVisualized;
 using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormOutput(this TextBlock textBlock, CoverabilityGraphToVisualize graph, SoundnessType soundnessType)
+        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph, SoundnessType soundnessType)
         {
             ArgumentNullException.ThrowIfNull(graph);
             
@@ -35,48 +32,27 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             
         }
         
-        private static void FormSoundnessVerificationLog(this TextBlock textBlock, CoverabilityGraphToVisualize graph)
-        {
-            if (graph.IsSound != null)
-            {
-                textBlock.Inlines.Add(new Bold(graph.IsSound.Value
-                    ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
-                    : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
-            }
-
-            textBlock.Inlines.Add(new Bold(graph.IsBounded
-                ? new Run(FormBoundedLine())
-                : new Run(FormUnboundedLine(isCoverability: true))));
-
-            textBlock.Inlines.Add(FormGraphInfoLines(graph));
-
-            if (graph.IsBounded)
-            {
-                textBlock.Inlines.Add(FormStatesInfoLines(graph.CgStates));
-            }
-        }
-
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
+        public static void FormSoundnessVerificationLog(this TextBlock textBlock, GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            textBlock.Inlines.Add(new Bold(graph.IsSound
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
                 ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
                 : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
 
-            textBlock.Inlines.Add(new Bold(graph.IsBounded
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties.Boundedness
                 ? new Run(FormBoundedLine())
                 : new Run(FormUnboundedLine(isCoverability: false))));
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
-            if (graph.IsBounded)
+            if (graph.SoundnessProperties.Boundedness)
             {
-                textBlock.Inlines.Add(FormStatesInfoLines(graph.ConstraintStates));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
+                textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
             }
         }
 
@@ -102,33 +78,19 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             return "Process model is UNSOUND: \n\n";
         }
 
-        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
+        private static string FormGraphInfoLines(GraphToVisualize graph)
         {
             return
-                $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
-        }
-
-        private static string FormGraphInfoLines(CoverabilityGraphToVisualize graph)
-        {
-            return $"Constraint states: {graph.CgStates.Count}. Constraint arcs: {graph.CgArcs.Count}\n";
-        }
-
-        private static string FormGraphInfoLines(ConstraintGraph graph)
-        {
-            return
-                $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
+                $"Constraint states: {graph.States.Count}. Constraint arcs: {graph.Arcs.Count}\n";
         }
 
         private static string FormStatesInfoLines(List<StateToVisualize> states)
         {
-            var stateTypes = new Dictionary<ConstraintStateType, int>();
             var consideredStateTypes = Enum.GetValues<ConstraintStateType>()
-                .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered });
+                .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered })
+                .ToArray();
 
-            foreach (var stateType in consideredStateTypes)
-            {
-                stateTypes.Add(stateType, 0);
-            }
+            var stateTypes = consideredStateTypes.ToDictionary(stateType => stateType, _ => 0);
 
             foreach (var state in states)
             {
@@ -147,19 +109,6 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 var description = stateType.Key.AsString(EnumFormat.Description);
 
                 stateInfoLines += $"{description}s: {stateType.Value}. ";
-            }
-
-            return stateInfoLines;
-        }
-
-        private static string FormStatesInfoLines(Dictionary<StateType, List<LtsState>> analysisResult)
-        {
-            var stateInfoLines = string.Empty;
-            foreach (var stateType in analysisResult.Keys)
-            {
-                var description = stateType.AsString(EnumFormat.Description);
-
-                stateInfoLines += $"{description}s: {analysisResult[stateType].Count}. ";
             }
 
             return stateInfoLines;
