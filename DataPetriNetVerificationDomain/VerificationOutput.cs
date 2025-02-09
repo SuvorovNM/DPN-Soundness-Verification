@@ -31,44 +31,15 @@ namespace DataPetriNetVerificationDomain
         public string? RepairTime { get; init; }
         public bool? RepairSuccess { get; init; }
         public string Id { get; init; }
+        public int CgStates { get; init; }
+        public int CgArcs { get; init; } 
+        
         public MainVerificationInfo()
         {
 
         }
-        public MainVerificationInfo(MainVerificationInfo verificationOutput)
-        {
-            SatisfiesCounditions = verificationOutput.SatisfiesCounditions;
-            Places = verificationOutput.Places;
-            Transitions = verificationOutput.Transitions;
-            Arcs = verificationOutput.Arcs;
-            Variables = verificationOutput.Variables;
-            Conditions = verificationOutput.Conditions;
-            Boundedness = verificationOutput.Boundedness;
-            LtsStates = verificationOutput.LtsStates;
-            LtsArcs = verificationOutput.LtsArcs;
-            CgRefStates = verificationOutput.CgRefStates;
-            CgRefArcs = verificationOutput.CgRefArcs;
-            DeadTransitions = verificationOutput.DeadTransitions;
-            Deadlocks = verificationOutput.Deadlocks;
-            Soundness = verificationOutput.Soundness;
-            VerificationTime = verificationOutput.VerificationTime;
-            RepairTime = verificationOutput.RepairTime;
-            RepairSuccess = verificationOutput.RepairSuccess;
-            Id = verificationOutput.Id;
-        }
-    }
-    
-    public class OptimizedVerificationOutput : MainVerificationInfo
-    {
-        public int CgStates { get; init; }
-        public int CgArcs { get; init; } 
-
-        public OptimizedVerificationOutput()
-        {
-
-        }
-
-        public OptimizedVerificationOutput(
+        
+        public MainVerificationInfo(
             DataPetriNet dpn, 
             bool satisfiesConditions,
             ClassicalLabeledTransitionSystem lts,
@@ -105,6 +76,7 @@ namespace DataPetriNetVerificationDomain
             RepairSuccess = repairSuccess;
         }
     }
+    
     public class VerificationOutputWithNumber : MainVerificationInfo
     {
         public int Number { get; init; }

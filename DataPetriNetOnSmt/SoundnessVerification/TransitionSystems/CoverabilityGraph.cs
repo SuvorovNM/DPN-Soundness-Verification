@@ -31,8 +31,20 @@ public class CoverabilityGraph : LabeledTransitionSystem
             tauTransitionsGuards.Add(transition, negatedGuardExpressions);
         }
 
+        var logged = false;
+
         while (StatesToConsider.Count > 0)
         {
+            if (ConstraintStates.Count > 20000 && !logged)
+            {
+                foreach (var state in ConstraintStates)
+                {
+                    File.AppendAllText("C:\\workspace\\results.txt", $"[{state.Marking}]({state.Constraints})" + "\n");
+                }
+
+                logged = true;
+            }
+            
             var currentState = StatesToConsider.Pop();
 
             foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))

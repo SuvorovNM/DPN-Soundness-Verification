@@ -2,9 +2,9 @@
 
 namespace DataPetriNetVerificationDomain.CsvClassMaps
 {
-    public class OptimizedVerificationOutputClassMap : ClassMap<OptimizedVerificationOutput>
+    public class VerificationOutputClassMap : ClassMap<MainVerificationInfo>
     {
-        public OptimizedVerificationOutputClassMap()
+        public VerificationOutputClassMap()
         {
             // NEEDS FIXING!
             Map(x => x.Places).Index(0).Name("PlacesCount");
