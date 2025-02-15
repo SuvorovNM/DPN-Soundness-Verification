@@ -226,7 +226,7 @@ namespace DataPetriNetOnSmt.Visualization
         private async Task<GraphToVisualize> CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
         {
             await Task.Run(cg.GenerateGraph);
-            var soundnessProperties = LazySoundnessAnalyzer.CheckLazySoundness(dpn, cg);
+            var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
             
             return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }

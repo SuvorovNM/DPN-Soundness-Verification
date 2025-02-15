@@ -60,24 +60,24 @@ public static class SoundnessAnalyzer
             graph.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
 
         DefineInitialState(stateDictionary);
-        DefineDeadlocks(finalMarking, stateDictionary);
 
         var finalStates = graph.ConstraintStates
-            .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] > 0));
+            .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] > 0))
+            .ToArray();
 
         DefineFinals(stateDictionary, finalStates);
         DefineUncleanFinals(finalMarking, stateDictionary, finalStates);
+        
+        DefineDeadlocks(stateDictionary);
         DefineStatesWithNoWayToFinals(stateDictionary, finalStates);
 
         return stateDictionary;
-
-
-        void DefineDeadlocks(IEnumerable<Place> terminalNodes,
-            Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+        
+        void DefineDeadlocks(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
         {
             graph.ConstraintStates
-                .Where(x => x.Marking.Keys.Except(terminalNodes).Any(y => x.Marking[y] > 0)
-                            && !graph.ConstraintArcs.Any(y => y.SourceState == x))
+                .Where(x=>!stateDictionary[x].HasFlag(ConstraintStateType.Final) && !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+                .Where(x => graph.ConstraintArcs.All(y => y.SourceState != x))
                 .ToList()
                 .ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
         }

@@ -9,7 +9,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 public class CoverabilityGraph : LabeledTransitionSystem
 {
     protected bool WithTauTransitions { get; init; }
-    
+
     public CoverabilityGraph(DataPetriNet dataPetriNet, bool withTauTransitions = false) : base(dataPetriNet)
     {
         WithTauTransitions = withTauTransitions;
@@ -44,7 +44,7 @@ public class CoverabilityGraph : LabeledTransitionSystem
 
                 logged = true;
             }
-            
+
             var currentState = StatesToConsider.Pop();
 
             foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
@@ -81,17 +81,19 @@ public class CoverabilityGraph : LabeledTransitionSystem
                         AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
                     }
                 }
-                
+
                 if (WithTauTransitions)
                 {
                     var negatedGuardExpressions = tauTransitionsGuards[transition];
 
-                    var constraintsIfSilentTransitionFires = DataPetriNet.Context.MkAnd(currentState.Constraints, negatedGuardExpressions);
-                        
+                    var constraintsIfSilentTransitionFires =
+                        DataPetriNet.Context.MkAnd(currentState.Constraints, negatedGuardExpressions);
+
                     if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
                         !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
                     {
-                        var stateToAddInfo = new BaseStateInfo(currentState.Marking, (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
+                        var stateToAddInfo = new BaseStateInfo(currentState.Marking,
+                            (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
 
                         AddNewState(currentState, new LtsTransition(transition, true), stateToAddInfo);
                     }

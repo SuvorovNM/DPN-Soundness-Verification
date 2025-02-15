@@ -4,7 +4,7 @@ using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services;
 
-public static class LazySoundnessAnalyzer
+public static class RelaxedLazySoundnessAnalyzer
 {
     private static string[] GetDeadTransitions(DataPetriNet dpn, LabeledTransitionSystem cg)
     {
@@ -12,56 +12,64 @@ public static class LazySoundnessAnalyzer
             .Select(x => x.BaseTransitionId)
             .Except(cg.ConstraintArcs.Select(y => y.Transition.NonRefinedTransitionId))
             .ToArray();
+
         return deadTransitions;
     }
 
-    public static SoundnessProperties CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
+    public static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityGraph cg)
     {
         var stateTypes = GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
 
-        var hasDeadlocks = false;
-        var isFinalMarkingAlwaysReachable = true;
-        var isFinalMarkingClean = true;
+        var unfeasibleTransitions = cg.ConstraintArcs
+            .GroupBy(a => a.Transition.NonRefinedTransitionId)
+            .ToDictionary(
+                arcsGroup => arcsGroup.Key,
+                arcsGroup =>
+                    arcsGroup.All(a => stateTypes[a.TargetState].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
+            .Where(a => a.Value)
+            .Select(a => a.Key)
+            .Union(GetDeadTransitions(dpn, cg))
+            .ToArray();
 
-        foreach (var constraintState in cg.ConstraintStates)
-        {
-            hasDeadlocks |= stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock);
-            isFinalMarkingAlwaysReachable &=
-                !stateTypes[constraintState].HasFlag(ConstraintStateType.NoWayToFinalMarking);
-            isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(ConstraintStateType.UncleanFinal);
-        }
+        var hasDeadlocks = cg.ConstraintStates.Aggregate(false, (current, constraintState) => current | stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock));
 
-        var isSound = isFinalMarkingAlwaysReachable && isFinalMarkingClean;
+        var isSound = unfeasibleTransitions.Length == 0;
 
-        return new SoundnessProperties(SoundnessType.Lazy, stateTypes, cg.IsFullGraph,
-            GetDeadTransitions(dpn, cg), hasDeadlocks, isSound);
+        return new SoundnessProperties(
+            SoundnessType.RelaxedLazy, 
+            stateTypes, 
+            cg.IsFullGraph,
+            unfeasibleTransitions, 
+            hasDeadlocks, 
+            isSound);
     }
 
     private static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypes
         (CoverabilityGraph graph, Place[] finalMarking)
     {
-        var stateDictionary = graph.ConstraintStates.ToDictionary(x => x as AbstractState, y => ConstraintStateType.Default);
+        var stateDictionary =
+            graph.ConstraintStates.ToDictionary(x => x as AbstractState, y => ConstraintStateType.Default);
 
         DefineInitialState(stateDictionary);
-        DefineDeadlocks(finalMarking, stateDictionary);
-
+        
         var finalStates = graph.ConstraintStates
             .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] == 1))
             .ToArray();
 
         DefineFinals(stateDictionary, finalStates);
         DefineUncleanFinals(finalMarking, stateDictionary, finalStates);
+        
+        DefineDeadlocks(stateDictionary);
         DefineStatesWithNoWayToFinals(stateDictionary, finalStates);
 
         return stateDictionary;
 
 
-        void DefineDeadlocks(IEnumerable<Place> terminalNodes,
-            Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+        void DefineDeadlocks(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
         {
             graph.ConstraintStates
-                .Where(x => x.Marking.Keys.Except(terminalNodes).Any(y => x.Marking[y] > 0)
-                            && graph.ConstraintArcs.All(y => y.SourceState != x))
+                .Where(x=>!stateDictionary[x].HasFlag(ConstraintStateType.Final) && !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+                .Where(x => graph.ConstraintArcs.All(y => y.SourceState != x))
                 .ToList()
                 .ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
         }
@@ -76,7 +84,7 @@ public static class LazySoundnessAnalyzer
             var stateIncidenceDict = graph.ConstraintArcs
                 .GroupBy(x => x.TargetState)
                 .ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
-                
+
             do
             {
                 var nextStates = intermediateStates

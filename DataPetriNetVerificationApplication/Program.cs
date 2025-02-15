@@ -124,13 +124,13 @@ namespace DataPetriNetVerificationApplication
                 timer.Start();
                 switch (soundnessType)
                 {
-                    case SoundnessType.Lazy:
+                    case SoundnessType.RelaxedLazy:
                     {
                         var coverabilityGraph = new CoverabilityGraph(dpnToVerify);
                         var (dpnRefined, _) = transformation.TransformUsingCg(dpnToVerify, coverabilityGraph);
                         var tauCoverabilityGraph = new CoverabilityGraph(dpnRefined, true);
                         tauCoverabilityGraph.GenerateGraph();
-                        soundnessProps = LazySoundnessAnalyzer.CheckLazySoundness(dpnRefined, tauCoverabilityGraph);
+                        soundnessProps = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpnRefined, tauCoverabilityGraph);
                         break;
                     }
                     case SoundnessType.Classical:

@@ -107,7 +107,7 @@
 
         <ComboBox Name="SoundnessTypeCmb" HorizontalAlignment="Left" Margin="610,64,0,0" VerticalAlignment="Top" Width="100" Height="20">
             <ComboBoxItem Content="Classical"/>
-            <ComboBoxItem Content="Lazy"/>
+            <ComboBoxItem Content="RelaxedLazy"/>
         </ComboBox>
         <ComboBox Name="WithRepairCmb" HorizontalAlignment="Left" Margin="610,90,0,0" VerticalAlignment="Top" Width="100" Height="20">
             <ComboBoxItem Content="False"/>

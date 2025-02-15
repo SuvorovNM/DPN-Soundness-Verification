@@ -25,13 +25,27 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 case null or SoundnessType.None:
                     textBlock.Inlines.Add(FormGraphInfoLines(graph));
                     break;
-                case SoundnessType.Classical or SoundnessType.Lazy:
+                case SoundnessType.Classical:
                     textBlock.FormSoundnessVerificationLog(graph);
+                    break;
+                case SoundnessType.RelaxedLazy:
+                    textBlock.FormSoundnessVerificationLog(
+                        graph,
+                        detailedInfoAction:
+                        () =>
+                        {
+                            textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                            textBlock.Inlines.Add(
+                                FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                        });
                     break;
             }
         }
 
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, GraphToVisualize graph)
+        public static void FormSoundnessVerificationLog(
+            this TextBlock textBlock,
+            GraphToVisualize graph,
+            Action? detailedInfoAction = null)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -48,10 +62,18 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
-            if (graph.SoundnessProperties.Boundedness)
+            if (detailedInfoAction == null)
             {
-                textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                if (graph.SoundnessProperties.Boundedness)
+                {
+                    textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                    textBlock.Inlines.Add(
+                        FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                }
+            }
+            else
+            {
+                detailedInfoAction.Invoke();
             }
         }
 
@@ -71,8 +93,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         {
             return soundnessType switch
             {
-                SoundnessType.Classical => "Classical Soundness is satisfied: \n\n",
-                SoundnessType.Lazy => "Lazy Soundness is satisfied: \n\n",
+                SoundnessType.Classical => $"{nameof(SoundnessType.Classical)} Soundness is satisfied: \n\n",
+                SoundnessType.RelaxedLazy => $"{nameof(SoundnessType.RelaxedLazy)} Soundness is satisfied: \n\n",
                 SoundnessType.None => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
                     "Unknown soundness type.")
@@ -83,8 +105,8 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
         {
             return soundnessType switch
             {
-                SoundnessType.Classical => "Classical Soundness is not satisfied: \n\n",
-                SoundnessType.Lazy => "Lazy Soundness is not satisfied: \n\n",
+                SoundnessType.Classical => $"{nameof(SoundnessType.Classical)} Soundness is not satisfied: \n\n",
+                SoundnessType.RelaxedLazy => $"{nameof(SoundnessType.RelaxedLazy)} Soundness is not satisfied: \n\n",
                 SoundnessType.None => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
                     "Unknown soundness type.")
@@ -129,9 +151,19 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
 
         private static string FormDeadTransitionsLine(IList<string> deadTransitions)
         {
-            var resultString = $"\nDead transitions count: {deadTransitions.Count}\n";
+            return FormTransitionsLine(deadTransitions, "Dead");
+        }
+
+        private static string FormUnfeasibleTransitionsLine(IList<string> unfeasibleTransitions)
+        {
+            return FormTransitionsLine(unfeasibleTransitions, "Unfeasible");
+        }
+
+        private static string FormTransitionsLine(IList<string> deadTransitions, string transitionsTypeName)
+        {
+            var resultString = $"\n{transitionsTypeName} transitions count: {deadTransitions.Count}\n";
             return deadTransitions.Count > 0
-                ? resultString + $"Dead transitions list: {string.Join(", ", deadTransitions)}"
+                ? resultString + $"{transitionsTypeName} transitions list: {string.Join(", ", deadTransitions)}"
                 : resultString;
         }
     }

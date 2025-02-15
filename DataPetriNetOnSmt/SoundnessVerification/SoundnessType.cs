@@ -4,5 +4,5 @@ public enum SoundnessType
 {
     None,
     Classical,
-    Lazy
+    RelaxedLazy
 }
