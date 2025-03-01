@@ -35,8 +35,12 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                         () =>
                         {
                             textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
-                            textBlock.Inlines.Add(
-                                FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+
+                            if (graph.IsFull)
+                            {
+                                textBlock.Inlines.Add(
+                                    FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                            }
                         });
                     break;
             }
@@ -55,16 +59,16 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
                 ? new Run(FormSoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkGreen }
                 : new Run(FormUnsoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkRed }));
-
-            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties.Boundedness
-                ? new Run(FormBoundedLine())
-                : new Run(FormUnboundedLine(isCoverability: false))));
+            
+            textBlock.Inlines.Add(new Bold(graph.IsFull
+                ? new Run(FullGraphIsConstructed())
+                : new Run(FragmentOfGraphIsConstructed(graph.SoundnessProperties.SoundnessType))));
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
             if (detailedInfoAction == null)
             {
-                if (graph.SoundnessProperties.Boundedness)
+                if (graph.IsFull)
                 {
                     textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
                     textBlock.Inlines.Add(
@@ -76,17 +80,23 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
                 detailedInfoAction.Invoke();
             }
         }
-
-        private static string FormBoundedLine()
+        
+        private static string FullGraphIsConstructed()
         {
-            return "Process model is bounded. Full constraint graph is constructed.\n";
+            return "Full state space graph is constructed.\n";
         }
-
-        private static string FormUnboundedLine(bool isCoverability)
+        
+        private static string FragmentOfGraphIsConstructed(SoundnessType soundnessType)
         {
-            var fragmentConstructed =
-                isCoverability ? string.Empty : " Only fragment of the constraint graph is constructed";
-            return "Process model is unbounded." + fragmentConstructed + "\n";
+            var prefix = "A fragment of state space  graph is constructed. ";
+            var suffix = soundnessType switch
+            {
+                SoundnessType.Classical or SoundnessType.None => " DPN is unbounded.\n",
+                SoundnessType.RelaxedLazy => " Unclean final states are found.\n",
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType, "Unknown soundness type")
+            };
+            
+            return prefix + suffix;
         }
 
         private static string FormSoundLine(SoundnessType soundnessType)

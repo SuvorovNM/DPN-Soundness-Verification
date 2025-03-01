@@ -100,11 +100,9 @@ namespace DataPetriNetOnSmt.Visualization
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var dpnTransformation = new TransformerToRefined();
-            (var dpn, _) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
-            
-            var tauCoverabilityGraph = new CoverabilityGraph(dpn, withTauTransitions: true);
-            var cgToVisualize = await CheckLazySoundness(dpn, tauCoverabilityGraph);
+            var cgToVisualize = await CheckLazySoundness(
+                currentDisplayedNet, 
+                new CoverabilityGraph(currentDisplayedNet, stopOnCoveringFinalPosition: true));
             
             stopwatch.Stop();
             MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");

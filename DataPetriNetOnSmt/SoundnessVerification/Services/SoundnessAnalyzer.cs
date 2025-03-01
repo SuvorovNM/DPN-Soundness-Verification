@@ -11,14 +11,9 @@ public static class SoundnessAnalyzer
         Dictionary<AbstractState, ConstraintStateType> stateTypes;
 
         var boundedness = cg.IsFullGraph;
-        if (boundedness)
-        {
-            stateTypes = GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
-        }
-        else
-        {
-            stateTypes = cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
-        }
+        stateTypes = boundedness 
+            ? GetStatesDividedByTypesNew(cg, dpn.Places.Where(x => x.IsFinal).ToArray()) 
+            : cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
 
         var deadTransitions = GetDeadTransitions(dpn, cg);
 

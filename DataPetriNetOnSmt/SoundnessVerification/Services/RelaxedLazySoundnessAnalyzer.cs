@@ -18,107 +18,112 @@ public static class RelaxedLazySoundnessAnalyzer
 
     public static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityGraph cg)
     {
-        var stateTypes = GetStatesDividedByTypes(cg, dpn.Places.Where(x => x.IsFinal).ToArray());
+        var stateDictionary = cg.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);
+        
+        DefineInitialState(cg, stateDictionary);
+        var finalMarking = dpn.Places.Where(x => x.IsFinal).ToArray();
+        
+        var finalStates = cg.ConstraintStates
+            .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] == 1))
+            .ToArray();
+
+        DefineFinals(stateDictionary, finalStates);
+        DefineUncleanFinals(finalMarking, stateDictionary);
+
+        if (cg.IsFullGraph)
+        {
+            DefineDeadlocks(cg, stateDictionary);
+            DefineStatesWithNoWayToFinals(cg, stateDictionary, finalStates);
+        }
 
         var unfeasibleTransitions = cg.ConstraintArcs
             .GroupBy(a => a.Transition.NonRefinedTransitionId)
             .ToDictionary(
                 arcsGroup => arcsGroup.Key,
                 arcsGroup =>
-                    arcsGroup.All(a => stateTypes[a.TargetState].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
+                    arcsGroup.All(a => stateDictionary[a.TargetState].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
             .Where(a => a.Value)
             .Select(a => a.Key)
             .Union(GetDeadTransitions(dpn, cg))
             .ToArray();
 
-        var hasDeadlocks = cg.ConstraintStates.Aggregate(false, (current, constraintState) => current | stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock));
+        var hasDeadlocks = cg.ConstraintStates.Aggregate(false, (current, constraintState) => current | stateDictionary[constraintState].HasFlag(ConstraintStateType.Deadlock));
 
         var isSound = unfeasibleTransitions.Length == 0;
 
         return new SoundnessProperties(
             SoundnessType.RelaxedLazy, 
-            stateTypes, 
+            stateDictionary, 
             cg.IsFullGraph,
             unfeasibleTransitions, 
             hasDeadlocks, 
             isSound);
     }
-
-    private static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypes
-        (CoverabilityGraph graph, Place[] finalMarking)
+    
+    
+    private static void DefineDeadlocks(CoverabilityGraph cg, Dictionary<AbstractState, ConstraintStateType> stateDictionary)
     {
-        var stateDictionary =
-            graph.ConstraintStates.ToDictionary(x => x as AbstractState, y => ConstraintStateType.Default);
+        cg.ConstraintStates
+            .Where(x=>!stateDictionary[x].HasFlag(ConstraintStateType.Final) && !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+            .Where(x => cg.ConstraintArcs.All(y => y.SourceState != x))
+            .ToList()
+            .ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
+    }
 
-        DefineInitialState(stateDictionary);
-        
-        var finalStates = graph.ConstraintStates
-            .Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] == 1))
-            .ToArray();
+    // Доработать
+    private static void DefineStatesWithNoWayToFinals(
+        CoverabilityGraph cg,
+        Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+        LtsState[] finalStates)
 
-        DefineFinals(stateDictionary, finalStates);
-        DefineUncleanFinals(finalMarking, stateDictionary, finalStates);
-        
-        DefineDeadlocks(stateDictionary);
-        DefineStatesWithNoWayToFinals(stateDictionary, finalStates);
+    {
+        var statesLeadingToFinals = new List<LtsState>(finalStates);
+        var intermediateStates = new List<LtsState>(finalStates);
+        var stateIncidenceDict = cg.ConstraintArcs
+            .GroupBy(x => x.TargetState)
+            .ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
 
-        return stateDictionary;
-
-
-        void DefineDeadlocks(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+        do
         {
-            graph.ConstraintStates
-                .Where(x=>!stateDictionary[x].HasFlag(ConstraintStateType.Final) && !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
-                .Where(x => graph.ConstraintArcs.All(y => y.SourceState != x))
-                .ToList()
-                .ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
-        }
+            var nextStates = intermediateStates
+                .Where(x => stateIncidenceDict.ContainsKey(x))
+                .SelectMany(x => stateIncidenceDict[x])
+                .Where(x => !statesLeadingToFinals.Contains(x))
+                .Distinct();
+            statesLeadingToFinals.AddRange(intermediateStates);
+            intermediateStates = new List<LtsState>(nextStates);
+        } while (intermediateStates.Count > 0);
 
-        // Доработать
-        void DefineStatesWithNoWayToFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary,
-            LtsState[] finalStates)
-
+        cg.ConstraintStates
+            .Except(statesLeadingToFinals)
+            .ToList()
+            .ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+    }
+    
+    private static void DefineUncleanFinals(
+        Place[] terminalNodes,
+        Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+    {
+        var uncleanFinalNodes = stateDictionary
+            .Where(x => x.Key.Marking.Keys.Intersect(terminalNodes).Any(y => x.Key.Marking[y] > 1))
+            .Select(x => x.Key);
+        
+        foreach (var cgNode in uncleanFinalNodes)
         {
-            var statesLeadingToFinals = new List<LtsState>(finalStates);
-            var intermediateStates = new List<LtsState>(finalStates);
-            var stateIncidenceDict = graph.ConstraintArcs
-                .GroupBy(x => x.TargetState)
-                .ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
-
-            do
+            if (cgNode.Marking.Keys.Intersect(terminalNodes).Any(y => cgNode.Marking[y] > 1))
             {
-                var nextStates = intermediateStates
-                    .Where(x => stateIncidenceDict.ContainsKey(x))
-                    .SelectMany(x => stateIncidenceDict[x])
-                    .Where(x => !statesLeadingToFinals.Contains(x))
-                    .Distinct();
-                statesLeadingToFinals.AddRange(intermediateStates);
-                intermediateStates = new List<LtsState>(nextStates);
-            } while (intermediateStates.Count > 0);
-
-            graph.ConstraintStates
-                .Except(statesLeadingToFinals)
-                .ToList()
-                .ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+                stateDictionary[cgNode] |= ConstraintStateType.UncleanFinal;
+            }
         }
+    }
 
-        static void DefineUncleanFinals(IEnumerable<Place> terminalNodes,
-            Dictionary<AbstractState, ConstraintStateType> stateDictionary, LtsState[] finalStates)
-        {
-            finalStates
-                .Where(x => x.Marking.Keys.Intersect(terminalNodes).Any(y => x.Marking[y] > 1))
-                .ToList()
-                .ForEach(x => stateDictionary[x] |= ConstraintStateType.UncleanFinal);
-        }
+    private static void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary, LtsState[] finalStates)
+    {
+        Array.ForEach(finalStates, x => stateDictionary[x] |= ConstraintStateType.Final);
+    }
 
-        void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary, LtsState[] finalStates)
-        {
-            Array.ForEach(finalStates, x => stateDictionary[x] |= ConstraintStateType.Final);
-        }
-
-        void DefineInitialState(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
-        {
-            stateDictionary[graph.InitialState] |= ConstraintStateType.Initial;
-        }
+    private static void DefineInitialState(CoverabilityGraph cg, Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+    {
+        stateDictionary[cg.InitialState] |= ConstraintStateType.Initial;
     }
 }

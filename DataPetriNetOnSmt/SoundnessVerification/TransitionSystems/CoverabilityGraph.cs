@@ -8,27 +8,26 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 
 public class CoverabilityGraph : LabeledTransitionSystem
 {
-    protected bool WithTauTransitions { get; init; }
+    private bool StopOnCoveringFinalPosition { get; init; }
+    private Place FinalPosition { get; init; }
 
-    public CoverabilityGraph(DataPetriNet dataPetriNet, bool withTauTransitions = false) : base(dataPetriNet)
+    public CoverabilityGraph(DataPetriNet dataPetriNet, bool stopOnCoveringFinalPosition = false)
+        : base(dataPetriNet)
     {
-        WithTauTransitions = withTauTransitions;
+        StopOnCoveringFinalPosition = stopOnCoveringFinalPosition;
+        FinalPosition = dataPetriNet.Places.Single(p => p.IsFinal);
     }
 
     public override void GenerateGraph()
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
         var transitionGuards = new Dictionary<Transition, BoolExpr>();
-        var tauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
         foreach (var transition in DataPetriNet.Transitions)
         {
             var smtExpression = transition.Guard.ActualConstraintExpression;
             var overwrittenVarNames = transition.Guard.WriteVars;
             var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
             transitionGuards.Add(transition, readExpression);
-
-            var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
-            tauTransitionsGuards.Add(transition, negatedGuardExpressions);
         }
 
         var logged = false;
@@ -65,9 +64,9 @@ public class CoverabilityGraph : LabeledTransitionSystem
                         var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                         var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                        var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+                        var coveredNodes = FindAllParentNodesForWhichComparisonResultForCurrentNodeHolds
                             (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
-                        if (coveredNode != null)
+                        foreach (var coveredNode in coveredNodes)
                         {
                             foreach (var place in DataPetriNet.Places)
                             {
@@ -78,24 +77,17 @@ public class CoverabilityGraph : LabeledTransitionSystem
                             }
                         }
 
+
                         AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
-                    }
-                }
 
-                if (WithTauTransitions)
-                {
-                    var negatedGuardExpressions = tauTransitionsGuards[transition];
 
-                    var constraintsIfSilentTransitionFires =
-                        DataPetriNet.Context.MkAnd(currentState.Constraints, negatedGuardExpressions);
-
-                    if (expressionService.CanBeSatisfied(constraintsIfSilentTransitionFires) &&
-                        !expressionService.AreEqual(currentState.Constraints, constraintsIfSilentTransitionFires))
-                    {
-                        var stateToAddInfo = new BaseStateInfo(currentState.Marking,
-                            (BoolExpr)constraintsIfSilentTransitionFires.Simplify());
-
-                        AddNewState(currentState, new LtsTransition(transition, true), stateToAddInfo);
+                        if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)
+                        {
+                            stopwatch.Stop();
+                            Milliseconds = stopwatch.ElapsedMilliseconds;
+                            IsFullGraph = false;
+                            return;
+                        }
                     }
                 }
             }
@@ -104,5 +96,15 @@ public class CoverabilityGraph : LabeledTransitionSystem
         stopwatch.Stop();
         Milliseconds = stopwatch.ElapsedMilliseconds;
         IsFullGraph = true;
+    }
+
+    private IEnumerable<LtsState> FindAllParentNodesForWhichComparisonResultForCurrentNodeHolds
+        (BaseStateInfo stateInfo, LtsState parentNode, MarkingComparisonResult comparisonResult)
+    {
+        return from stateInGraph in parentNode.ParentStates.Union(new[] { parentNode })
+            let isConditionHoldsForTokens = stateInfo.Marking.CompareTo(stateInGraph.Marking) == comparisonResult
+            where isConditionHoldsForTokens &&
+                  expressionService.AreEqual(stateInGraph.Constraints, stateInfo.Constraints)
+            select stateInGraph;//DoesTargetCoverSource
     }
 }

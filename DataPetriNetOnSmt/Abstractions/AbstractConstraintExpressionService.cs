@@ -52,6 +52,28 @@ namespace DataPetriNetOnSmt.Abstractions
 
             return result;
         }
+        
+        public bool DoesTargetCoverSource(BoolExpr? expressionSource, BoolExpr? expressionTarget)
+        {
+            if (expressionSource is null)
+            {
+                throw new ArgumentNullException(nameof(expressionSource));
+            }
+            if (expressionTarget is null)
+            {
+                throw new ArgumentNullException(nameof(expressionTarget));
+            }
+
+            // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
+            var exprWithSourceNegated = Context.MkAnd(Context.MkNot(expressionSource), expressionTarget);
+
+            Solver s = Context.MkSimpleSolver();
+            s.Assert(exprWithSourceNegated);
+
+            var result = s.Check() == Status.UNSATISFIABLE;
+
+            return result;
+        }
 
         public BoolExpr ConcatExpressions(
             BoolExpr? source,

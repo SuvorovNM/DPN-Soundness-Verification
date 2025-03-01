@@ -28,14 +28,15 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
         }
 
         protected override void AddNewState(LtsState currentState,
-                                LtsTransition transition,
-                                BaseStateInfo stateInfo)
+            LtsTransition transition,
+            BaseStateInfo stateInfo)
         {
             var equalStateInGraph = FindEqualStateInGraph(stateInfo.Marking, stateInfo.Constraints);
             if (equalStateInGraph != null)
             {
                 ConstraintArcs.Add(new LtsArc(currentState, transition, equalStateInGraph));
-                equalStateInGraph.ParentStates = equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
+                equalStateInGraph.ParentStates =
+                    equalStateInGraph.ParentStates.Union(currentState.ParentStates).ToHashSet();
                 equalStateInGraph.ParentStates.Add(currentState);
 
                 if (equalStateInGraph.ParentStates.Contains(equalStateInGraph))
@@ -60,7 +61,8 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                 var isConditionHoldsForTokens =
                     stateInfo.Marking.CompareTo(stateInGraph.Marking) == comparisonResult;
 
-                if (isConditionHoldsForTokens && expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
+                if (isConditionHoldsForTokens &&
+                    expressionService.AreEqual(stateInfo.Constraints, stateInGraph.Constraints))
                 {
                     return stateInGraph;
                 }
@@ -69,14 +71,16 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             return null;
         }
 
+
         private LtsState? FindEqualStateInGraph(Marking tokens, BoolExpr constraintsIfFires)
         {
             foreach (var stateInGraph in ConstraintStates)
             {
-                var isConsideredStateTokensEqual = 
+                var isConsideredStateTokensEqual =
                     tokens.CompareTo(stateInGraph.Marking) == MarkingComparisonResult.Equal;
 
-                if (isConsideredStateTokensEqual && expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
+                if (isConsideredStateTokensEqual &&
+                    expressionService.AreEqual(constraintsIfFires, stateInGraph.Constraints))
                 {
                     return stateInGraph;
                 }
