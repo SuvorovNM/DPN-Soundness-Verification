@@ -105,7 +105,7 @@ namespace DataPetriNetOnSmt.Visualization
                 new CoverabilityGraph(currentDisplayedNet, stopOnCoveringFinalPosition: true));
             
             stopwatch.Stop();
-            MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}");
+            MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
 
             VisualizeCoverabilityGraph(cgToVisualize);
         }

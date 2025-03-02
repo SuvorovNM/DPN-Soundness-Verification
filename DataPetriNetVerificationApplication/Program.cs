@@ -180,6 +180,8 @@ namespace DataPetriNetVerificationApplication
                 }
 
                 timer.Stop();
+                verificationTime = timer.ElapsedMilliseconds;
+                
                 satisfiesConditions = VerifyConditions(
                     conditionsInfo,
                     dpnToVerify.Transitions.Count,
@@ -206,7 +208,7 @@ namespace DataPetriNetVerificationApplication
                     repairSuccess);
             }, source.Token);
 
-            if (!verificationTask.Wait(TimeSpan.FromMinutes(120)))
+            if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
             {
                 var conditionsCount = dpnToVerify
                     .Transitions
@@ -216,7 +218,7 @@ namespace DataPetriNetVerificationApplication
                 File.AppendAllText(badCasesPath,
                     $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");
 
-                throw new TimeoutException("Process requires more than 20 minutes to verify soundness");
+                throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
             }
 
             SendResultToPipe(pipeClientHandle, outputRow);
