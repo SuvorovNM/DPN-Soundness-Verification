@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Gambling</text>
+      </name>
+      <page id="n0">
+         <place id="i">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>    
+         <place id="o">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>		 
+         <transition id="t0">
+            <name>
+               <text>Start Gambling</text>
+            </name>
+         </transition>
+		 <transition id="t1" guard="res_w &gt;= 0 &amp;&amp; res_w &lt;= 100">
+            <name>
+               <text>Gamble</text>
+            </name>
+         </transition>
+         <transition id="t2" guard="res_r &gt;= 40 &amp;&amp; res_r &lt; 85">
+            <name>
+               <text>Draw</text>
+            </name>
+         </transition>
+		 <transition guard="res_r &gt;= 85" id="t3">
+            <name>
+               <text>Win</text>
+            </name>
+         </transition>
+		 <transition id="t4" guard="res_r &lt; 40">
+            <name>
+               <text>Lose</text>
+            </name>
+         </transition>
+         <transition id="t5">
+            <name>
+               <text>End Gambling</text>
+            </name>
+         </transition>
+		       
+         <arc id="arc0" source="i" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p3">
+            <name>
+               <text>3</text>
+            </name>
+         </arc>
+		 
+		 <arc id="arc2" source="p1" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="t1" target="p2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 
+		 <arc id="arc2" source="p2" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		  <arc id="arc2" source="p2" target="t3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		  <arc id="arc2" source="p2" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		  <arc id="arc2" source="p3" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 
+		 <arc id="arc3" source="t2" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>		 
+		 <arc id="arc4" source="t3" target="p3">
+            <name>
+               <text>3</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="t3" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 <arc id="arc4" source="t4" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 <arc id="arc2" source="p1" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+		 <arc id="arc4" source="t5" target="o">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 
+      </page>
+      <variables>
+         <variable type="Real">
+            <name>res</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>
