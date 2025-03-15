@@ -1,6 +1,4 @@
 ﻿using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using EnumsNET;
 using System;
 using System.Collections.Generic;
@@ -8,120 +6,136 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using DataPetriNetOnSmt.SoundnessVerification;
+using DataPetriNetVerificationDomain.GraphVisualized;
 
 namespace DataPetriNetOnSmt.Visualization.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, ConstraintGraphToVisualize graph)
+        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            textBlock.Inlines.Add(new Bold(graph.IsSound
-                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
-
-            textBlock.Inlines.Add(new Bold(graph.IsBounded
-                ? new Run(FormBoundedLine())
-                : new Run(FormUnboundedLine())));
-
-            textBlock.Inlines.Add(FormGraphInfoLines(graph));
-
-            if (graph.IsBounded)
+            switch (graph.SoundnessProperties?.SoundnessType)
             {
-                textBlock.Inlines.Add(FormStatesInfoLines(graph.ConstraintStates));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(graph.DeadTransitions));
+                case null or SoundnessType.None:
+                    textBlock.Inlines.Add(FormGraphInfoLines(graph));
+                    break;
+                case SoundnessType.Classical:
+                    textBlock.FormSoundnessVerificationLog(graph);
+                    break;
+                case SoundnessType.RelaxedLazy:
+                    textBlock.FormSoundnessVerificationLog(
+                        graph,
+                        detailedInfoAction:
+                        () =>
+                        {
+                            textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+
+                            if (graph.IsFull)
+                            {
+                                textBlock.Inlines.Add(
+                                    FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                            }
+                        });
+                    break;
             }
         }
-        public static void FormSoundnessVerificationLog(this TextBlock textBlock, DataPetriNet dpn, ConstraintGraph graph, Dictionary<StateType, List<LtsState>> analysisResult)
+
+        public static void FormSoundnessVerificationLog(
+            this TextBlock textBlock,
+            GraphToVisualize graph,
+            Action? detailedInfoAction = null)
         {
-            if (textBlock == null)
-            {
-                throw new ArgumentNullException(nameof(textBlock));
-            }
-            if (graph == null)
-            {
-                throw new ArgumentNullException(nameof(graph));
-            }
-            if (analysisResult == null)
-            {
-                throw new ArgumentNullException(nameof(analysisResult));
-            }            
-
-            var deadTransitions = dpn.Transitions
-                    .Select(x => x.Id)
-                    .Except(graph.ConstraintArcs.Where(x => !x.Transition.IsSilent).Select(x => x.Transition.Id))
-                    .ToList();
-
-            var isSound = graph.IsFullGraph
-                && !analysisResult[StateType.NoWayToFinalMarking].Any()
-                && !analysisResult[StateType.UncleanFinal].Any()
-                && !analysisResult[StateType.Deadlock].Any()
-                && deadTransitions.Count == 0;
+            ArgumentNullException.ThrowIfNull(graph);
 
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            textBlock.Inlines.Add(new Bold(isSound
-                ? new Run(FormSoundLine()) { Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine()) { Foreground = Brushes.DarkRed }));
-
-            textBlock.Inlines.Add(new Bold(graph.IsFullGraph
-                ? new Run(FormBoundedLine())
-                : new Run(FormUnboundedLine())));
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
+                ? new Run(FormSoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkRed }));
+            
+            textBlock.Inlines.Add(new Bold(graph.IsFull
+                ? new Run(FullGraphIsConstructed())
+                : new Run(FragmentOfGraphIsConstructed(graph.SoundnessProperties.SoundnessType))));
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
-            if (graph.IsFullGraph)
+            if (detailedInfoAction == null)
             {
-                textBlock.Inlines.Add(FormStatesInfoLines(analysisResult));
-                textBlock.Inlines.Add(FormDeadTransitionsLine(deadTransitions));
+                if (graph.IsFull)
+                {
+                    textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                    textBlock.Inlines.Add(
+                        FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+                }
+            }
+            else
+            {
+                detailedInfoAction.Invoke();
             }
         }
-
-        private static string FormBoundedLine()
+        
+        private static string FullGraphIsConstructed()
         {
-            return "Process model is bounded. Full constraint graph is constructed.\n";
+            return "Full state space graph is constructed.\n";
+        }
+        
+        private static string FragmentOfGraphIsConstructed(SoundnessType soundnessType)
+        {
+            var prefix = "A fragment of state space  graph is constructed. ";
+            var suffix = soundnessType switch
+            {
+                SoundnessType.Classical or SoundnessType.None => " DPN is unbounded.\n",
+                SoundnessType.RelaxedLazy => " Unclean final states are found.\n",
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType, "Unknown soundness type")
+            };
+            
+            return prefix + suffix;
         }
 
-        private static string FormUnboundedLine()
+        private static string FormSoundLine(SoundnessType soundnessType)
         {
-            return "Process model is unbounded. Only fragment of the constraint graph is constructed.\n";
+            return soundnessType switch
+            {
+                SoundnessType.Classical => $"{nameof(SoundnessType.Classical)} Soundness is satisfied: \n\n",
+                SoundnessType.RelaxedLazy => $"{nameof(SoundnessType.RelaxedLazy)} Soundness is satisfied: \n\n",
+                SoundnessType.None => string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
+                    "Unknown soundness type.")
+            };
         }
 
-        private static string FormSoundLine()
+        private static string FormUnsoundLine(SoundnessType soundnessType)
         {
-            return "Process model is SOUND: \n\n";
+            return soundnessType switch
+            {
+                SoundnessType.Classical => $"{nameof(SoundnessType.Classical)} Soundness is not satisfied: \n\n",
+                SoundnessType.RelaxedLazy => $"{nameof(SoundnessType.RelaxedLazy)} Soundness is not satisfied: \n\n",
+                SoundnessType.None => string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
+                    "Unknown soundness type.")
+            };
         }
 
-        private static string FormUnsoundLine()
+        private static string FormGraphInfoLines(GraphToVisualize graph)
         {
-            return "Process model is UNSOUND: \n\n";
+            return
+                $"Constraint states: {graph.States.Count}. Constraint arcs: {graph.Arcs.Count}\n";
         }
 
-        private static string FormGraphInfoLines(ConstraintGraphToVisualize graph)
+        private static string FormStatesInfoLines(List<StateToVisualize> states)
         {
-            return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
-        }
-
-        private static string FormGraphInfoLines(ConstraintGraph graph)
-        {
-            return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
-        }
-
-        private static string FormStatesInfoLines(List<ConstraintStateToVisualize> states)
-        {
-            var stateTypes = new Dictionary<ConstraintStateType, int>();
             var consideredStateTypes = Enum.GetValues<ConstraintStateType>()
-                    .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered });
+                .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered })
+                .ToArray();
 
-            foreach (var stateType in consideredStateTypes)
-            {
-                stateTypes.Add(stateType, 0);
-            }
+            var stateTypes = consideredStateTypes.ToDictionary(stateType => stateType, _ => 0);
 
             foreach (var state in states)
             {
@@ -145,24 +159,21 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             return stateInfoLines;
         }
 
-        private static string FormStatesInfoLines(Dictionary<StateType, List<LtsState>> analysisResult)
-        {
-            var stateInfoLines = string.Empty;
-            foreach (var stateType in analysisResult.Keys)
-            {
-                var description = stateType.AsString(EnumFormat.Description);
-
-                stateInfoLines += $"{description}s: {analysisResult[stateType].Count}. ";
-            }
-
-            return stateInfoLines;
-        }
-
         private static string FormDeadTransitionsLine(IList<string> deadTransitions)
         {
-            var resultString = $"\nDead transitions count: {deadTransitions.Count}\n";
+            return FormTransitionsLine(deadTransitions, "Dead");
+        }
+
+        private static string FormUnfeasibleTransitionsLine(IList<string> unfeasibleTransitions)
+        {
+            return FormTransitionsLine(unfeasibleTransitions, "Unfeasible");
+        }
+
+        private static string FormTransitionsLine(IList<string> deadTransitions, string transitionsTypeName)
+        {
+            var resultString = $"\n{transitionsTypeName} transitions count: {deadTransitions.Count}\n";
             return deadTransitions.Count > 0
-                ? resultString + $"Dead transitions list: {string.Join(", ", deadTransitions)}"
+                ? resultString + $"{transitionsTypeName} transitions list: {string.Join(", ", deadTransitions)}"
                 : resultString;
         }
     }

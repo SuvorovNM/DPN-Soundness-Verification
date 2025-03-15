@@ -1,6 +1,5 @@
 ﻿using DataPetriNetOnSmt.Enums;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using System;
 using System.Collections.Generic;
 using System.Linq;

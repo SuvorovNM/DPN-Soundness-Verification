@@ -1,34 +1,20 @@
-﻿using DataPetriNetGeneration;
-using DataPetriNetIterativeVerificationApplication.Enums;
-using DataPetriNetIterativeVerificationApplication.Services;
-using DataPetriNetOnSmt;
+﻿using DataPetriNetIterativeVerificationApplication.Services;
 using DataPetriNetParsers;
 using DataPetriNetVerificationDomain;
-using Microsoft.Z3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Serialization;
+using DataPetriNetOnSmt.SoundnessVerification;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
@@ -58,6 +44,8 @@ namespace DataPetriNetIterativeVerificationApplication
             MaxDtTb.Text = "60";
             BoundnessCmb.SelectedIndex = 0;
             SoundnessCmb.SelectedIndex = 0;
+            SoundnessTypeCmb.SelectedIndex = 0;
+            WithRepairCmb.SelectedIndex = 0;
             InitialValueTb.Text = "5";
             IncrementValueTb.Text = "5";
             DpnNumberTb.Text = "3";
@@ -152,6 +140,8 @@ namespace DataPetriNetIterativeVerificationApplication
                     DpnInfo = dpnInfo,
                     ConditionsInfo = conditionsInfo,
                     IterationsInfo = iterationsInfo,
+                    SoundnessType = Enum.Parse<SoundnessType>(SoundnessTypeCmb.Text),
+                    WithRepair = bool.Parse(WithRepairCmb.Text),
                     OutputDirectory = DirectoryTb.Text,
                 };
 
@@ -173,6 +163,8 @@ namespace DataPetriNetIterativeVerificationApplication
             {
                 var verificationInput = new VerificationInputForRandom
                 {
+                    SoundnessType = Enum.Parse<SoundnessType>(SoundnessTypeCmb.Text),
+                    WithRepair = bool.Parse(WithRepairCmb.Text),
                     ConditionsInfo = conditionsInfo,
                     MinPlaces = int.Parse(MinPlacesTb.Text),
                     MaxPlaces = int.Parse(MaxPlacesTb.Text),

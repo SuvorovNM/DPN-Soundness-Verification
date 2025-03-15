@@ -1,8 +1,6 @@
-﻿using DataPetriNetOnSmt;
-using DataPetriNetOnSmt.Abstractions;
+﻿using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.DPNElements;
 using DataPetriNetOnSmt.Enums;
-using System.Diagnostics;
 
 namespace DataPetriNetOnSmt.SoundnessVerification.Services
 {

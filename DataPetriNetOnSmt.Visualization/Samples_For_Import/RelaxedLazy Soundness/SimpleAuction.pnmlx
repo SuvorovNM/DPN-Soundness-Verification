@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>simple auction</text>
+      </name>
+      <page id="n0">
+         <place id="start">
+            <name>
+               <text>start</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="end">
+            <name>
+               <text>end</text>
+            </name>
+            <finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>
+         <transition guard="t_w > 0 &amp;&amp; o_w == 0"  id="init">
+            <name>
+               <text>init</text>
+            </name>
+         </transition>
+         <transition guard="t_r &gt; 0 &amp;&amp; o_w &gt; o_r" id="bid">
+            <name>
+               <text>bid</text>
+            </name>
+         </transition>
+         <transition guard="t_r &gt; 0 &amp;&amp; t_w &lt; t_r" id="dec">
+            <name>
+               <text>dec</text>
+            </name>
+         </transition>
+         <transition guard="t_r &lt;= 0 &amp;&amp; o_r &gt; 0" id="exp">
+            <name>
+               <text>expire</text>
+            </name>
+         </transition>
+         <arc id="a0" source="start" target="init">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a1" source="init" target="p1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a2" source="init" target="p2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a5" source="p2" target="bid">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a6" source="bid" target="p2">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a7" source="p1" target="dec">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a8" source="dec" target="p1">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a9" source="p2" target="exp">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a10" source="p1" target="exp">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+         <arc id="a11" source="exp" target="end">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+         </arc>
+      </page>
+      <variables>
+      <variable type="Real">
+            <name>o</name>
+         </variable>
+         <variable type="Real">
+            <name>t</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>

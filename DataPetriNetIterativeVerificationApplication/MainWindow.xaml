@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataPetriNetIterativeVerificationApplication"
         mc:Ignorable="d"
-        Title="Iterative Verifier" Height="450" Width="875">
+        Title="Iterative Verifier" Height="450" Width="900">
     <Grid Margin="0,1,0,-1">
         <TabControl x:Name="generationTypes">
             <TabItem x:Name="iterativeGenerationTab">
@@ -27,13 +27,13 @@
                         <TextBox Name="ArcsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
                         <TextBox Name="VariablesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,114,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
                         <TextBox Name="ConditionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,140,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <Label Content="Iterations" HorizontalAlignment="Left" Margin="625,1,0,0" VerticalAlignment="Top" Width="80" Height="30" FontSize="15"/>
-                        <Label Content="DPNs per Configuration:" HorizontalAlignment="Left" Margin="645,55,0,0" VerticalAlignment="Top" Width="141"/>
-                        <Label Content="Increment Value:" HorizontalAlignment="Left" Margin="645,82,0,0" VerticalAlignment="Top" Width="122"/>
-                        <TextBox Name="DpnNumberTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,61,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <TextBox Name="IncrementValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <Label Content="Initial n-value:" HorizontalAlignment="Left" Margin="645,30,0,0" VerticalAlignment="Top" Width="122"/>
-                        <TextBox Name="InitialValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="791,36,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <Label Content="Iterations" HorizontalAlignment="Left" Margin="710,1,0,0" VerticalAlignment="Top" Width="80" Height="30" FontSize="15"/>
+                        <Label Content="Initial n-value:" HorizontalAlignment="Left" Margin="720,30,0,0" VerticalAlignment="Top" Width="122"/>
+                        <Label Content="DPNs per Config:" HorizontalAlignment="Left" Margin="720,55,0,0" VerticalAlignment="Top" Width="141"/>
+                        <Label Content="Increment Value:" HorizontalAlignment="Left" Margin="720,82,0,0" VerticalAlignment="Top" Width="122"/>
+                        <TextBox Name="DpnNumberTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="820,61,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="IncrementValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="820,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="InitialValueTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="820,36,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,34,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,60,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,85,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
@@ -86,6 +86,37 @@
 
             </TabItem>
         </TabControl>
+        <Label Content="Conditions" HorizontalAlignment="Left" Margin="304,31,0,0" VerticalAlignment="Top" Width="89" Height="30" FontSize="15"/>
+        <CheckBox Name="MaxDtChb" Content="Max Dead Transitions" HorizontalAlignment="Left" Margin="324,71,0,0" VerticalAlignment="Top" Width="136" Checked="MaxDtChb_Checked" Unchecked="MaxDtChb_Unchecked"/>
+        <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="324,96,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
+        <CheckBox Name="SoundnessChb" Content="Soundness" HorizontalAlignment="Left" Margin="324,121,0,0" VerticalAlignment="Top" Width="84" Checked="SoundnessChb_Checked" Unchecked="SoundnessChb_Unchecked"/>
+        <TextBox Name="MaxDtTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="464,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="35"/>
+        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="500,67,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+        <ComboBox Name="BoundnessCmb" HorizontalAlignment="Left" Margin="423,93,0,0" VerticalAlignment="Top" Width="77" Height="20">
+            <ComboBoxItem Content="True"/>
+            <ComboBoxItem Content="False"/>
+        </ComboBox>
+        <ComboBox Name="SoundnessCmb" HorizontalAlignment="Left" Margin="423,118,0,0" VerticalAlignment="Top" Width="77" Height="20">
+            <ComboBoxItem Content="True"/>
+            <ComboBoxItem Content="False"/>
+        </ComboBox>
+        <Label Content="Verification Properties" HorizontalAlignment="Left" Margin="515,31,0,0" VerticalAlignment="Top" Width="180" Height="30" FontSize="15"/>
+                        
+        <Label Content="Soundness:" HorizontalAlignment="Left" Margin="530,61,0,0" VerticalAlignment="Top" Width="72"/>
+        <Label Content="With repair:" HorizontalAlignment="Left" Margin="530,87,0,0" VerticalAlignment="Top" Width="72"/>
+
+        <ComboBox Name="SoundnessTypeCmb" HorizontalAlignment="Left" Margin="610,64,0,0" VerticalAlignment="Top" Width="100" Height="20">
+            <ComboBoxItem Content="Classical"/>
+            <ComboBoxItem Content="RelaxedLazy"/>
+        </ComboBox>
+        <ComboBox Name="WithRepairCmb" HorizontalAlignment="Left" Margin="610,90,0,0" VerticalAlignment="Top" Width="100" Height="20">
+            <ComboBoxItem Content="False"/>
+            <ComboBoxItem Content="True"/>
+        </ComboBox>
+        
+        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,197,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
+        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,202,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
+        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,202,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
         <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,201,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
         </Button>
         <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,201,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
@@ -93,23 +124,6 @@
                 <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
             </StackPanel>
         </Button>
-        <Label Content="Conditions" HorizontalAlignment="Left" Margin="333,31,0,0" VerticalAlignment="Top" Width="89" Height="30" FontSize="15"/>
-        <CheckBox Name="MaxDtChb" Content="Max Dead Transitions" HorizontalAlignment="Left" Margin="347,71,0,0" VerticalAlignment="Top" Width="136" Checked="MaxDtChb_Checked" Unchecked="MaxDtChb_Unchecked"/>
-        <CheckBox Name="BoundednessChb" Content="Boundedness" HorizontalAlignment="Left" Margin="347,96,0,0" VerticalAlignment="Top" Width="99" Checked="BoundednessChb_Checked" Unchecked="BoundednessChb_Unchecked"/>
-        <CheckBox Name="SoundnessChb" Content="Soundness" HorizontalAlignment="Left" Margin="347,121,0,0" VerticalAlignment="Top" Width="84" Checked="SoundnessChb_Checked" Unchecked="SoundnessChb_Unchecked"/>
-        <TextBox Name="MaxDtTb" PreviewTextInput="PositiveIntegerNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="488,70,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="35"/>
-        <Label Name="PercentLb" Content="%" HorizontalAlignment="Left" Margin="523,67,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
-        <ComboBox Name="BoundnessCmb" HorizontalAlignment="Left" Margin="446,93,0,0" VerticalAlignment="Top" Width="77" Height="20">
-            <ComboBoxItem Content="True"/>
-            <ComboBoxItem Content="False"/>
-        </ComboBox>
-        <ComboBox Name="SoundnessCmb" HorizontalAlignment="Left" Margin="446,118,0,0" VerticalAlignment="Top" Width="77" Height="20">
-            <ComboBoxItem Content="True"/>
-            <ComboBoxItem Content="False"/>
-        </ComboBox>
-        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,197,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
-        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,202,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
-        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,202,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
         <Grid Margin="0,244,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
                 <DataGrid.Resources>

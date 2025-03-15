@@ -1,15 +1,10 @@
 ﻿using CsvHelper.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataPetriNetVerificationDomain.CsvClassMaps
 {
-    public class OptimizedVerificationOutputClassMap : ClassMap<OptimizedVerificationOutput>
+    public class VerificationOutputClassMap : ClassMap<MainVerificationInfo>
     {
-        public OptimizedVerificationOutputClassMap()
+        public VerificationOutputClassMap()
         {
             // NEEDS FIXING!
             Map(x => x.Places).Index(0).Name("PlacesCount");
@@ -28,9 +23,8 @@ namespace DataPetriNetVerificationDomain.CsvClassMaps
             Map(x => x.Deadlocks).Index(13).Name("Deadlocks");
             Map(x => x.Soundness).Index(14).Name("Soundness");
             Map(x => x.VerificationTime).Index(15).Name("VerificationTime");
-            Map(x => x.LtsTime).Index(16).Name("LtsTime");
-            Map(x => x.CgTime).Index(17).Name("CgTime");
-            Map(x => x.CgRefTime).Index(18).Name("CgRefTime");
+            Map(x => x.RepairSuccess).Index(16).Name("RepairSuccess");
+            Map(x => x.RepairTime).Index(17).Name("RepairTime");
 
             Map(x => x.SatisfiesCounditions).Ignore();
         }

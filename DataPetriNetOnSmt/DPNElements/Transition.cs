@@ -69,11 +69,18 @@ namespace DataPetriNetOnSmt.DPNElements
                 {
                     throw new ArgumentException("Transition cannot fire on given marking!");
                 }
-                updatedMarking[presetPlace] -= arcsDict[(presetPlace, this)];
+
+                if (updatedMarking[presetPlace] != int.MaxValue)
+                {
+                    updatedMarking[presetPlace] -= arcsDict[(presetPlace, this)];
+                }
             }
             foreach (var postsetPlace in postsetPlaces)
             {
-                updatedMarking[postsetPlace] += arcsDict[(this, postsetPlace)];
+                if (updatedMarking[postsetPlace] != int.MaxValue)
+                {
+                    updatedMarking[postsetPlace] += arcsDict[(this, postsetPlace)];
+                }
             }
 
             return updatedMarking;

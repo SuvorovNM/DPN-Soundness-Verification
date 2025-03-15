@@ -1,24 +1,18 @@
 ﻿using CsvHelper;
 using DataPetriNetOnSmt;
-using DataPetriNetOnSmt.Abstractions;
 using DataPetriNetOnSmt.Enums;
-using DataPetriNetOnSmt.SoundnessVerification;
 using DataPetriNetOnSmt.SoundnessVerification.Services;
 using DataPetriNetOnSmt.SoundnessVerification.TransitionSystems;
 using DataPetriNetParsers;
 using DataPetriNetVerificationDomain;
-using DataPetriNetVerificationDomain.ConstraintGraphVisualized;
 using DataPetriNetVerificationDomain.CsvClassMaps;
-using Microsoft.Z3;
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using System.Xml.Serialization;
+using DataPetriNetOnSmt.SoundnessVerification;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -28,12 +22,13 @@ namespace DataPetriNetVerificationApplication
         const string SoundnessParameterName = nameof(ConditionsInfo.Soundness);
         const string DeadTransitionsParameterName = nameof(ConditionsInfo.DeadTransitions);
         const string VerificationAlgorithmTypeParameterName = nameof(VerificationAlgorithmTypeEnum);
+        const string SoundnessTypeParameterName = nameof(SoundnessType);
+        const string WithRepairParameterName = "WithRepair";
         const string PipeClientHandleParameterName = "PipeClientHandle";
         const string DpnFileParameterName = "DpnFile";
         const string OutputDirectoryParameterName = "OutputDirectory";
         const string SaveConstraintGraph = "SaveCG";
-        private static Context context = new Context();
-        private static TransformerToRefined transformation = new TransformerToRefined();
+        private static readonly TransformerToRefined transformation = new();
 
         static int Main(string[] args)
         {
@@ -43,6 +38,9 @@ namespace DataPetriNetVerificationApplication
 
             //args = @"DpnFile C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Release\net6.0-windows\Output\0a41b746-7a47-44b8-b9b0-2831de858668.pnmlx PipeClientHandle 2052 OutputDirectory C:\Users\Admin\source\repos\DataPetriNet\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum DirectVersion".Split(" "); ;
 
+            //args = @"DpnFile C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output\92dda929-453b-4d78-93a9-15610b36549e.pnmlx PipeClientHandle 6340 OutputDirectory C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DataPetriNetIterativeVerificationApplication\bin\Debug\net6.0-windows\Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Lazy WithRepair False".Split(" ");
+
+
             bool? soundness = null;
             bool? boundedness = null;
             byte? deadTransitions = null;
@@ -50,6 +48,8 @@ namespace DataPetriNetVerificationApplication
             string? pipeClientHandle = null;
             string? dpnFilePath = null;
             string? outputDirectory = null;
+            SoundnessType soundnessType = SoundnessType.Classical;
+            bool withRepair = false;
             bool saveCG = false;
 
             var index = 0;
@@ -66,8 +66,14 @@ namespace DataPetriNetVerificationApplication
                     case DeadTransitionsParameterName:
                         deadTransitions = byte.Parse(args[++index]);
                         break;
+                    case SoundnessTypeParameterName:
+                        soundnessType = Enum.Parse<SoundnessType>(args[++index], true);
+                        break;
+                    case WithRepairParameterName:
+                        withRepair = bool.Parse(args[++index]);
+                        break;
                     case VerificationAlgorithmTypeParameterName:
-                        verificationAlgorithmType = Enum.Parse<VerificationAlgorithmTypeEnum>(args[++index]);
+                        verificationAlgorithmType = Enum.Parse<VerificationAlgorithmTypeEnum>(args[++index], true);
                         break;
                     case PipeClientHandleParameterName:
                         pipeClientHandle = args[++index];
@@ -84,6 +90,7 @@ namespace DataPetriNetVerificationApplication
                     default:
                         throw new ArgumentException("Parameter " + args[index] + " is not supported!");
                 }
+
                 index++;
             } while (index < args.Length);
 
@@ -98,7 +105,6 @@ namespace DataPetriNetVerificationApplication
             };
 
             DataPetriNet dpnToVerify = GetDpnToVerify(dpnFilePath);
-            ConstraintExpressionService constraintExpressionService = new ConstraintExpressionService(dpnToVerify.Context);
 
             CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromMinutes(30));
             MainVerificationInfo outputRow = null;
@@ -106,9 +112,7 @@ namespace DataPetriNetVerificationApplication
 
             timer.Start();
 
-            long ltsTime = 0;
-            long cgTime = 0;
-            long cgRefinedTime = 0;
+            long verificationTime = -1;
             var lts = new ClassicalLabeledTransitionSystem(dpnToVerify);
             ConstraintGraph? cg = null;
             ConstraintGraph? cgRefined = null;
@@ -117,110 +121,104 @@ namespace DataPetriNetVerificationApplication
 
             var verificationTask = Task.Run(() =>
             {
-                lts.GenerateGraph();
-                soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, lts);
-                timer.Stop();
-                ltsTime = timer.ElapsedMilliseconds;
-
-                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.ImprovedVersion)
+                timer.Start();
+                switch (soundnessType)
                 {
-                    satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                    if (satisfiesConditions && soundnessProps.Soundness)
+                    case SoundnessType.RelaxedLazy:
                     {
-                        timer.Restart();
-                        cg = new ConstraintGraph(dpnToVerify);
-                        cg.GenerateGraph();
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, cg);
-                        timer.Stop();
-                        cgTime = timer.ElapsedMilliseconds;
-
-                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                        if (satisfiesConditions)
+                        var coverabilityGraph = new CoverabilityGraph(dpnToVerify, stopOnCoveringFinalPosition: true);
+                        coverabilityGraph.GenerateGraph();
+                        soundnessProps = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpnToVerify, coverabilityGraph);
+                        break;
+                    }
+                    case SoundnessType.Classical:
+                    {
+                        if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.ImprovedVersion)
                         {
                             if (soundnessProps.Soundness)
                             {
-                                timer.Restart();
+                                cg = new ConstraintGraph(dpnToVerify);
+                                cg.GenerateGraph();
+                                soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnToVerify, cg);
 
-                                (var dpnRefined, _) = transformation.TransformUsingLts(dpnToVerify, lts);
-                                cgRefined = new ConstraintGraph(dpnRefined);
-                                cgRefined.GenerateGraph();
-                                soundnessProps = LtsAnalyzer.CheckSoundness(dpnRefined, cgRefined);
-                                timer.Stop();
-                                satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                                cgRefinedTime = timer.ElapsedMilliseconds;
+                                satisfiesConditions = VerifyConditions(conditionsInfo,
+                                    dpnToVerify.Transitions.Count,
+                                    soundnessProps);
+                                if (satisfiesConditions)
+                                {
+                                    if (soundnessProps.Soundness)
+                                    {
+                                        var (dpnRefined, _) = transformation.TransformUsingLts(dpnToVerify, lts);
+                                        cgRefined = new ConstraintGraph(dpnRefined);
+                                        cgRefined.GenerateGraph();
+                                        soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnRefined, cgRefined);
+                                    }
+                                }
                             }
                         }
+
+                        if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.DirectVersion)
+                        {
+                            if (lts.IsFullGraph)
+                            {
+                                var (dpnRefined, _) = transformation.TransformUsingLts(dpnToVerify, lts);
+                                cgRefined = new ConstraintGraph(dpnRefined);
+                                cgRefined.GenerateGraph();
+                                soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnRefined, cgRefined);
+                            }
+                            else
+                            {
+                                soundnessProps = SoundnessAnalyzer.CheckSoundness(dpnToVerify, lts);
+                            }
+                        }
+
+                        break;
                     }
-
-                    ConductSoundnessRepair(dpnToVerify, soundnessProps, out var repairTime, out var result);
-
-                    satisfiesConditions &= repairTime != -1;
-
-                    outputRow = new OptimizedVerificationOutput(
-                        dpnToVerify,
-                        satisfiesConditions,
-                        lts,
-                        cg,
-                        cgRefined,
-                        soundnessProps,
-                        ltsTime,
-                        cgTime,
-                        cgRefinedTime,
-                        repairTime,
-                        result);
+                    case SoundnessType.None:
+                    default:
+                        throw new ArgumentException("Soundness type is either not defined or not supported!");
                 }
-                if (verificationAlgorithmType == VerificationAlgorithmTypeEnum.DirectVersion)
+
+                timer.Stop();
+                verificationTime = timer.ElapsedMilliseconds;
+                
+                satisfiesConditions = VerifyConditions(
+                    conditionsInfo,
+                    dpnToVerify.Transitions.Count,
+                    soundnessProps!);
+
+
+                long repairTime = -1;
+                var repairSuccess = false;
+                if (withRepair)
                 {
-                    long transformationTime = 0;
-                    if (lts.IsFullGraph)
-                    {
-                        timer.Restart();
-                        (var dpnRefined,_) = transformation.TransformUsingLts(dpnToVerify, lts);
-                        timer.Stop();
-                        transformationTime = timer.ElapsedMilliseconds;
-
-                        timer.Restart();
-                        cgRefined = new ConstraintGraph(dpnRefined);
-                        cgRefined.GenerateGraph();
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnRefined, cgRefined);
-                        timer.Stop();
-                        cgRefinedTime = timer.ElapsedMilliseconds;
-
-                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                    }
-                    else
-                    {
-                        soundnessProps = LtsAnalyzer.CheckSoundness(dpnToVerify, lts);
-                        satisfiesConditions = VerifyConditions(conditionsInfo, dpnToVerify.Transitions.Count, soundnessProps);
-                    }
-
-                    ConductSoundnessRepair(dpnToVerify, soundnessProps, out var repairTime, out var result);
-
+                    ConductSoundnessRepair(dpnToVerify, soundnessProps, out repairTime, out repairSuccess);
                     satisfiesConditions &= repairTime != -1;
-
-                    outputRow = new BasicVerificationOutput(
-                        dpnToVerify,
-                        satisfiesConditions,
-                        lts,
-                        cgRefined,
-                        soundnessProps,
-                        ltsTime,
-                        transformationTime,
-                        cgRefinedTime,
-                        repairTime,
-                        result);
                 }
+
+                outputRow = new MainVerificationInfo(
+                    dpnToVerify,
+                    satisfiesConditions,
+                    lts,
+                    cg,
+                    cgRefined,
+                    soundnessProps,
+                    verificationTime,
+                    repairTime,
+                    repairSuccess);
             }, source.Token);
-            if (!verificationTask.Wait(TimeSpan.FromMinutes(120)))
+
+            if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
             {
                 var conditionsCount = dpnToVerify
                     .Transitions
                     .SelectMany(x => x.Guard.BaseConstraintExpressions)
                     .Count();
                 var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
-                File.AppendAllText(badCasesPath, $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");
+                File.AppendAllText(badCasesPath,
+                    $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");
 
-                throw new TimeoutException("Process requires more than 20 minutes to verify soundness");
+                throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
             }
 
             SendResultToPipe(pipeClientHandle, outputRow);
@@ -233,12 +231,15 @@ namespace DataPetriNetVerificationApplication
                 {
                     throw new NotImplementedException("Currently, it is prohibited to save CG!");
                 }
+
                 return 1;
             }
+
             return -1;
         }
 
-        private static void ConductSoundnessRepair(DataPetriNet dpnToVerify, SoundnessProperties? soundnessProps, out long repairTime, out bool result)
+        private static void ConductSoundnessRepair(DataPetriNet dpnToVerify, SoundnessProperties? soundnessProps,
+            out long repairTime, out bool result)
         {
             repairTime = -1;
             result = false;
@@ -269,54 +270,43 @@ namespace DataPetriNetVerificationApplication
         }
 
 
-        private static void SaveResultInFile(VerificationAlgorithmTypeEnum? verificationType, string? outputDirectory, MainVerificationInfo outputRow)
+        private static void SaveResultInFile(VerificationAlgorithmTypeEnum? verificationType, string? outputDirectory,
+            MainVerificationInfo outputRow)
         {
-            using (var writer = new StreamWriter(outputDirectory + "/" + verificationType.ToString() + ".csv", true))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                if (verificationType == VerificationAlgorithmTypeEnum.ImprovedVersion)
-                {
-                    csv.Context.RegisterClassMap<OptimizedVerificationOutputClassMap>();
-                    csv.WriteRecord(outputRow);
-                    csv.NextRecord();
-                }
-                if (verificationType == VerificationAlgorithmTypeEnum.DirectVersion)
-                {
-                    csv.Context.RegisterClassMap<BasicVerificationOutputClassMap>();
-                    csv.WriteRecord(outputRow);
-                    csv.NextRecord();
-                }
-            }
+            using var writer = new StreamWriter(outputDirectory + "/" + verificationType.ToString() + ".csv", true);
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            csv.Context.RegisterClassMap<VerificationOutputClassMap>();
+            csv.WriteRecord(outputRow);
+            csv.NextRecord();
         }
 
         private static void SendResultToPipe(string pipeClientHandle, MainVerificationInfo outputRow)
         {
-            using (PipeStream pipeClient =
-                                new AnonymousPipeClientStream(PipeDirection.Out, pipeClientHandle))
-            {
-                using (StreamWriter sw = new StreamWriter(pipeClient))
-                {
-                    sw.AutoFlush = true;
-                    XmlSerializer serializer = new XmlSerializer(typeof(MainVerificationInfo));//null
-                    serializer.Serialize(sw, new MainVerificationInfo(outputRow));
-                }
-            }
+            using PipeStream pipeClient = new AnonymousPipeClientStream(PipeDirection.Out, pipeClientHandle);
+            using StreamWriter sw = new StreamWriter(pipeClient);
+            sw.AutoFlush = true;
+            XmlSerializer serializer = new XmlSerializer(typeof(MainVerificationInfo)); //null
+            serializer.Serialize(sw, outputRow);
         }
 
-        private static bool VerifyConditions(ConditionsInfo conditionsInfo, int transitionsCount, SoundnessProperties soundnessProperties)
+        private static bool VerifyConditions(ConditionsInfo conditionsInfo, int transitionsCount,
+            SoundnessProperties soundnessProperties)
         {
             var satisfiesConditions = true;
             if (conditionsInfo.Boundedness.HasValue)
             {
                 satisfiesConditions &= soundnessProperties.Boundedness == conditionsInfo.Boundedness.Value;
             }
+
             if (conditionsInfo.Soundness.HasValue)
             {
                 satisfiesConditions &= soundnessProperties.Soundness == conditionsInfo.Soundness.Value;
             }
+
             if (conditionsInfo.DeadTransitions.HasValue)
             {
-                satisfiesConditions &= soundnessProperties.DeadTransitions.Count < (conditionsInfo.DeadTransitions.Value * transitionsCount / 100);
+                satisfiesConditions &= soundnessProperties.DeadTransitions.Length <
+                                       (conditionsInfo.DeadTransitions.Value * transitionsCount / 100);
             }
 
             return satisfiesConditions;
