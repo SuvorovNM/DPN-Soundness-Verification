@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Credit Bank Request</text>
+      </name>
+      <page id="n0">
+         <place id="i">
+            <name>
+               <text>i</text>
+            </name>
+            <initialMarking>
+               <text>1</text>
+            </initialMarking>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>    
+         <place id="o">
+            <name>
+               <text>o</text>
+            </name>
+			<finalMarking>
+               <text>1</text>
+            </finalMarking>
+         </place>		 
+         <transition id="t0" guard="((age' &gt; 0) &amp;&amp; (hasPass' == True) || (age' &gt; 0) &amp;&amp; (hasPass' == False))">
+            <name>
+               <text>Enter Casino</text>
+            </name>
+         </transition>
+		 <transition id="t1" guard="(hasPass == False)">
+            <name>
+               <text>Register</text>
+            </name>
+         </transition>
+         <transition id="t2">
+            <name>
+               <text>Quit</text>
+            </name>
+         </transition>
+		 <transition guard="(hasPass == True)" id="t3">
+            <name>
+               <text>Enter Gambling Room</text>
+            </name>
+         </transition>
+		 <transition id="t4" guard="((hasPass' == True) &amp;&amp; (age > 18))">
+            <name>
+               <text>Receive Pass</text>
+            </name>
+         </transition>
+         <transition id="t5">
+            <name>
+               <text>Gamble</text>
+            </name>
+         </transition>
+		       
+         <arc id="arc0" source="i" target="t0">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc1" source="t0" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc2" source="p1" target="t3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc3" source="t1" target="p2">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="t2" target="o">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc4" source="t3" target="p3">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+
+		 <arc id="arc5" source="p2" target="t4">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc6" source="t4" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc7" source="p3" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+		 <arc id="arc8" source="t5" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>
+      </page>
+      <variables>
+         <variable maxValue="100000" minValue="0" type="java.lang.Double">
+            <name>age</name>
+         </variable>
+         <variable type="java.lang.Boolean">
+            <name>hasPass</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>
