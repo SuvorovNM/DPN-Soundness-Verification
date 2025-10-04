@@ -13,8 +13,7 @@ namespace DataPetriNetOnSmt.DPNElements
             {
                 [DomainType.Boolean] = new BoolSourceService(),
                 [DomainType.Integer] = new IntegerSourceService(),
-                [DomainType.Real] = new RealSourceService(),
-                [DomainType.String] = new StringSourceService()
+                [DomainType.Real] = new RealSourceService()
             };
         }
 

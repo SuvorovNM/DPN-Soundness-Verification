@@ -139,19 +139,20 @@ namespace DataPetriNetParsers
 
                     dpn.Name = name?.FirstChild?.InnerText ?? string.Empty;
                     AddVariablesToDpn(dpn, varTypeDict, variables);
-                    AddPetriNetElementsToDpn(dpn, varTypeDict, page, context);
+
+                    var readWriteVariablesToTypes = varTypeDict
+                        .SelectMany(kvp => new[] { (kvp.Key + "_r", kvp.Value), (kvp.Key + "_w", kvp.Value) })
+                        .ToDictionary(kvp=>kvp.Item1, kvp=>kvp.Value);
+
+                    var expressionParser = new Z3ExpressionParser(context, readWriteVariablesToTypes);
+                    AddPetriNetElementsToDpn(dpn, page, context, expressionParser);
                 }
             }
-            if (dpn.Context != dpn.Transitions[0].Guard.Context)
-            {
-
-            }
-            var t = dpn.Arcs.GroupBy(x => x.Destination.Id);
 
             return dpn;
         }
 
-        private void AddPetriNetElementsToDpn(DataPetriNet dpn, Dictionary<string, DomainType> varTypeDict, XmlNode? page, Context context)
+        private void AddPetriNetElementsToDpn(DataPetriNet dpn, XmlNode? page, Context context, Z3ExpressionParser expressionParser)
         {
             if (page != null && page.HasChildNodes)
             {
@@ -164,7 +165,7 @@ namespace DataPetriNetParsers
                             break;
                         // Transitions should be executed only after obtaining variables
                         case "transition":
-                            dpn.Transitions.Add(GetTransitionFromXmlNode(page.ChildNodes[i], varTypeDict, context));
+                            dpn.Transitions.Add(GetTransitionFromXmlNode(page.ChildNodes[i], context, expressionParser));
                             break;
                         // Arcs must be executed only after adding all places
                         case "arc":
@@ -225,41 +226,13 @@ namespace DataPetriNetParsers
             return place;
         }
 
-        private Transition GetTransitionFromXmlNode(XmlNode transitionNode, Dictionary<string, DomainType> varTypeDict, Context context)
+        private Transition GetTransitionFromXmlNode(XmlNode transitionNode, Context context, Z3ExpressionParser expressionParser)
         {
             var transitionId = transitionNode.Attributes["id"].Value;
             var transitionName = string.Empty;
-            List<IConstraintExpression> transitionConstraint = null;
-
-            //var transition = new Transition();
-            //transition.Id = transitionNode.Attributes["id"].Value;
-            var constraintList = new List<IConstraintExpression>();
 
             var expressionString = transitionNode.Attributes["guard"]?.Value;
-            if (expressionString != null)
-            {
-                var expressionSplittedByDisjunction = expressionString.Trim().Split("||");
-                foreach (var expressionBlock in expressionSplittedByDisjunction)
-                {
-                    var expressionBlockSplittedByConjunction = expressionBlock.Trim().Split("&&");
-                    var andBlockConstraintList = new List<IConstraintExpression>();
-                    foreach (var constraint in expressionBlockSplittedByConjunction)
-                    {
-                        andBlockConstraintList.Add(FormConstraint(varTypeDict, constraint));
-                    }
-                    if (andBlockConstraintList.Count > 0)
-                    {
-                        andBlockConstraintList[0].LogicalConnective = LogicalConnective.Or;
-                        constraintList.AddRange(andBlockConstraintList);
-                    }
-                }
-                if (constraintList.Count > 0)
-                {
-                    constraintList[0].LogicalConnective = LogicalConnective.Empty;
-                }
-                //transition.Guard.BaseConstraintExpressions = constraintList;
-                transitionConstraint = constraintList;
-            }
+            var smtExpression = expressionParser.Parse(expressionString);
             for (var i = 0; i < transitionNode.ChildNodes.Count; i++)
             {
                 switch (transitionNode.ChildNodes[i]?.Name)
@@ -272,8 +245,7 @@ namespace DataPetriNetParsers
                 }
             }
 
-            //return transition;
-            return new Transition(transitionId, new Guard(context, transitionConstraint)) { Label = transitionName };
+            return new Transition(transitionId, new Guard(context, smtExpression)) { Label = transitionName };
         }
 
         private Arc GetArcFromXmlNode(XmlNode arcNode, IEnumerable<Node> dpnNodes)
@@ -427,11 +399,9 @@ namespace DataPetriNetParsers
         {
             return typeAsString switch
             {
-                "Real" => DomainType.Real,
-                "Double" => DomainType.Real,
-                "Integer" => DomainType.Integer,
+                "Real" or "Double" => DomainType.Real,
+                "Integer" or "Int" => DomainType.Integer,
                 "Boolean" => DomainType.Boolean,
-                "String" => DomainType.String,
                 _ => throw new Exception($"Cannot select a type for {typeAsString}")
             };
         }
@@ -443,7 +413,6 @@ namespace DataPetriNetParsers
                 DomainType.Real => new DefinableValue<double>(0),
                 DomainType.Integer => new DefinableValue<long>(0),
                 DomainType.Boolean => new DefinableValue<bool>(false),
-                DomainType.String => new DefinableValue<string>(string.Empty),
                 _ => throw new Exception($"Domain type {domain} is not supported")
             };
         }

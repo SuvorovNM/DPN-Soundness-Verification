@@ -61,6 +61,27 @@ namespace DataPetriNetOnSmt.DPNElements
 
             Context = ctx;            
         }
+        
+        public Guard(Context ctx, BoolExpr? smtExpression)
+        {
+            if (smtExpression == null)
+            {
+                BaseConstraintExpressions = new List<IConstraintExpression>();
+                ActualConstraintExpression = ctx.MkTrue();
+                ConstraintExpressionBeforeUpdate = ctx.MkTrue();
+                WriteVars = new Dictionary<string, DomainType>();
+            }
+            else
+            {
+                BaseConstraintExpressions = new List<IConstraintExpression>();
+                ActualConstraintExpression = smtExpression;
+                ConstraintExpressionBeforeUpdate = smtExpression;
+                WriteVars = smtExpression.GetTypedVarsDict(VariableType.Written);
+                ReadVars = smtExpression.GetTypedVarsDict(VariableType.Read);
+            }
+
+            Context = ctx;            
+        }
 
         public static Guard MakeRefined(Guard baseGuard, BoolExpr updatedConstraintExpression)
         {

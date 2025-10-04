@@ -4,7 +4,6 @@
     {
         Integer,
         Real,
-        Boolean,
-        String
+        Boolean
     }
 }
