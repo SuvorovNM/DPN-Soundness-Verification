@@ -7,20 +7,15 @@ namespace DataPetriNetOnSmt.DPNElements
     public class Transition : Node, ICloneable
     {
         public Guard Guard { get; set; }
-        public bool IsSplitted { get; set; }
+        public bool IsSplit { get; set; }
         public string BaseTransitionId { get; set; }
-        public Transition(Guard guard)
-        {
-            Guard = guard;
-            IsSplitted = false;
-            BaseTransitionId = Id;// null;
-        }
+
         public Transition(string id, Guard guard, string? baseTransitionId = null)
         {
             Guard = guard;
             Label = id;
             Id = id;
-            IsSplitted = baseTransitionId != null;
+            IsSplit = baseTransitionId != null;
             BaseTransitionId = baseTransitionId ?? id;
         }
 

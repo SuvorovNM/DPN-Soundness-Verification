@@ -20,7 +20,7 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
             Label = transition.Label;
             Id = transition.Id;
 
-            NonRefinedTransitionId = transition.IsSplitted
+            NonRefinedTransitionId = transition.IsSplit
                 ? transition.BaseTransitionId
                 : transition.Id;
         }

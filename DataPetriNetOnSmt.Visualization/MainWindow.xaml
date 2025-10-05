@@ -17,7 +17,7 @@
                 <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click" />
             </MenuItem>
             <MenuItem Header="Transition Systems">
-                <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click" />
+                <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructLtsItem_Click" />
 
                 <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree"
                           Click="ConstructCoverabilityTree_Click" />
@@ -25,7 +25,7 @@
                 <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph"
                           Click="ConstructCoverabilityGraph_Click" />
 
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click" />
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="QeTacticSoundnessMenuItem_Click" />
             </MenuItem>
             <MenuItem Header="Soundness">
                 <MenuItem x:Name="VerifyItem" Header="Verify">
@@ -49,7 +49,7 @@
                 </MenuItem>
                 <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click" />
                 <MenuItem x:Name="TransformModelItem" Header="Transform model">
-                    <MenuItem x:Name="TransformModelToRefinedItem" Header="Transform model to refined"
+                    <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined"
                               Click="TransformModelToRefinedItem_Click" />
                 </MenuItem>
 
