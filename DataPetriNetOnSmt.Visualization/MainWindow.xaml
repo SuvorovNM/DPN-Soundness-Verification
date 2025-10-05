@@ -10,34 +10,47 @@
         <Menu HorizontalAlignment="Stretch" Height="26" VerticalAlignment="Top">
             <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558">
                 <MenuItem.Header>
-                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0"/>
+                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0" />
                 </MenuItem.Header>
-                <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click"/>
-                <MenuItem x:Name="OpenCG" Header="Open Constraint Graph..." Click="OpenCG_Click"/>
-                <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click"/>
+                <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click" />
+                <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenCG_Click" />
+                <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click" />
+            </MenuItem>
+            <MenuItem Header="Transition Systems">
+                <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click" />
+
+                <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree"
+                          Click="ConstructCoverabilityTree_Click" />
+
+                <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph"
+                          Click="ConstructCoverabilityGraph_Click" />
+
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click" />
+            </MenuItem>
+            <MenuItem Header="Soundness">
+                <MenuItem x:Name="VerifyItem" Header="Verify">
+                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)"
+                              Click="CheckSoundnessDirectItem_Click" />
+                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)"
+                              Click="CheckSoundnessImprovedItem_Click" />
+                    <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness"
+                              Click="CheckLazySoundnessDirectItem_Click" />
+                </MenuItem>
+                <MenuItem x:Name="RepairItem" Header="Repair">
+                <MenuItem x:Name="TransformModelToRepairedItem" Header="Classical soundness"
+                          Click="TransformModelToRepairedItem_Click" />
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Model">
                 <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
-                    <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
-                    <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
+                    <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model"
+                              Click="DefaultVOCMenuItem_Click" />
+                    <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click" />
                 </MenuItem>
-                <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
+                <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click" />
                 <MenuItem x:Name="TransformModelItem" Header="Transform model">
-                    <MenuItem x:Name="TransformModelToRefinedItem" Header="Transform model to refined" Click="TransformModelToRefinedItem_Click"/>
-                    <MenuItem x:Name="TransformModelToRepairedItem" Header="Transform model to repaired" Click="TransformModelToRepairedItem_Click"/>
-                </MenuItem>
-                <MenuItem x:Name="ConstructLtsItem" Header="Construct LTS" Click="ConstructLtsItem_Click"/>
-
-                <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree" Click="ConstructCoverabilityTree_Click"/>
-                
-                <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph" Click="ConstructCoverabilityGraph_Click"/>
-
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct CG" Click="QeTacticSoundnessMenuItem_Click"/>
-
-                <MenuItem x:Name="CheckSoundnessItem" Header="Check soundness">
-                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)" Click="CheckSoundnessDirectItem_Click"/>
-                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)" Click="CheckSoundnessImprovedItem_Click"/>
-                    <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness" Click="CheckLazySoundnessDirectItem_Click"/>
+                    <MenuItem x:Name="TransformModelToRefinedItem" Header="Transform model to refined"
+                              Click="TransformModelToRefinedItem_Click" />
                 </MenuItem>
 
             </MenuItem>
