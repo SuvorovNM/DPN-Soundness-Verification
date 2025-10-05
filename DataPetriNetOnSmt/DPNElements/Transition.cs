@@ -8,6 +8,7 @@ namespace DataPetriNetOnSmt.DPNElements
     {
         public Guard Guard { get; set; }
         public bool IsSplit { get; set; }
+        public bool IsTau { get; set; }
         public string BaseTransitionId { get; set; }
 
         public Transition(string id, Guard guard, string? baseTransitionId = null)
@@ -16,6 +17,7 @@ namespace DataPetriNetOnSmt.DPNElements
             Label = id;
             Id = id;
             IsSplit = baseTransitionId != null;
+            IsTau = id.StartsWith("τ");
             BaseTransitionId = baseTransitionId ?? id;
         }
 
@@ -48,6 +50,19 @@ namespace DataPetriNetOnSmt.DPNElements
 
                 return (positiveTransition, negativeTransition);
             }
+        }
+
+        public Transition? MakeTau()
+        {
+            var readExpression = Guard.Context.GetReadExpression(Guard.ActualConstraintExpression, Guard.WriteVars);
+            var negatedExpression = Guard.Context.MkNot(readExpression);
+
+            if (readExpression is { IsTrue: false, IsFalse: false })
+            {
+                return new Transition($"τ({Id})", new Guard(Guard.Context, negatedExpression), Id);
+            }
+
+            return null;
         }
 
         public Marking FireOnGivenMarking(Marking tokens, IEnumerable<Arc> arcs)

@@ -5,14 +5,14 @@ using Microsoft.Msagl.Drawing;
 
 namespace DataPetriNetParsers
 {
-    public class LtsToGraphParser
+    public class LtsToGraphParser : IToGraphParser
     {
-        public Graph FormGraphBasedOnCG(GraphToVisualize constraintGraph)
+        public Graph Parse(GraphToVisualize graphToVisualize)
         {
             Graph graph = new Graph();
 
-            var states = AddStatesToGraph(constraintGraph.States, graph);
-            AddArcsToGraph(constraintGraph, graph, states);
+            var states = AddStatesToGraph(graphToVisualize.States, graph);
+            AddArcsToGraph(graphToVisualize, graph, states);
 
             return graph;
         }

@@ -197,7 +197,7 @@ namespace DataPetriNetOnSmt.Visualization
         
         private void VisualizeCoverabilityGraph(GraphToVisualize coverabilityGraphToVisualize)
         {
-            var coverabilityTreeWindow = new CoverabilityGraphWindow(coverabilityGraphToVisualize)
+            var coverabilityTreeWindow = new LtsWindow(coverabilityGraphToVisualize, isOpenedFromFile: false)
             {
                 Owner = this
             };
@@ -206,7 +206,7 @@ namespace DataPetriNetOnSmt.Visualization
 
         private void VisualizeConstraintGraph(GraphToVisualize constraintGraphToVisualize)
         {
-            var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize)
+            var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize, isOpenedFromFile: false)
             {
                 Owner = this
             };
@@ -252,6 +252,15 @@ namespace DataPetriNetOnSmt.Visualization
 
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
         }
+        
+        private void TransformModelToTauItem_Click(object sender, RoutedEventArgs e)
+        {
+            var dpnTransformation = new TransformerToTau();
+            
+            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+
+            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
 
         private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
         {
@@ -279,7 +288,7 @@ namespace DataPetriNetOnSmt.Visualization
 
                     var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
 
-                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize);
+                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize, isOpenedFromFile: true);
                     constraintGraphWindow.Owner = this;
                     constraintGraphWindow.Show();
                 }

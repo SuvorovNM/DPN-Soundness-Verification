@@ -51,6 +51,8 @@
                 <MenuItem x:Name="TransformModelItem" Header="Transform model">
                     <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined"
                               Click="TransformModelToRefinedItem_Click" />
+                    <MenuItem x:Name="TransformModelToTauItem" Header="To tau"
+                              Click="TransformModelToTauItem_Click" />
                 </MenuItem>
 
             </MenuItem>

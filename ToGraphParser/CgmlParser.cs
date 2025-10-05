@@ -75,7 +75,8 @@ namespace DataPetriNetParsers
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
             var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
 
-            if (!Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
+            if (cgElement.Attribute("soundness_type")== null || 
+                !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
             {
                 soundnessType = SoundnessType.Classical;
             }

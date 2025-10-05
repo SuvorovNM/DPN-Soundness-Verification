@@ -5,17 +5,17 @@ using Microsoft.Msagl.Drawing;
 
 namespace DataPetriNetParsers;
 
-public class CoverabilityGraphToGraphParser
+public class CoverabilityGraphToGraphParser : IToGraphParser
 {
-    public Graph FormGraphBasedOnCg(GraphToVisualize coverabilityGraph)
+    public Graph Parse(GraphToVisualize graphToVisualize)
     {
         var graph = new Graph();
 
         var states = AddStatesToGraph(
-            coverabilityGraph.States, 
+            graphToVisualize.States, 
             graph, 
-            coverabilityGraph.SoundnessProperties?.SoundnessType ?? SoundnessType.None);
-        AddArcsToGraph(coverabilityGraph, graph, states);
+            graphToVisualize.SoundnessProperties?.SoundnessType ?? SoundnessType.None);
+        AddArcsToGraph(graphToVisualize, graph, states);
 
         return graph;
     }

@@ -86,6 +86,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.Services
 
                         foreach (var baseTransition in updatedTransitionsBasis)
                         {
+                            if (baseTransition.IsTau)
+                            {
+                                continue;
+                            }
+                            
                             (var positiveTransition, var negativeTransition) = baseTransition
                                 .Split(formulaToConjunct, outputTransition.Id);
                             if (positiveTransition != null && negativeTransition != null)

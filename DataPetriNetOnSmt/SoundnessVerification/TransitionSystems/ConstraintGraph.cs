@@ -107,6 +107,11 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
                             AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
                         }
                     }
+
+                    if (transition.IsTau)
+                    {
+                        continue;
+                    }
                     
                     var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
 

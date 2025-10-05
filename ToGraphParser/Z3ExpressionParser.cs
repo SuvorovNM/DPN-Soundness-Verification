@@ -305,8 +305,25 @@ public class Z3ExpressionParser
         {
             index++;
             var operand = ParseNumericOperand(tokens, ref index);
-            return (RealExpr)_ctx.MkSub(_ctx.MkReal(0), operand);
+            if (operand.IsInt || operand.IsIntNum)
+            {
+                return (IntExpr)_ctx.MkSub(_ctx.MkInt(0), operand);
+            }
+
+            if (operand.IsReal || operand.IsRatNum)
+            {
+                return (RealExpr)_ctx.MkSub(_ctx.MkReal(0), operand);
+            }
+            
+            throw new ArgumentException($"Invalid numeric operand: {tokens[index]}");
         }
+        
+        var secondOperand = index >= 1 && IsComparisonOperator(tokens[index - 1])
+            ? tokens[index - 2]
+            : tokens[index + 2];
+        var domainType = _intVariables.ContainsKey(secondOperand)
+            ? DomainType.Integer
+            : DomainType.Real;
 
         string token = tokens[index];
         index++;
@@ -314,11 +331,13 @@ public class Z3ExpressionParser
         if (int.TryParse(token, out int intValue))
         {
             // Convert integer literals to real
-            return _ctx.MkInt(intValue);
+            return domainType == DomainType.Integer ? _ctx.MkInt(intValue) :  _ctx.MkReal(intValue);
         }
         else if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out double realValue))
         {
-            return _ctx.MkReal(realValue.ToString(CultureInfo.InvariantCulture));
+            return domainType == DomainType.Integer ? 
+                _ctx.MkInt((int)realValue) : 
+                _ctx.MkReal(realValue.ToString(CultureInfo.InvariantCulture));
         }
         else if (IsVariable(token))
         {

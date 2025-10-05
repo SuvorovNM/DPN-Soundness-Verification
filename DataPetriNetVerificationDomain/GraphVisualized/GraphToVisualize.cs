@@ -34,12 +34,20 @@ public class SoundnessPropertiesToVisualize
     }
 }
 
+public enum GraphType
+{
+    Lts,
+    CoverabilityGraph
+}
+
 public class GraphToVisualize
 {
     public List<StateToVisualize> States { get; init; }
     public List<ArcToVisualize> Arcs { get; init; }
     public SoundnessPropertiesToVisualize? SoundnessProperties { get; init; }
     public bool IsFull { get; init; }
+    public GraphType GraphType { get; init; }
+
 
     public static GraphToVisualize FromCoverabilityGraph(CoverabilityGraph cg,
         SoundnessProperties? soundnessProperties = null)
@@ -60,7 +68,9 @@ public class GraphToVisualize
                 ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
                 : null,
             
-            IsFull = cg.IsFullGraph
+            IsFull = cg.IsFullGraph,
+            
+            GraphType = GraphType.CoverabilityGraph
         };
     }
 
@@ -82,7 +92,9 @@ public class GraphToVisualize
                 ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
                 : null,
 
-            IsFull = lts.IsFullGraph
+            IsFull = lts.IsFullGraph,
+            
+            GraphType =  GraphType.Lts
         };
     }
 }
