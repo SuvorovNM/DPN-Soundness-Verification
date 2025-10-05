@@ -73,22 +73,27 @@ namespace DataPetriNetParsers
             }
 
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
-            var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
-            
+            bool? isRelaxedLazySound = cgElement.Attribute("is_relaxed_lazy_sound") != null
+                ? bool.Parse(cgElement.Attribute("is_relaxed_lazy_sound").Value)
+                : null;
+            bool? isClassicalSound = cgElement.Attribute("is_classical_sound") != null
+                ? bool.Parse(cgElement.Attribute("is_classical_sound").Value)
+                : null;
+
             var graphTypeAttribute = cgElement.Attribute("graph_type");
-            if (graphTypeAttribute == null || 
+            if (graphTypeAttribute == null ||
                 !Enum.TryParse(graphTypeAttribute.Value, out GraphType graphType))
             {
                 graphType = GraphType.Lts;
             }
-            
-            if (cgElement.Attribute("is_full") == null && 
-                !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph));
+
+            if (cgElement.Attribute("is_full") == null &&
+                !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph)) ;
             {
                 isFullGraph = true;
             }
 
-            if (cgElement.Attribute("soundness_type")== null || 
+            if (cgElement.Attribute("soundness_type") == null ||
                 !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
             {
                 soundnessType = SoundnessType.Classical;
@@ -100,7 +105,8 @@ namespace DataPetriNetParsers
                 Arcs = constraintArcs,
                 GraphType = graphType,
                 IsFull = isFullGraph,
-                SoundnessProperties = new SoundnessPropertiesToVisualize(soundnessType, isBounded, deadTransitions.ToArray(), isSound)
+                SoundnessProperties =
+                    new SoundnessPropertiesToVisualize(isBounded, deadTransitions.ToArray(), isClassicalSound, isRelaxedLazySound)
             };
         }
 
@@ -150,11 +156,11 @@ namespace DataPetriNetParsers
             var cgElement = new XElement("cg",
                 statesElement, arcsElement, deadTransitionsElement);
             cgElement.SetAttributeValue("is_bounded", cg.SoundnessProperties.Boundedness);
-            cgElement.SetAttributeValue("is_sound", cg.SoundnessProperties.Soundness);
-            cgElement.SetAttributeValue("soundness_type",cg.SoundnessProperties.SoundnessType.ToString());
-            cgElement.SetAttributeValue("graph_type",cg.GraphType.ToString());
-            cgElement.SetAttributeValue("is_full",cg.IsFull.ToString());
-            
+            cgElement.SetAttributeValue("is_classical_sound", cg.SoundnessProperties.ClassicalSoundness);
+            cgElement.SetAttributeValue("is_relaxed_lazy_sound", cg.SoundnessProperties.RelaxedLazySoundness);
+            cgElement.SetAttributeValue("graph_type", cg.GraphType.ToString());
+            cgElement.SetAttributeValue("is_full", cg.IsFull.ToString());
+
             //cgElement.SetAttributeValue("dead_transitions", cg.DeadTransitions);
 
             var srcTree = new XElement("cgml", cgElement);

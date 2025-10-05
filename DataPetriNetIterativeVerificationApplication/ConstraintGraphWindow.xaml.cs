@@ -17,7 +17,7 @@ namespace DataPetriNetIterativeVerificationApplication
 
             var constraintGraphToGraphParser = new LtsToGraphParser();
 
-            graphControl.Graph = constraintGraphToGraphParser.FormGraphBasedOnCG(constraintGraph);
+            graphControl.Graph = constraintGraphToGraphParser.Parse(constraintGraph);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 
             logControl.FormSoundnessVerificationLog(constraintGraph);

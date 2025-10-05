@@ -20,33 +20,21 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            switch (graph.SoundnessProperties?.SoundnessType)
+            if (graph.SoundnessProperties.ClassicalSoundness != null)
             {
-                case null or SoundnessType.None:
-                    textBlock.Inlines.Add(FormGraphInfoLines(graph));
-                    break;
-                case SoundnessType.Classical:
-                    textBlock.FormSoundnessVerificationLog(graph);
-                    break;
-                case SoundnessType.RelaxedLazy:
-                    textBlock.FormSoundnessVerificationLog(
-                        graph,
-                        detailedInfoAction:
-                        () =>
-                        {
-                            textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
-
-                            if (graph.IsFull)
-                            {
-                                textBlock.Inlines.Add(
-                                    FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
-                            }
-                        });
-                    break;
+                textBlock.FormSoundnessVerificationLog(graph);
+            }
+            else if (graph.SoundnessProperties.RelaxedLazySoundness != null)
+            {
+                textBlock.FormRelaxedLazySoundnessVerificationLog(graph);
+            }
+            else
+            {
+                textBlock.Inlines.Add(FormGraphInfoLines(graph));
             }
         }
 
-        public static void FormSoundnessVerificationLog(
+        public static void FormRelaxedLazySoundnessVerificationLog(
             this TextBlock textBlock,
             GraphToVisualize graph,
             Action? detailedInfoAction = null)
@@ -56,36 +44,58 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             textBlock.FontSize = 14;
             textBlock.Inlines.Clear();
 
-            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.Soundness
-                ? new Run(FormSoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkGreen }
-                : new Run(FormUnsoundLine(graph.SoundnessProperties.SoundnessType)) { Foreground = Brushes.DarkRed }));
-            
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.RelaxedLazySoundness!.Value
+                ? new Run(FormSoundLine(SoundnessType.RelaxedLazy)) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine(SoundnessType.RelaxedLazy)) { Foreground = Brushes.DarkRed }));
+
             textBlock.Inlines.Add(new Bold(graph.IsFull
                 ? new Run(FullGraphIsConstructed())
-                : new Run(FragmentOfGraphIsConstructed(graph.SoundnessProperties.SoundnessType))));
+                : new Run(FragmentOfGraphIsConstructed(SoundnessType.RelaxedLazy))));
 
             textBlock.Inlines.Add(FormGraphInfoLines(graph));
 
-            if (detailedInfoAction == null)
+            textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+
+            if (graph.IsFull)
             {
-                if (graph.IsFull)
-                {
-                    textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
-                    textBlock.Inlines.Add(
-                        FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
-                }
-            }
-            else
-            {
-                detailedInfoAction.Invoke();
+                textBlock.Inlines.Add(
+                    FormUnfeasibleTransitionsLine(graph.SoundnessProperties.DeadTransitions));
             }
         }
-        
+
+        public static void FormSoundnessVerificationLog(
+            this TextBlock textBlock,
+            GraphToVisualize graph)
+        {
+            ArgumentNullException.ThrowIfNull(graph);
+
+            textBlock.FontSize = 14;
+            textBlock.Inlines.Clear();
+
+            textBlock.Inlines.Add(new Bold(graph.SoundnessProperties!.ClassicalSoundness!.Value
+                ? new Run(FormSoundLine(SoundnessType.Classical)) { Foreground = Brushes.DarkGreen }
+                : new Run(FormUnsoundLine(SoundnessType.Classical)) { Foreground = Brushes.DarkRed }));
+
+            textBlock.Inlines.Add(new Bold(graph.IsFull
+                ? new Run(FullGraphIsConstructed())
+                : new Run(FragmentOfGraphIsConstructed(SoundnessType.Classical))));
+
+            textBlock.Inlines.Add(FormGraphInfoLines(graph));
+
+
+            if (graph.IsFull)
+            {
+                textBlock.Inlines.Add(FormStatesInfoLines(graph.States));
+                textBlock.Inlines.Add(
+                    FormDeadTransitionsLine(graph.SoundnessProperties.DeadTransitions));
+            }
+        }
+
         private static string FullGraphIsConstructed()
         {
             return "Full state space graph is constructed.\n";
         }
-        
+
         private static string FragmentOfGraphIsConstructed(SoundnessType soundnessType)
         {
             var prefix = "A fragment of state space  graph is constructed. ";
@@ -93,9 +103,10 @@ namespace DataPetriNetOnSmt.Visualization.Extensions
             {
                 SoundnessType.Classical or SoundnessType.None => " DPN is unbounded.\n",
                 SoundnessType.RelaxedLazy => " Unclean final states are found.\n",
-                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType, "Unknown soundness type")
+                _ => throw new ArgumentOutOfRangeException(nameof(soundnessType), soundnessType,
+                    "Unknown soundness type")
             };
-            
+
             return prefix + suffix;
         }
 

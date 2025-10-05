@@ -147,12 +147,12 @@ namespace DataPetriNetOnSmt.Visualization
 
             var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
 
-            if (ltsToVisualize.SoundnessProperties!.Soundness)
+            if (ltsToVisualize.SoundnessProperties!.ClassicalSoundness!.Value)
             {
                 var cg = new ConstraintGraph(currentDisplayedNet);
                 ltsToVisualize = await CheckSoundness(currentDisplayedNet, cg);
 
-                if (ltsToVisualize.SoundnessProperties!.Soundness)
+                if (ltsToVisualize.SoundnessProperties!.ClassicalSoundness!.Value)
                 {
                     var dpnTransformation = new TransformerToRefined();
                     (var dpn, _) = dpnTransformation.TransformUsingLts(currentDisplayedNet);

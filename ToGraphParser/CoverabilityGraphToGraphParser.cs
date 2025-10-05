@@ -11,10 +11,11 @@ public class CoverabilityGraphToGraphParser : IToGraphParser
     {
         var graph = new Graph();
 
+        // TODO: advance
         var states = AddStatesToGraph(
-            graphToVisualize.States, 
-            graph, 
-            graphToVisualize.SoundnessProperties?.SoundnessType ?? SoundnessType.None);
+            graphToVisualize.States,
+            graph,
+            graphToVisualize.SoundnessProperties!.ClassicalSoundness != null ? SoundnessType.Classical : SoundnessType.RelaxedLazy);
         AddArcsToGraph(graphToVisualize, graph, states);
 
         return graph;

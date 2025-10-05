@@ -33,7 +33,7 @@ namespace DataPetriNetOnSmt.Visualization
             if (FindName("SaveMenu") is Menu menu && isOpenedFromFile)
                 menu.Visibility = Visibility.Collapsed;
 
-            logControl.FormSoundnessVerificationLog(stateSpaceStructure);
+            logControl.FormOutput(stateSpaceStructure);
         }
 
         private void SaveCG_Click(object sender, RoutedEventArgs e)
