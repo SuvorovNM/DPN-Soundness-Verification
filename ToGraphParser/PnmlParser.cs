@@ -55,6 +55,8 @@ namespace DataPetriNetParsers
                 dpnStructureElement.Add(placeElement);
             }
 
+            var expressionSerializer = new Z3ExpressionSerializer();
+
             foreach (var transition in dpn.Transitions)
             {
                 var transitionElement = new XElement("transition",
@@ -62,14 +64,12 @@ namespace DataPetriNetParsers
                         new XElement("text", transition.Label)));
                 transitionElement.SetAttributeValue("id", transition.Id);
 
-                if (transition.Guard.BaseConstraintExpressions.Count > 0)
+                if (!transition.Guard.ActualConstraintExpression.IsTrue)
                 {
-                    var resultExpression = string.Join(" ", transition.Guard.BaseConstraintExpressions.Select(x => x.ToString()));
-                    resultExpression = resultExpression.Replace("∧", "&&");
-                    resultExpression = resultExpression.Replace("∨", "||");
-
-                    transitionElement.SetAttributeValue("guard", resultExpression);
+                    var stringExpression = expressionSerializer.Serialize(transition.Guard.ActualConstraintExpression);
+                    transitionElement.SetAttributeValue("guard", stringExpression);
                 }
+
                 dpnStructureElement.Add(transitionElement);
             }
 

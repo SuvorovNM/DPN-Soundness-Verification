@@ -244,13 +244,6 @@ namespace DataPetriNetOnSmt.Visualization
             return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
 
-        private void TransformModelToAtomicItem_Click(object sender, RoutedEventArgs e)
-        {
-            var dpnTransformation = new TransformationToAtomicConstraints();
-            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
-            graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
-        }
-
         private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
         {
             var dpnTransformation = new TransformerToRefined();
@@ -306,6 +299,19 @@ namespace DataPetriNetOnSmt.Visualization
 
             MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds} ms. Repair steps: {repairSteps}." : "Failure!");
             graphControl.Graph = dpnParser.FormGraphBasedOnDPN(currentDisplayedNet);
+        }
+
+        private void SaveDpn_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new SaveFileDialog()
+            {
+                Filter = "Model files (*.pnmlx) | *.pnmlx",
+            };
+            if (ofd.ShowDialog() == true)
+            {
+                var xDocument = pnmlParser.SerializeDpn(currentDisplayedNet);
+                xDocument.Save(ofd.FileName);
+            }
         }
     }
 }

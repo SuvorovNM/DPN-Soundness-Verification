@@ -14,6 +14,7 @@
                 </MenuItem.Header>
                 <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click"/>
                 <MenuItem x:Name="OpenCG" Header="Open Constraint Graph..." Click="OpenCG_Click"/>
+                <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click"/>
             </MenuItem>
             <MenuItem Header="Model">
                 <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
@@ -22,7 +23,6 @@
                 </MenuItem>
                 <MenuItem x:Name="GenerateModelItem" Header="Generate model..." Click="GenerateModelItem_Click"/>
                 <MenuItem x:Name="TransformModelItem" Header="Transform model">
-                    <MenuItem x:Name="TransformModelToAtomicItem" Header="Transform model to atomic" Click="TransformModelToAtomicItem_Click"/>
                     <MenuItem x:Name="TransformModelToRefinedItem" Header="Transform model to refined" Click="TransformModelToRefinedItem_Click"/>
                     <MenuItem x:Name="TransformModelToRepairedItem" Header="Transform model to repaired" Click="TransformModelToRepairedItem_Click"/>
                 </MenuItem>

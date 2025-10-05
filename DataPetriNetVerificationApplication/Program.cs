@@ -210,10 +210,12 @@ namespace DataPetriNetVerificationApplication
 
             if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
             {
+                var expressionSerializer = new Z3ExpressionSerializer();
+                
+                
                 var conditionsCount = dpnToVerify
                     .Transitions
-                    .SelectMany(x => x.Guard.BaseConstraintExpressions)
-                    .Count();
+                    .Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
                 var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
                 File.AppendAllText(badCasesPath,
                     $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");

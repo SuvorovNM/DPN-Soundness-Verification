@@ -13,7 +13,7 @@ namespace DataPetriNetOnSmt.DPNElements
         private Dictionary<string, DomainType> readVars = new Dictionary<string, DomainType>();
         public Context Context { get; set; }
 
-        public List<IConstraintExpression> BaseConstraintExpressions { get; init; }
+        public BoolExpr BaseConstraintExpressions { get; init; }
         public BoolExpr ConstraintExpressionBeforeUpdate { get; init; }
         public BoolExpr ActualConstraintExpression { get; private set; }
 
@@ -44,15 +44,16 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             if (baseConstraints == null)
             {
-                BaseConstraintExpressions = new List<IConstraintExpression>();
-                ActualConstraintExpression = ctx.MkTrue();
-                ConstraintExpressionBeforeUpdate = ctx.MkTrue();
+                var trueExpression = ctx.MkTrue();
+                BaseConstraintExpressions = trueExpression;
+                ActualConstraintExpression = trueExpression;
+                ConstraintExpressionBeforeUpdate = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
             }
             else
             {
-                BaseConstraintExpressions = baseConstraints;
                 var smtExpression = ctx.GetSmtExpression(baseConstraints);
+                BaseConstraintExpressions = smtExpression;
                 ActualConstraintExpression = smtExpression;
                 ConstraintExpressionBeforeUpdate = smtExpression;
                 WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
@@ -66,14 +67,16 @@ namespace DataPetriNetOnSmt.DPNElements
         {
             if (smtExpression == null)
             {
-                BaseConstraintExpressions = new List<IConstraintExpression>();
-                ActualConstraintExpression = ctx.MkTrue();
-                ConstraintExpressionBeforeUpdate = ctx.MkTrue();
+                var trueExpression = ctx.MkTrue();
+                
+                BaseConstraintExpressions = trueExpression;
+                ActualConstraintExpression = trueExpression;
+                ConstraintExpressionBeforeUpdate = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
             }
             else
             {
-                BaseConstraintExpressions = new List<IConstraintExpression>();
+                BaseConstraintExpressions = smtExpression;
                 ActualConstraintExpression = smtExpression;
                 ConstraintExpressionBeforeUpdate = smtExpression;
                 WriteVars = smtExpression.GetTypedVarsDict(VariableType.Written);
