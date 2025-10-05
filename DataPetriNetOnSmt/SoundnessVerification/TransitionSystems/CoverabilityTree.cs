@@ -72,14 +72,6 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                             AddNewState(currentState, new CtTransition(transition), stateToAddInfo);
                         }
-                        else
-                        {
-
-                        }
-                        if (!expressionService.CanBeSatisfied(constraintsIfTransitionFires))
-                        {
-
-                        }
                         
                     }
 
@@ -180,6 +172,14 @@ namespace DataPetriNetOnSmt.SoundnessVerification.TransitionSystems
 
                 var stateColor = isStrictCoverage ? CtStateType.StrictlyCovered : CtStateType.NonstrictlyCovered; // Not forget about final nodes
 
+                foreach (var place in DataPetriNet.Places)
+                {
+                    if (coveredNode.Marking[place] < stateInfo.Marking[place])
+                    {
+                        stateInfo.Marking[place] = int.MaxValue;
+                    }
+                }
+                
                 var stateToAdd = new CtState(stateInfo, currentState, stateColor, coveredNode);
 
                 ConstraintStates.Add(stateToAdd);

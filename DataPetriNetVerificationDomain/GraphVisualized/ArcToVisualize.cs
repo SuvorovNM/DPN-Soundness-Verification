@@ -19,4 +19,15 @@ public class ArcToVisualize
             TargetStateId = arc.TargetState.Id
         };
     }
+    
+    public static ArcToVisualize FromArc(CtArc arc)
+    {
+        return new ArcToVisualize
+        {
+            TransitionName = arc.Transition.Label,
+            IsSilent = arc.Transition.IsSilent,
+            SourceStateId = arc.SourceState.Id,
+            TargetStateId = arc.TargetState.Id
+        };
+    }
 }

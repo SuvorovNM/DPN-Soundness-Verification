@@ -186,9 +186,9 @@ namespace DataPetriNetOnSmt.Visualization
             VisualizeConstraintGraph(constraintGraphToVisualize);
         }
 
-        private void VisualizeCoverabilityTree(CoverabilityTreeToVisualize coverabilityTreeToVisualize)
+        private void VisualizeCoverabilityTree(GraphToVisualize coverabilityTreeToVisualize)
         {
-            var coverabilityTreeWindow = new CoverabilityTreeWindow(coverabilityTreeToVisualize)
+            var coverabilityTreeWindow = new LtsWindow(coverabilityTreeToVisualize, isOpenedFromFile: false)
             {
                 Owner = this
             };
@@ -229,11 +229,12 @@ namespace DataPetriNetOnSmt.Visualization
             return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
         }
 
-        private async Task<CoverabilityTreeToVisualize> ConstructAndAnalyzeCoverabilityTree
+        private async Task<GraphToVisualize> ConstructAndAnalyzeCoverabilityTree
             (CoverabilityTree ct)
         {
             await Task.Run(ct.GenerateGraph);
-            return CoverabilityTreeToVisualize.FromCoverabilityTree(ct);
+            var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(currentDisplayedNet, ct);
+            return GraphToVisualize.FromCoverabilityTree(ct, soundnessProperties);
         }
         
         private async Task<GraphToVisualize> ConstructAndAnalyzeCoverabilityGraph

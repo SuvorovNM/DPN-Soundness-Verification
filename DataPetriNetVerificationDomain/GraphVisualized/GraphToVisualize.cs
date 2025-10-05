@@ -23,6 +23,8 @@ public class SoundnessPropertiesToVisualize
     public bool Boundedness { get; init; }
     public string[] DeadTransitions { get; init; }
     public bool Soundness { get; init; }
+    public bool? ClassicalSoundness { get; init; }
+    public bool? RelaxedLazySoundness { get; init; }
 
     public static SoundnessPropertiesToVisualize FromSoundnessProperties(SoundnessProperties soundnessProperties)
     {
@@ -37,7 +39,8 @@ public class SoundnessPropertiesToVisualize
 public enum GraphType
 {
     Lts,
-    CoverabilityGraph
+    CoverabilityGraph,
+    CoverabilityTree
 }
 
 public class GraphToVisualize
@@ -59,17 +62,17 @@ public class GraphToVisualize
                     soundnessProperties?.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default) ??
                     ConstraintStateType.Default))
                 .ToList(),
-            
+
             Arcs = cg.ConstraintArcs
                 .Select(ArcToVisualize.FromArc)
                 .ToList(),
-            
+
             SoundnessProperties = soundnessProperties != null
                 ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
                 : null,
-            
+
             IsFull = cg.IsFullGraph,
-            
+
             GraphType = GraphType.CoverabilityGraph
         };
     }
@@ -93,8 +96,39 @@ public class GraphToVisualize
                 : null,
 
             IsFull = lts.IsFullGraph,
-            
-            GraphType =  GraphType.Lts
+
+            GraphType = GraphType.Lts
+        };
+    }
+
+    public static GraphToVisualize FromCoverabilityTree(CoverabilityTree ct,
+        SoundnessProperties? soundnessProperties = null)
+    {
+        var states = ct.ConstraintStates
+            .Select(x => StateToVisualize.FromNode(x,
+                soundnessProperties?.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default) ??
+                ConstraintStateType.Default))
+            .ToList();
+
+        var arcs = ct.ConstraintArcs
+            .Select(ArcToVisualize.FromArc)
+            .ToList();
+
+        var soundnessProperties1 = soundnessProperties != null
+            ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
+            : null;
+
+        var isFull = true;
+
+        var graphType = GraphType.CoverabilityTree;
+
+        return new GraphToVisualize
+        {
+            States = states,
+            Arcs = arcs,
+            SoundnessProperties = soundnessProperties1,
+            IsFull = isFull,
+            GraphType = graphType
         };
     }
 }

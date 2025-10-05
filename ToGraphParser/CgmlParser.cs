@@ -74,6 +74,19 @@ namespace DataPetriNetParsers
 
             var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
             var isSound = bool.Parse(cgElement.Attribute("is_sound").Value);
+            
+            var graphTypeAttribute = cgElement.Attribute("graph_type");
+            if (graphTypeAttribute == null || 
+                !Enum.TryParse(graphTypeAttribute.Value, out GraphType graphType))
+            {
+                graphType = GraphType.Lts;
+            }
+            
+            if (cgElement.Attribute("is_full") == null && 
+                !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph));
+            {
+                isFullGraph = true;
+            }
 
             if (cgElement.Attribute("soundness_type")== null || 
                 !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
@@ -85,6 +98,8 @@ namespace DataPetriNetParsers
             {
                 States = constraintStates,
                 Arcs = constraintArcs,
+                GraphType = graphType,
+                IsFull = isFullGraph,
                 SoundnessProperties = new SoundnessPropertiesToVisualize(soundnessType, isBounded, deadTransitions.ToArray(), isSound)
             };
         }
@@ -136,7 +151,10 @@ namespace DataPetriNetParsers
                 statesElement, arcsElement, deadTransitionsElement);
             cgElement.SetAttributeValue("is_bounded", cg.SoundnessProperties.Boundedness);
             cgElement.SetAttributeValue("is_sound", cg.SoundnessProperties.Soundness);
-            cgElement.SetAttributeValue("soundess_type",cg.SoundnessProperties.SoundnessType.ToString());
+            cgElement.SetAttributeValue("soundness_type",cg.SoundnessProperties.SoundnessType.ToString());
+            cgElement.SetAttributeValue("graph_type",cg.GraphType.ToString());
+            cgElement.SetAttributeValue("is_full",cg.IsFull.ToString());
+            
             //cgElement.SetAttributeValue("dead_transitions", cg.DeadTransitions);
 
             var srcTree = new XElement("cgml", cgElement);

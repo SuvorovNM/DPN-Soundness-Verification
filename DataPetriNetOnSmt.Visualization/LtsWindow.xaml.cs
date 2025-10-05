@@ -44,7 +44,7 @@ namespace DataPetriNetOnSmt.Visualization
             };
             if (ofd.ShowDialog() == true)
             {
-                using (var fs = new FileStream(ofd.FileName, FileMode.CreateNew))
+                using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
                 {
                     var cgmlParser = new CgmlParser();
                     var xdocument = cgmlParser.Serialize(stateSpaceStructure);
