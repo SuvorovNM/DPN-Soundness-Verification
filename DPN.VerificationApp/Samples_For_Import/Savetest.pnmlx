@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pnml>
+  <net>
+    <name>
+      <text></text>
+    </name>
+    <page>
+      <place id="i">
+        <name>
+          <text>i</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="p1">
+        <name>
+          <text>p1</text>
+        </name>
+      </place>
+      <place id="p2">
+        <name>
+          <text>p2</text>
+        </name>
+      </place>
+      <place id="p3">
+        <name>
+          <text>p3</text>
+        </name>
+      </place>
+      <place id="p4">
+        <name>
+          <text>p4</text>
+        </name>
+      </place>
+      <place id="p5">
+        <name>
+          <text>p5</text>
+        </name>
+      </place>
+      <place id="p6">
+        <name>
+          <text>p6</text>
+        </name>
+      </place>
+      <place id="p7">
+        <name>
+          <text>p7</text>
+        </name>
+      </place>
+      <place id="p8">
+        <name>
+          <text>p8</text>
+        </name>
+      </place>
+      <place id="p9">
+        <name>
+          <text>p9</text>
+        </name>
+      </place>
+      <place id="o">
+        <name>
+          <text>o</text>
+        </name>
+        <finalMarking>
+          <text>1</text>
+        </finalMarking>
+      </place>
+      <transition id="Credit request" guard="(reqd_w &gt; 0.0)">
+        <name>
+          <text>Credit request</text>
+        </name>
+      </transition>
+      <transition id="Verify" guard="(ok_w == true) || (ok_w == false)">
+        <name>
+          <text>Verify</text>
+        </name>
+      </transition>
+      <transition id="Prepare" guard="(ok_r == true)">
+        <name>
+          <text>Prepare</text>
+        </name>
+      </transition>
+      <transition id="Skip" guard="(ok_r == false)">
+        <name>
+          <text>Skip</text>
+        </name>
+      </transition>
+      <transition id="Make proposal" guard="(granted_w &lt;= reqd_r)">
+        <name>
+          <text>Make proposal</text>
+        </name>
+      </transition>
+      <transition id="Refuse proposal" guard="(granted_r != reqd_r)">
+        <name>
+          <text>Refuse proposal</text>
+        </name>
+      </transition>
+      <transition id="Update request" guard="(reqd_w &lt; reqd_r)">
+        <name>
+          <text>Update request</text>
+        </name>
+      </transition>
+      <transition id="AND split">
+        <name>
+          <text>AND split</text>
+        </name>
+      </transition>
+      <transition id="Inform acceptance VIP" guard="(granted_r &gt; 10000.0)">
+        <name>
+          <text>Inform acceptance VIP</text>
+        </name>
+      </transition>
+      <transition id="Inform rejection" guard="(ok_r == false)">
+        <name>
+          <text>Inform rejection</text>
+        </name>
+      </transition>
+      <transition id="Open credit loan" guard="(ok_r == true)">
+        <name>
+          <text>Open credit loan</text>
+        </name>
+      </transition>
+      <transition id="AND join">
+        <name>
+          <text>AND join</text>
+        </name>
+      </transition>
+      <arc id="0" source="i" target="Credit request">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="1" source="Credit request" target="p1">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="2" source="p1" target="Verify">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="3" source="Verify" target="p2">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="4" source="p2" target="Prepare">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="5" source="p2" target="Skip">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="6" source="Skip" target="p3">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="7" source="Prepare" target="p8">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="8" source="p8" target="Make proposal">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="9" source="Make proposal" target="p3">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="10" source="p3" target="Refuse proposal">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="11" source="Refuse proposal" target="p9">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="12" source="p9" target="Update request">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="13" source="Update request" target="p1">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="14" source="p3" target="AND split">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="15" source="AND split" target="p4">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="16" source="AND split" target="p5">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="17" source="p4" target="Inform acceptance VIP">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="18" source="p4" target="Inform rejection">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="19" source="Inform acceptance VIP" target="p6">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="20" source="Inform rejection" target="p6">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="21" source="p5" target="Open credit loan">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="22" source="Open credit loan" target="p7">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="23" source="p6" target="AND join">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="24" source="p7" target="AND join">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="25" source="AND join" target="o">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+    </page>
+    <variables>
+      <variable type="Real">
+        <name>reqd</name>
+      </variable>
+      <variable type="Real">
+        <name>granted</name>
+      </variable>
+      <variable type="Boolean">
+        <name>ok</name>
+      </variable>
+    </variables>
+  </net>
+</pnml>

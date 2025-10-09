@@ -1,0 +1,37 @@
+﻿<Window x:Class="DPN.VerificationApp.LtsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wpfgraphcontrol="http://mlsagl"
+        mc:Ignorable="d"
+        Title="Constraint Graph Visualization" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="120"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Содержимое первой строки -->
+        <wpfgraphcontrol:AutomaticGraphLayoutControl Grid.Row="0" x:Name="graphControl"
+                                                     HorizontalAlignment="Stretch"
+                                                     VerticalAlignment="Stretch"
+                                                     HorizontalScrollBarVisibility="Disabled"
+                                                     VerticalScrollBarVisibility="Disabled"/>
+        
+        <!-- Menu в первой строке, справа снизу -->
+        <Menu Name="SaveMenu" Grid.Row="0" HorizontalAlignment="Right" Height="26" Margin="0,0,10,10" VerticalAlignment="Bottom">
+            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558" Click="SaveCG_Click">
+                <MenuItem.Header>
+                    <TextBlock Text="Save" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="11,0,-21,0"/>
+                </MenuItem.Header>
+            </MenuItem>
+        </Menu>
+        
+        <!-- Содержимое второй строки -->
+        <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="Black"/>
+        <ScrollViewer Grid.Row="1">
+            <TextBlock x:Name="logControl" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        </ScrollViewer>
+    </Grid>
+</Window>

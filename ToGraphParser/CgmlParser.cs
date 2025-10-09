@@ -1,9 +1,8 @@
-﻿using DataPetriNetOnSmt.Enums;
-using System.Xml.Linq;
-using DataPetriNetOnSmt.SoundnessVerification;
-using DataPetriNetVerificationDomain.GraphVisualized;
+﻿using System.Xml.Linq;
+using DPN.Models.Enums;
+using DPN.Models.SoundnessVerification;
 
-namespace DataPetriNetParsers
+namespace DPN.Parsers
 {
     public class CgmlParser
     {

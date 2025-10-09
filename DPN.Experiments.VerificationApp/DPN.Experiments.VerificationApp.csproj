@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>DataPetriNetVerificationApplication</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="27.2.1" />
+    <PackageReference Include="Microsoft.Z3" Version="4.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
+    <ProjectReference Include="..\DPN.Experiments.Common\DPN.Experiments.Common.csproj" />
+    <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
+  </ItemGroup>
+
+</Project>

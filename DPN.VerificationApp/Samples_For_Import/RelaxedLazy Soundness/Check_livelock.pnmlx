@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pnml>
+  <net>
+    <name>
+      <text>Boundness check</text>
+    </name>
+    <page>
+      <place id="i">
+        <name>
+          <text>i</text>
+        </name>
+        <initialMarking>
+          <text>1</text>
+        </initialMarking>
+      </place>
+      <place id="p0">
+        <name>
+          <text>p0</text>
+        </name>
+      </place>
+      <place id="o">
+        <name>
+          <text>o</text>
+        </name>
+        <finalMarking>
+          <text>1</text>
+        </finalMarking>
+      </place>
+      <transition id="t0" guard="!((a_w &lt;= 0.0))">
+        <name>
+          <text>t0</text>
+        </name>
+      </transition>
+      <transition id="t2" guard="!((3.0 &lt;= b_r))">
+        <name>
+          <text>t2</text>
+        </name>
+      </transition>
+      <transition id="t1" guard="(!((b_w &lt;= a_r)) &amp;&amp; !((3.0 &lt;= b_w))) || (!((3.0 &lt;= a_r)) &amp;&amp; (3.0 &lt;= b_w))">
+        <name>
+          <text>t1</text>
+        </name>
+      </transition>
+      <arc id="0" source="i" target="t0">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="1" source="t0" target="p0">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="2" source="p0" target="t2">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="3" source="t2" target="o">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="4" source="p0" target="t1">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+      <arc id="5" source="t1" target="p0">
+        <weight>
+          <text>1</text>
+        </weight>
+      </arc>
+    </page>
+    <variables>
+      <variable type="Real">
+        <name>a</name>
+      </variable>
+      <variable type="Real">
+        <name>b</name>
+      </variable>
+    </variables>
+  </net>
+</pnml>

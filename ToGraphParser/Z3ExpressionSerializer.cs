@@ -1,5 +1,7 @@
 ﻿using Microsoft.Z3;
 
+namespace DPN.Parsers;
+
 public class Z3ExpressionSerializer
 {
     public string Serialize(BoolExpr expression)

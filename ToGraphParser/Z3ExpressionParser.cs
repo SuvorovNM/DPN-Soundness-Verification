@@ -1,6 +1,8 @@
-﻿using Microsoft.Z3;
-using System.Globalization;
-using DataPetriNetOnSmt.Enums;
+﻿using System.Globalization;
+using DPN.Models.Enums;
+using Microsoft.Z3;
+
+namespace DPN.Parsers;
 
 public class Z3ExpressionParser
 {

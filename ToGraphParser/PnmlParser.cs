@@ -1,16 +1,13 @@
-﻿using DataPetriNetOnSmt;
-using DataPetriNetOnSmt.Abstractions;
-using DataPetriNetOnSmt.DPNElements;
-using DataPetriNetOnSmt.Enums;
-using Microsoft.Z3;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
+using DPN.Models;
+using DPN.Models.Abstractions;
+using DPN.Models.DPNElements;
+using DPN.Models.Enums;
+using Microsoft.Z3;
 
-namespace DataPetriNetParsers
+namespace DPN.Parsers
 {
     public class PnmlParser
     {
