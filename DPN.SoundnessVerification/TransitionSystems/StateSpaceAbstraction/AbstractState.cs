@@ -5,7 +5,7 @@ namespace DPN.SoundnessVerification.TransitionSystems
 {
     public record BaseStateInfo(Marking Marking, BoolExpr Constraints);
 
-    public abstract class AbstractState//<TSelf>
+    public class AbstractState//<TSelf>
         //where TSelf : AbstractState<TSelf>
     {
         private static int _stateCounter = 0;

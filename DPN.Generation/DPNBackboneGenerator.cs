@@ -3,7 +3,6 @@ using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using Microsoft.Z3;
-using System.Runtime.Intrinsics.Arm;
 
 namespace DataPetriNetGeneration
 {

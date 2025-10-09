@@ -1,12 +1,12 @@
-﻿using DataPetriNetOnSmt;
-using DataPetriNetOnSmt.Enums;
-using EnumsNET;
+﻿using EnumsNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using DPN.Models;
+using DPN.Models.Enums;
 using DPN.SoundnessVerification.TransitionSystems;
 using DPN.Visualization.Models;
 

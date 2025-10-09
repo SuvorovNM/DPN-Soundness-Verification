@@ -1,5 +1,4 @@
-﻿using DPN.Models.Abstractions;
-using DPN.Models.Enums;
+﻿using DPN.Models.Enums;
 using Microsoft.Z3;
 
 namespace DPN.Models.Extensions

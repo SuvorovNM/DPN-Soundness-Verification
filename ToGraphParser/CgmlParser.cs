@@ -1,6 +1,5 @@
 ﻿using System.Xml.Linq;
 using DPN.Models.Enums;
-using DPN.Models.SoundnessVerification;
 
 namespace DPN.Parsers
 {

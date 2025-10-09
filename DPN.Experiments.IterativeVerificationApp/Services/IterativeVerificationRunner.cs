@@ -9,15 +9,13 @@ using DataPetriNetGeneration;
 using Microsoft.Z3;
 using Newtonsoft.Json;
 using System.Xml.Serialization;
-using DataPetriNetOnSmt;
-using System.Runtime.Serialization;
 using System.Diagnostics;
 using System.Threading;
-using DataPetriNetIterativeVerificationApplication.Extensions;
 using DPN.Parsers;
 using System.Xml.Linq;
 using System.Collections.ObjectModel;
 using DPN.Experiments.Common;
+using DPN.Models;
 using DPN.SoundnessVerification;
 
 namespace DataPetriNetIterativeVerificationApplication.Services

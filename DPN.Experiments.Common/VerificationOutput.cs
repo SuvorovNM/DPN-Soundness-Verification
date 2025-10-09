@@ -1,6 +1,6 @@
 ﻿using DPN.Models;
-using DPN.Models.SoundnessVerification;
-using DPN.Models.SoundnessVerification.TransitionSystems;
+using DPN.SoundnessVerification;
+using DPN.SoundnessVerification.TransitionSystems;
 
 namespace DPN.Experiments.Common
 {

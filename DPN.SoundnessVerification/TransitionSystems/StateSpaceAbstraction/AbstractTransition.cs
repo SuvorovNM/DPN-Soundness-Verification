@@ -3,7 +3,7 @@ using DPN.Models.DPNElements;
 
 namespace DPN.SoundnessVerification.TransitionSystems
 {
-    public abstract class AbstractTransition : Node
+    public class AbstractTransition : Node
     {
         public bool IsSilent { get; set; }
         public string NonRefinedTransitionId { get; set; }

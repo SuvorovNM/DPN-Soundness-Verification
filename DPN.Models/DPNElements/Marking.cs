@@ -1,12 +1,4 @@
-﻿using DPN.Models.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Threading.Tasks;
-using DPN.Models.Enums;
+﻿using DPN.Models.Enums;
 
 namespace DPN.Models.DPNElements
 {

@@ -1,6 +1,6 @@
 ﻿namespace DPN.SoundnessVerification.TransitionSystems
 {
-    public abstract class AbstractArc<TAbsState,TAbsTransition> 
+    public class AbstractArc<TAbsState,TAbsTransition> 
         where TAbsState : AbstractState
         where TAbsTransition : AbstractTransition
     {

@@ -1,7 +1,6 @@
 ﻿using DataPetriNetIterativeVerificationApplication.Extensions;
 using System.Windows;
 using System.Windows.Controls;
-using DPN.Parsers;
 using DPN.Visualization.Converters;
 using DPN.Visualization.Models;
 

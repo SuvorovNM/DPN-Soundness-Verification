@@ -1,4 +1,4 @@
-﻿using DPN.Models.SoundnessVerification;
+﻿using DPN.SoundnessVerification;
 
 namespace DPN.Experiments.Common
 {

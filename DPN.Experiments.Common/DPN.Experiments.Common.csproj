@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
+      <ProjectReference Include="..\DPN.SoundnessVerification\DPN.SoundnessVerification.csproj" />
     </ItemGroup>
 
 </Project>

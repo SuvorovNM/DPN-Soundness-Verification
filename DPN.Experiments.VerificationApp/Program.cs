@@ -1,8 +1,6 @@
 ﻿using CsvHelper;
 using DPN.Models;
 using DPN.Models.Enums;
-using DPN.Models.SoundnessVerification.Services;
-using DPN.Models.SoundnessVerification.TransitionSystems;
 using DPN.Parsers;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,9 +8,11 @@ using System.IO.Pipes;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
-using DPN.Models.SoundnessVerification;
 using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
+using DPN.SoundnessVerification;
+using DPN.SoundnessVerification.Services;
+using DPN.SoundnessVerification.TransitionSystems;
 
 namespace DataPetriNetVerificationApplication
 {
