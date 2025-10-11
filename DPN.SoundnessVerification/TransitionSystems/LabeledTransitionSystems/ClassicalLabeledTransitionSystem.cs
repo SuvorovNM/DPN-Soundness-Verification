@@ -30,8 +30,7 @@ namespace DPN.SoundnessVerification.TransitionSystems
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
                     var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
-
-                    // 
+                    
                     if (ExpressionService.CanBeSatisfied(ExpressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
                         var constraintsIfTransitionFires = ExpressionService

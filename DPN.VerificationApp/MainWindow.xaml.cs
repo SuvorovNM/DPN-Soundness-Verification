@@ -187,9 +187,9 @@ namespace DPN.VerificationApp
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 		}
 
-		private void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
+		private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
 		{
-			var stateSpace = StateSpaceConstructor.ConstructLabeledTransitionSystem(currentDisplayedNet);
+			var stateSpace = await Task.Run(()=> StateSpaceConstructor.ConstructLabeledTransitionSystem(currentDisplayedNet));
 			var soundnessProperties = SoundnessAnalyzer.CheckSoundness(stateSpace);
 			
 			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
