@@ -225,7 +225,7 @@ public static class SoundnessAnalyzer
 
 		stateSpaceAbstraction.Nodes
 			.Where(x => !stateDictionary[x.Id].HasFlag(ConstraintStateType.Final) && !stateDictionary[x.Id].HasFlag(ConstraintStateType.UncleanFinal))
-			.Where(x => successors.ContainsKey(x.Id))
+			.Where(x => !successors.ContainsKey(x.Id))
 			.ToList()
 			.ForEach(x => stateDictionary[x.Id] |= ConstraintStateType.Deadlock);
 
