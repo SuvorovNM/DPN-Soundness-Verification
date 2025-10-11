@@ -1,4 +1,5 @@
-﻿using DPN.Models;
+﻿using System.Diagnostics;
+using DPN.Models;
 using DPN.SoundnessVerification.TransitionSystems;
 using DPN.SoundnessVerification.TransitionSystems.Converters;
 
@@ -8,6 +9,7 @@ public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 {
     public VerificationResult Verify(DataPetriNet dpn, Dictionary<string, string> verificationSettings)
     {
+	    var stopWatch = Stopwatch.StartNew();
 	    verificationSettings.TryGetValue(VerificationSettingsConstants.BaseStructure, out var baseStructure);
 
 	    if (baseStructure is VerificationSettingsConstants.CoverabilityGraph or null)
@@ -16,16 +18,18 @@ public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 		    cg.GenerateGraph();
 		    var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
 
-		    return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties);
+		    stopWatch.Stop();
+		    return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
 	    }
 
 	    if (baseStructure == VerificationSettingsConstants.CoverabilityTree)
 	    {
-		    var ct = new CoverabilityTree(dpn);
+		    var ct = new CoverabilityTree(dpn, stopOnCoveringFinalPosition: true);
 		    ct.GenerateGraph();
 		    var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, ct);
 
-		    return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties);
+		    stopWatch.Stop();
+		    return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties, stopWatch.Elapsed);
 	    }
 	    
         throw new ArgumentException($"{nameof(RelaxedLazySoundnessVerifier)} does not support base structure {baseStructure}");

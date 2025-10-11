@@ -95,7 +95,7 @@ namespace DataPetriNetIterativeVerificationApplication
             {
                 using (var fs = new FileStream(paths[item.Number] + ".cgml", FileMode.Open))// + "_" + item.VerificationType
                 {
-                    var cgmlParser = new CgmlParser();
+                    var cgmlParser = new AsmlParser();
                     var xDocument = XDocument.Load(fs);
 
                     var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);

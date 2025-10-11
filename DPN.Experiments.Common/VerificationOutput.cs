@@ -35,7 +35,7 @@ namespace DPN.Experiments.Common
         public MainVerificationInfo(
             DataPetriNet dpn, 
             bool satisfiesConditions,
-            ClassicalLabeledTransitionSystem lts,
+            ReachabilityGraph lts,
             ConstraintGraph? cg,
             ConstraintGraph? cgRefined,
             SoundnessProperties? soundnessProperties,

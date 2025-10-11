@@ -13,7 +13,7 @@ namespace DPN.VerificationApp.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph)
+        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph, TimeSpan? verificationTime)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -31,6 +31,11 @@ namespace DPN.VerificationApp.Extensions
             else
             {
                 textBlock.Inlines.Add(FormGraphInfoLines(graph));
+            }
+
+            if (verificationTime.HasValue)
+            {
+	            textBlock.Inlines.Add($"\n Verification time: {(long)verificationTime.Value.TotalMilliseconds} milliseconds");
             }
         }
 

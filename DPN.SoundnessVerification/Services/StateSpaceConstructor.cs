@@ -14,17 +14,17 @@ public static class StateSpaceConstructor
 		return ToStateSpaceConverter.Convert(cg);
 	}
 	
-	public static StateSpaceAbstraction ConstructCoverabilityTree(DataPetriNet dpn)
+	public static StateSpaceAbstraction ConstructCoverabilityTree(DataPetriNet dpn, bool stopOnCoveringFinalPosition)
 	{
-		var ct = new CoverabilityTree(dpn);
+		var ct = new CoverabilityTree(dpn, stopOnCoveringFinalPosition);
 		ct.GenerateGraph();
 
 		return ToStateSpaceConverter.Convert(ct);
 	}
 	
-	public static StateSpaceAbstraction ConstructLabeledTransitionSystem(DataPetriNet dpn)
+	public static StateSpaceAbstraction ConstructReachabilityGraph(DataPetriNet dpn)
 	{
-		var lts = new ClassicalLabeledTransitionSystem(dpn);
+		var lts = new ReachabilityGraph(dpn);
 		lts.GenerateGraph();
 
 		return ToStateSpaceConverter.Convert(lts);

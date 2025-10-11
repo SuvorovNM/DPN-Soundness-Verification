@@ -41,10 +41,7 @@ public class ColoredConstraintGraph : ConstraintGraph
             statesLeadingToFinals.AddRange(intermediateStates);
             intermediateStates = new List<LtsState>(nextStates);
         } while (intermediateStates.Count > 0);
-
-        var statesNotLeadingToFinals = ConstraintStates
-            .Except(statesLeadingToFinals)
-            .ToList();
+        
 
         foreach (var state in statesLeadingToFinals)
         {

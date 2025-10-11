@@ -21,7 +21,7 @@
         
         <!-- Menu в первой строке, справа снизу -->
         <Menu Name="SaveMenu" Grid.Row="0" HorizontalAlignment="Right" Height="26" Margin="0,0,10,10" VerticalAlignment="Bottom">
-            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558" Click="SaveCG_Click">
+            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558" Click="SaveStateSpace_Click">
                 <MenuItem.Header>
                     <TextBlock Text="Save" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="11,0,-21,0"/>
                 </MenuItem.Header>

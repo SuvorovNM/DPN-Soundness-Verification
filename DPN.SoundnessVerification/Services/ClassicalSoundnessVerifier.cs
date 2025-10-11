@@ -1,4 +1,5 @@
-﻿using DPN.Models;
+﻿using System.Diagnostics;
+using DPN.Models;
 using DPN.SoundnessVerification.TransitionSystems;
 using DPN.SoundnessVerification.TransitionSystems.Converters;
 
@@ -25,6 +26,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 
 	private static VerificationResult VerifyClassical(DataPetriNet dpn)
 	{
+		var stopWatch = Stopwatch.StartNew();
 		var dpnTransformation = new TransformerToRefined();
 		var (refinedDpn, lts) = dpnTransformation.TransformUsingLts(dpn);
 
@@ -34,31 +36,40 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			var constraintGraph = new ConstraintGraph(refinedDpn);
 			constraintGraph.GenerateGraph();
 			soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
-			return new VerificationResult(ToStateSpaceConverter.Convert(constraintGraph), soundnessProperties);
+			stopWatch.Stop();
+			return new VerificationResult(ToStateSpaceConverter.Convert(constraintGraph), soundnessProperties, stopWatch.Elapsed);
 		}
 
 		soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
-		return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties);
+		stopWatch.Stop();
+		return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties, stopWatch.Elapsed);
 	}
 
 	private static VerificationResult VerifyImproved(DataPetriNet dpn)
 	{
-		var lts = new ClassicalLabeledTransitionSystem(dpn);
+		var stopWatch = Stopwatch.StartNew();
+		var lts = new ReachabilityGraph(dpn);
 		lts.GenerateGraph();
 		var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
 
 		if (!soundnessProperties.Soundness)
 		{
-			return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties);
+			stopWatch.Stop();
+			return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties,  stopWatch.Elapsed);
 		}
 
 		var cg = new ConstraintGraph(dpn);
 		cg.GenerateGraph();
 		soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, cg);
+		stopWatch.Stop();
 
-		return soundnessProperties.Soundness
-			? VerifyClassical(dpn)
-			: new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties);
+		if (soundnessProperties.Soundness)
+		{
+			var verificationResult = VerifyClassical(dpn);
+			return new VerificationResult(verificationResult.StateSpaceAbstraction, verificationResult.SoundnessProperties, stopWatch.Elapsed + verificationResult.VerificationTime);
+		}
+
+		return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
 	}
 
 	public static class VerificationSettingsConstants

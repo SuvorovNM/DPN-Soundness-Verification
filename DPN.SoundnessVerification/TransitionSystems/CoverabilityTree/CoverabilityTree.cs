@@ -12,13 +12,18 @@ namespace DPN.SoundnessVerification.TransitionSystems
         protected Stack<CtState> StatesToConsider { get; set; }
         public List<CtState> LeafStates { get; protected set; }
         protected bool WithTauTransitions { get; init; }
+        public bool IsFullGraph { get; private set; }
+        private bool StopOnCoveringFinalPosition { get; init; }
+        private Place FinalPosition { get; init; }
 
-        public CoverabilityTree(DataPetriNet dataPetriNet, bool withTauTransitions = false) : base(dataPetriNet)
+        public CoverabilityTree(DataPetriNet dataPetriNet, bool stopOnCoveringFinalPosition, bool withTauTransitions = false) : base(dataPetriNet)
         {
             LeafStates = new List<CtState>();
             StatesToConsider = new Stack<CtState>();
             StatesToConsider.Push(InitialState);
             WithTauTransitions = withTauTransitions;
+            StopOnCoveringFinalPosition =  stopOnCoveringFinalPosition;
+            FinalPosition = dataPetriNet.Places.Single(p => p.IsFinal);
         }
 
         public override void GenerateGraph()
@@ -60,12 +65,16 @@ namespace DPN.SoundnessVerification.TransitionSystems
 
                         if (!constraintsIfTransitionFires.IsFalse)
                         {
-                            //constraintsIfTransitionFires = DataPetriNet.Context.SimplifyExpression(constraintsIfTransitionFires);
-
                             var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
                             var stateToAddInfo = new BaseStateInfo(updatedMarking, (BoolExpr)constraintsIfTransitionFires.Simplify());
 
                             AddNewState(currentState, new CtTransition(transition), stateToAddInfo);
+                            
+                            if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)
+                            {
+	                            IsFullGraph = false;
+	                            return;
+                            }
                         }
                         
                     }
@@ -94,7 +103,7 @@ namespace DPN.SoundnessVerification.TransitionSystems
         {
             var dpnFinalMarking = DataPetriNet.FinalMarking;
 
-            // Color simplepPaths that lead to M_F as green
+            // Color simple Paths that lead to M_F as green
             ColorSimplePathsThatLeadToFinalMarkingAsGreen();
             ColorCyclicPathsThatLeadToFinalMarkingAsGreen();
             ColorRemainedNodesAsRed();

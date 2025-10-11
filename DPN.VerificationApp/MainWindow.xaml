@@ -13,11 +13,11 @@
                     <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0" />
                 </MenuItem.Header>
                 <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click" />
-                <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenCG_Click" />
+                <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click" />
                 <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click" />
             </MenuItem>
             <MenuItem Header="Transition Systems">
-                <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructLtsItem_Click" />
+                <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructReachabilityGraphItem_Click" />
 
                 <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree"
                           Click="ConstructCoverabilityTree_Click" />
@@ -25,7 +25,7 @@
                 <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph"
                           Click="ConstructCoverabilityGraph_Click" />
 
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="QeTacticSoundnessMenuItem_Click" />
+                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="ConstructConstraintGraphMenuItem_Click" />
             </MenuItem>
             <MenuItem Header="Soundness">
                 <MenuItem x:Name="VerifyItem" Header="Verify">
@@ -58,5 +58,32 @@
             </MenuItem>
         </Menu>
         <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,26,0,0" />
+        
+        <!-- Loader Overlay -->
+        <Grid x:Name="LoaderOverlay" 
+              Background="#CC000000" 
+              Visibility="Collapsed"
+              Panel.ZIndex="1000">
+            <Border Background="White" 
+                    BorderBrush="#FF0078D7" 
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <ProgressBar x:Name="LoaderProgressBar" 
+                                 Height="20" 
+                                 Width="200" 
+                                 IsIndeterminate="True"
+                                 Margin="0,0,0,10"/>
+                    <TextBlock x:Name="LoaderText" 
+                               Text="Processing..." 
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

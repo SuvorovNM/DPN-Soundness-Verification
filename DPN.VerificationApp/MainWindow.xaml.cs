@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -81,82 +82,76 @@ namespace DPN.VerificationApp
 			}
 		}
 
-		private void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
+		private async void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
 		{
-			var stateSpace = StateSpaceConstructor.ConstructCoverabilityTree(currentDisplayedNet);
-			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
-		}
-
-		private void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
-		{
-			// TODO: добавить возможность выбора - строить весь или нет?
-			var stateSpace = StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, false);
-			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
-		}
-
-		private void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
-		{
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
-
-			var soundnessVerifier = new RelaxedLazySoundnessVerifier();
-			var verificationResult = soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>());
-
-			stopwatch.Stop();
-			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
-
-			VisualizeVerificationResult(verificationResult);
-		}
-
-		private void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
-		{
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
-
-			var soundnessVerifier = new ClassicalSoundnessVerifier();
-			var verificationResult = soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>());
-			stopwatch.Stop();
-			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			ShowLoader("Constructing Coverability Tree");
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityTree(currentDisplayedNet, false));
+			HideLoader();
 			
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+		}
+
+		private async void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
+		{
+			ShowLoader("Constructing Coverability Graph");
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, false));
+			HideLoader();
+			
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+		}
+
+		private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
+		{
+			var soundnessVerifier = new RelaxedLazySoundnessVerifier();
+			
+			ShowLoader("Verifying Relaxed Lazy Soundness");
+			var verificationResult = await Task.Run(() => soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>()));
+			HideLoader();
+
 			VisualizeVerificationResult(verificationResult);
 		}
 
-		private void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
+		private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
+		{
+			var soundnessVerifier = new ClassicalSoundnessVerifier();
+			
+			ShowLoader("Verifying Soundness");
+			var verificationResult = await Task.Run(() => soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>()));
+			HideLoader();
+
+			VisualizeVerificationResult(verificationResult);
+		}
+
+		private async void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
 			var soundnessVerifier = new ClassicalSoundnessVerifier();
-			var verificationResult = soundnessVerifier.Verify(
+			
+			ShowLoader("Verifying Soundness");
+			var verificationResult = await Task.Run(()=>soundnessVerifier.Verify(
 				currentDisplayedNet,
 				verificationSettings: new Dictionary<string, string>
 				{
 					{ ClassicalSoundnessVerifier.VerificationSettingsConstants.AlgorithmVersion, ClassicalSoundnessVerifier.VerificationSettingsConstants.ImprovedVersion }
-				});
-			
+				}));
+			HideLoader();
+
 			stopwatch.Stop();
 			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
-			
+
 			VisualizeVerificationResult(verificationResult);
 		}
 
-		private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
+		private void ConstructConstraintGraphMenuItem_Click(object sender, RoutedEventArgs e)
 		{
-			currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
-			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-		}
-
-		private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
-		{
-			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
-			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-		}
-
-		private void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
-		{
+			ShowLoader("Constructing Constraint Graph");
 			var stateSpace = StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet);
+			HideLoader();
+			
 			VisualizeVerificationResult(new VerificationResult(stateSpace, SoundnessAnalyzer.CheckSoundness(stateSpace)));
 		}
 
@@ -169,11 +164,13 @@ namespace DPN.VerificationApp
 			ltsWindow.Show();
 		}
 
-		private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
+		private async void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
 		{
 			var dpnTransformation = new TransformerToRefined();
 
-			(currentDisplayedNet, _) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
+			ShowLoader("Refining DPN");
+			(currentDisplayedNet, _) = await Task.Run(() => dpnTransformation.TransformUsingCg(currentDisplayedNet));
+			HideLoader();
 
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 		}
@@ -187,48 +184,49 @@ namespace DPN.VerificationApp
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 		}
 
-		private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
+		private async void ConstructReachabilityGraphItem_Click(object sender, RoutedEventArgs e)
 		{
-			var stateSpace = await Task.Run(()=> StateSpaceConstructor.ConstructLabeledTransitionSystem(currentDisplayedNet));
+			ShowLoader("Constructing Reachability Graph");
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructReachabilityGraph(currentDisplayedNet));
 			var soundnessProperties = SoundnessAnalyzer.CheckSoundness(stateSpace);
-			
+			HideLoader();
+
 			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
 		}
 
-		private void OpenCG_Click(object sender, RoutedEventArgs e)
+		private void OpenStateSpace_Click(object sender, RoutedEventArgs e)
 		{
 			var ofd = new OpenFileDialog
 			{
-				Filter = "CG files (*.cgml) | *.cgml"
+				Filter = "State space files (*.asml) | *.asml"
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				using (var fs = new FileStream(ofd.FileName, FileMode.Open))
-				{
-					var cgmlParser = new CgmlParser();
-					var xDocument = XDocument.Load(fs);
+				using var fs = new FileStream(ofd.FileName, FileMode.Open);
+				var asmlParser = new AsmlParser();
+				var xDocument = XDocument.Load(fs);
 
-					var stateSpace = cgmlParser.Deserialize(xDocument);
-					SoundnessProperties soundnessProperties;
-					soundnessProperties = stateSpace.StateSpaceType == TransitionSystemType.AbstractReachabilityGraph 
-						? SoundnessAnalyzer.CheckSoundness(stateSpace) 
-						: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
+				var stateSpace = asmlParser.Deserialize(xDocument);
+				var soundnessProperties = stateSpace.StateSpaceType == TransitionSystemType.AbstractReachabilityGraph
+					? SoundnessAnalyzer.CheckSoundness(stateSpace)
+					: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-					var constraintGraphWindow = new LtsWindow(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
-					constraintGraphWindow.Owner = this;
-					constraintGraphWindow.Show();
-				}
+				var constraintGraphWindow = new LtsWindow(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
+				constraintGraphWindow.Owner = this;
+				constraintGraphWindow.Show();
 			}
 		}
 
-		private void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
+		private async void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
 		{
 			var dpnRepairment = new Repairment();
 
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			(currentDisplayedNet, var repairSteps, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
+			ShowLoader("Repairing DPN");
+			(currentDisplayedNet, var repairSteps, var result) = await Task.Run(() => dpnRepairment.RepairDpn(currentDisplayedNet));
+			HideLoader();
 
 			stopwatch.Stop();
 
@@ -247,6 +245,63 @@ namespace DPN.VerificationApp
 				var xDocument = pnmlParser.SerializeDpn(currentDisplayedNet);
 				xDocument.Save(ofd.FileName);
 			}
+		}
+		
+		private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
+
+		private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
+		
+		private void ShowLoader(string message = "Processing...")
+		{
+			// Ensure we're on the UI thread
+			Dispatcher.Invoke(() =>
+			{
+				LoaderText.Text = message;
+				LoaderOverlay.Visibility = Visibility.Visible;
+        
+				// Disable menu items while loading
+				SetMenuEnabledState(false);
+			});
+		}
+
+		private void HideLoader()
+		{
+			// Ensure we're on the UI thread
+			Dispatcher.Invoke(() =>
+			{
+				LoaderOverlay.Visibility = Visibility.Collapsed;
+        
+				// Re-enable menu items
+				SetMenuEnabledState(true);
+			});
+		}
+		
+		private void SetMenuEnabledState(bool enabled)
+		{
+			OpenDpnItem.IsEnabled = enabled;
+			OpenCgItem.IsEnabled = enabled;
+			SaveDpnItem.IsEnabled = enabled;
+			ConstructLtsItem.IsEnabled = enabled;
+			ConstructCtItem.IsEnabled = enabled;
+			ConstructCgItem.IsEnabled = enabled;
+			CheckSoundnessMenuItem.IsEnabled = enabled;
+			CheckSoundnessDirectItem.IsEnabled = enabled;
+			CheckSoundnessImprovedItem.IsEnabled = enabled;
+			CheckSoundnessLazyItem.IsEnabled = enabled;
+			TransformModelToRepairedItem.IsEnabled = enabled;
+			DefaultVOCMenuItem.IsEnabled = enabled;
+			DefaultVOVMenuItem.IsEnabled = enabled;
+			GenerateModelItem.IsEnabled = enabled;
+			TransformModelToRefinedItem.IsEnabled = enabled;
+			TransformModelToTauItem.IsEnabled = enabled;
 		}
 	}
 }

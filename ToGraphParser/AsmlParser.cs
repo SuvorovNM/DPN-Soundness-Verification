@@ -7,7 +7,7 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers
 {
-	public class CgmlParser
+	public class AsmlParser
 	{
 		private const string rootElementName = "cgml";
 		private const string stateSpaceElementName = "state_space";

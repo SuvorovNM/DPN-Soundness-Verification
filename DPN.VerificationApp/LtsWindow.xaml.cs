@@ -12,14 +12,10 @@ using Microsoft.Win32;
 
 namespace DPN.VerificationApp
 {
-    /// <summary>
-    /// Логика взаимодействия для ConstraintGraphWindow.xaml
-    /// </summary>
     public partial class LtsWindow : Window
     {
         private readonly StateSpaceAbstraction stateSpaceStructure;
-
-        //StateSpaceAbstraction stateSpaceAbstraction, SoundnessProperties soundnessProperties
+        
         public LtsWindow(VerificationResult verificationResult, bool isOpenedFromFile)
         {
             InitializeComponent();
@@ -35,25 +31,25 @@ namespace DPN.VerificationApp
             if (FindName("SaveMenu") is Menu menu && isOpenedFromFile)
                 menu.Visibility = Visibility.Collapsed;
 
-            logControl.FormOutput(graphToVisualize);
+            logControl.FormOutput(graphToVisualize, verificationResult.VerificationTime);
             
             stateSpaceStructure = verificationResult.StateSpaceAbstraction;
         }
 
-        private void SaveCG_Click(object sender, RoutedEventArgs e)
+        private void SaveStateSpace_Click(object sender, RoutedEventArgs e)
         {
             var ofd = new SaveFileDialog()
             {
-                Filter = "CG files (*.cgml) | *.cgml"
+                Filter = "State space files (*.asml) | *.asml"
             };
             if (ofd.ShowDialog() == true)
             {
                 using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
                 {
-                    var cgmlParser = new CgmlParser();
-                    var xdocument = cgmlParser.Serialize(stateSpaceStructure);
+                    var asmlParser = new AsmlParser();
+                    var xDocument = asmlParser.Serialize(stateSpaceStructure);
 
-                    xdocument.Save(fs,SaveOptions.None);
+                    xDocument.Save(fs,SaveOptions.None);
                 }
             }
         }

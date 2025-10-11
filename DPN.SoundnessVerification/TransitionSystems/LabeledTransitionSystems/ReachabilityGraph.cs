@@ -6,10 +6,10 @@ using DPN.Models.Extensions;
 
 namespace DPN.SoundnessVerification.TransitionSystems
 {
-    public class ClassicalLabeledTransitionSystem : LabeledTransitionSystem
+    public class ReachabilityGraph : LabeledTransitionSystem
     {
 
-        public ClassicalLabeledTransitionSystem(DataPetriNet dataPetriNet)
+        public ReachabilityGraph(DataPetriNet dataPetriNet)
         : base(dataPetriNet)
         {
 
@@ -34,7 +34,12 @@ namespace DPN.SoundnessVerification.TransitionSystems
                     if (ExpressionService.CanBeSatisfied(ExpressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
                     {
                         var constraintsIfTransitionFires = ExpressionService
-                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);                      
+                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+
+                        if (constraintsIfTransitionFires.IsAnd && (constraintsIfTransitionFires.Args.LastOrDefault()?.IsFalse ?? false))
+                        {
+	                        
+                        }
 
                         if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
                         {

@@ -270,13 +270,13 @@ public class Z3ExpressionParser
         string token = tokens[index];
         index++;
 
-        if (token == "true")
+        if (token.Equals("true",  StringComparison.InvariantCultureIgnoreCase))
         {
-            return _ctx.MkTrue();
+            return _ctx.MkBool(true);
         }
-        else if (token == "false")
+        else if (token.Equals("false",  StringComparison.InvariantCultureIgnoreCase))
         {
-            return _ctx.MkFalse();
+            return _ctx.MkBool(false);
         }
         else if (IsVariable(token))
         {

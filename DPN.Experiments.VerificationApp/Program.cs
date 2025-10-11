@@ -113,7 +113,7 @@ namespace DataPetriNetVerificationApplication
             timer.Start();
 
             long verificationTime = -1;
-            var lts = new ClassicalLabeledTransitionSystem(dpnToVerify);
+            var lts = new ReachabilityGraph(dpnToVerify);
             ConstraintGraph? cg = null;
             ConstraintGraph? cgRefined = null;
             SoundnessProperties? soundnessProps = null;
