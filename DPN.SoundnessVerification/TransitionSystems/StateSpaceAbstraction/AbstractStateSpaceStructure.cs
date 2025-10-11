@@ -14,7 +14,7 @@ namespace DPN.SoundnessVerification.TransitionSystems
         protected ConstraintExpressionService ExpressionService;
         private bool disposedValue;
 
-        protected DataPetriNet DataPetriNet { get; init; }
+        public DataPetriNet DataPetriNet { get; init; }
         public TAbsState InitialState { get; set; }
         public List<TAbsState> ConstraintStates { get; set; }
         public List<TAbsArc> ConstraintArcs { get; set; }

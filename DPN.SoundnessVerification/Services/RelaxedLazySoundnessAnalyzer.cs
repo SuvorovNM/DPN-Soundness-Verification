@@ -60,9 +60,10 @@ public static class RelaxedLazySoundnessAnalyzer
 
         var isSound = unfeasibleTransitions.Length == 0;
 
+        // TODO: update dictionary
         return new SoundnessProperties(
             SoundnessType.RelaxedLazy,
-            stateDictionary,
+            stateDictionary.ToDictionary(x=>x.Key.Id, x=>x.Value),
             cg.IsFullGraph,
             unfeasibleTransitions,
             hasDeadlocks,
@@ -110,7 +111,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
         return new SoundnessProperties(
             SoundnessType.RelaxedLazy,
-            stateDictionary,
+            stateDictionary.ToDictionary(x=>x.Key.Id, x=>x.Value),
             isBounded,
             unfeasibleTransitions,
             hasDeadlocks,

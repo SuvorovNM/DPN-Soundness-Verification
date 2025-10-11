@@ -6,8 +6,8 @@ namespace DPN.Visualization.Models;
 
 public class GraphToVisualize
 {
-    public List<StateToVisualize> States { get; init; }
-    public List<ArcToVisualize> Arcs { get; init; }
+    public StateToVisualize[] States { get; init; }
+    public ArcToVisualize[] Arcs { get; init; }
     public SoundnessPropertiesToVisualize? SoundnessProperties { get; init; }
     public bool IsFull { get; init; }
     public GraphType GraphType { get; init; }
@@ -20,13 +20,13 @@ public class GraphToVisualize
         {
             States = cg.ConstraintStates
                 .Select(x => StateToVisualize.FromNode(x,
-                    soundnessProperties?.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default) ??
+                    soundnessProperties?.StateTypes.GetValueOrDefault(x.Id, ConstraintStateType.Default) ??
                     ConstraintStateType.Default))
-                .ToList(),
+                .ToArray(),
 
             Arcs = cg.ConstraintArcs
                 .Select(ArcToVisualize.FromArc)
-                .ToList(),
+                .ToArray(),
 
             SoundnessProperties = soundnessProperties != null
                 ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
@@ -44,13 +44,13 @@ public class GraphToVisualize
         {
             States = lts.ConstraintStates
                 .Select(x => StateToVisualize.FromNode(x,
-                    soundnessProperties?.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default) ??
+                    soundnessProperties?.StateTypes.GetValueOrDefault(x.Id, ConstraintStateType.Default) ??
                     ConstraintStateType.Default))
-                .ToList(),
+                .ToArray(),
 
             Arcs = lts.ConstraintArcs
                 .Select(ArcToVisualize.FromArc)
-                .ToList(),
+                .ToArray(),
 
             SoundnessProperties = soundnessProperties != null
                 ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)
@@ -67,13 +67,13 @@ public class GraphToVisualize
     {
         var states = ct.ConstraintStates
             .Select(x => StateToVisualize.FromNode(x,
-                soundnessProperties?.StateTypes.GetValueOrDefault(x, ConstraintStateType.Default) ??
+                soundnessProperties?.StateTypes.GetValueOrDefault(x.Id, ConstraintStateType.Default) ??
                 ConstraintStateType.Default))
-            .ToList();
+            .ToArray();
 
         var arcs = ct.ConstraintArcs
             .Select(ArcToVisualize.FromArc)
-            .ToList();
+            .ToArray();
 
         var soundnessProperties1 = soundnessProperties != null
             ? SoundnessPropertiesToVisualize.FromSoundnessProperties(soundnessProperties)

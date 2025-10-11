@@ -15,8 +15,9 @@ namespace DPN.Parsers
         {
             ArgumentNullException.ThrowIfNull(dpn);
 
-            XElement variablesElement = new XElement("variables");
+            
             XElement dpnStructureElement = new XElement("page");
+            XElement variablesElement = new XElement("variables");
 
             foreach (var domainType in Enum.GetValues<DomainType>())
             {

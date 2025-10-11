@@ -5,7 +5,7 @@ namespace DPN.SoundnessVerification;
 
 public record SoundnessProperties(
     SoundnessType SoundnessType,
-    Dictionary<AbstractState, ConstraintStateType> StateTypes,
+    Dictionary<int, ConstraintStateType> StateTypes,
     bool Boundedness,
     string[] DeadTransitions,
     bool Deadlocks,

@@ -105,7 +105,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
 
         private static string FormGraphInfoLines(GraphToVisualize graph)
         {
-            return $"Constraint states: {graph.States.Count}. Constraint arcs: {graph.Arcs.Count}\n";
+            return $"Constraint states: {graph.States.Length}. Constraint arcs: {graph.Arcs.Length}\n";
         }
 
         private static string FormGraphInfoLines(ConstraintGraph graph)
@@ -113,7 +113,7 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
             return $"Constraint states: {graph.ConstraintStates.Count}. Constraint arcs: {graph.ConstraintArcs.Count}\n";
         }
 
-        private static string FormStatesInfoLines(List<StateToVisualize> states)
+        private static string FormStatesInfoLines(StateToVisualize[] states)
         {
             var stateTypes = new Dictionary<ConstraintStateType, int>();
             foreach (var stateType in Enum.GetValues<ConstraintStateType>())

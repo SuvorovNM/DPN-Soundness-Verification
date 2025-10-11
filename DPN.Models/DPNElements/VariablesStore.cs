@@ -24,7 +24,7 @@ namespace DPN.Models.DPNElements
             }
         }
 
-        public List<(DomainType domain, string name)> GetAllVariables()
+        public (DomainType domain, string name)[] GetAllVariables()
         {
             var variables = new List<(DomainType, string)> ();
             foreach (var domainType in variableSources.Keys)
@@ -32,7 +32,7 @@ namespace DPN.Models.DPNElements
                 variables.AddRange(variableSources[domainType].GetKeys().Select(x => (domainType, x)));
             }
 
-            return variables;
+            return variables.ToArray();
         }
 
         public void Clear()

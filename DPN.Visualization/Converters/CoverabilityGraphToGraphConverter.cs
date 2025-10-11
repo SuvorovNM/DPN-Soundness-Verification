@@ -21,7 +21,7 @@ public class CoverabilityGraphToGraphConverter : IToGraphConverter
     }
 
     private Dictionary<int, string> AddStatesToGraph(
-        List<StateToVisualize> states, 
+        StateToVisualize[] states, 
         Graph graph,
         SoundnessType soundnessType)
     {

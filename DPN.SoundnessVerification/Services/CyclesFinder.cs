@@ -103,7 +103,7 @@ namespace DPN.SoundnessVerification.Services
                 while (currentNode != coveredNode)
                 {
                     var arcToParent = invertedArcDict[currentNode];
-                    currentNode = currentNode.ParentNode;
+                    currentNode = currentNode.ParentNode!;
                     outputArcs.AddRange(arcDict[currentNode].Except(new[] { arcToParent }));
                     inputArcs.Add(arcToParent);
                 } // It seems that we do not need to add anything else

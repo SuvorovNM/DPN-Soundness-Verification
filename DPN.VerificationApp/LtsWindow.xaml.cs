@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
 using DPN.Parsers;
+using DPN.SoundnessVerification;
+using DPN.SoundnessVerification.TransitionSystems;
 using DPN.VerificationApp.Extensions;
 using DPN.Visualization.Converters;
 using DPN.Visualization.Models;
@@ -15,24 +17,27 @@ namespace DPN.VerificationApp
     /// </summary>
     public partial class LtsWindow : Window
     {
-        private readonly GraphToVisualize stateSpaceStructure;
+        private readonly StateSpaceAbstraction stateSpaceStructure;
 
-        public LtsWindow(GraphToVisualize stateSpaceStructure, bool isOpenedFromFile)
+        //StateSpaceAbstraction stateSpaceAbstraction, SoundnessProperties soundnessProperties
+        public LtsWindow(VerificationResult verificationResult, bool isOpenedFromFile)
         {
             InitializeComponent();
 
-            IToGraphConverter constraintGraphToGraphParser = stateSpaceStructure.GraphType == GraphType.Lts
+            var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
+            IToGraphConverter constraintGraphToGraphParser = graphToVisualize.GraphType == GraphType.Lts
                 ? new LtsToGraphConverter()
                 : new CoverabilityGraphToGraphConverter();
-
-            this.stateSpaceStructure = stateSpaceStructure;
-            graphControl.Graph = constraintGraphToGraphParser.Convert(stateSpaceStructure);
+            
+            graphControl.Graph = constraintGraphToGraphParser.Convert(graphToVisualize);
             graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
             
             if (FindName("SaveMenu") is Menu menu && isOpenedFromFile)
                 menu.Visibility = Visibility.Collapsed;
 
-            logControl.FormOutput(stateSpaceStructure);
+            logControl.FormOutput(graphToVisualize);
+            
+            stateSpaceStructure = verificationResult.StateSpaceAbstraction;
         }
 
         private void SaveCG_Click(object sender, RoutedEventArgs e)

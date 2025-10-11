@@ -16,7 +16,7 @@ namespace DPN.Visualization.Converters
             return graph;
         }
 
-        private Dictionary<int, string> AddStatesToGraph(List<StateToVisualize> states, Graph graph)
+        private Dictionary<int, string> AddStatesToGraph(StateToVisualize[] states, Graph graph)
         {
             var addedStates = new Dictionary<int, string>();
             foreach (var state in states)

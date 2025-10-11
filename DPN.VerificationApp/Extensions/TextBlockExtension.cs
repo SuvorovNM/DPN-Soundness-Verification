@@ -137,10 +137,10 @@ namespace DPN.VerificationApp.Extensions
         private static string FormGraphInfoLines(GraphToVisualize graph)
         {
             return
-                $"Constraint states: {graph.States.Count}. Constraint arcs: {graph.Arcs.Count}\n";
+                $"Constraint states: {graph.States.Length}. Constraint arcs: {graph.Arcs.Length}\n";
         }
 
-        private static string FormStatesInfoLines(List<StateToVisualize> states)
+        private static string FormStatesInfoLines(StateToVisualize[] states)
         {
             var consideredStateTypes = Enum.GetValues<ConstraintStateType>()
                 .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered })

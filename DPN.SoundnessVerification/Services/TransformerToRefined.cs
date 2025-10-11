@@ -156,7 +156,7 @@ namespace DPN.SoundnessVerification.Services
         public (DataPetriNet dpn, ClassicalLabeledTransitionSystem lts) TransformUsingLts
             (DataPetriNet sourceDpn, ClassicalLabeledTransitionSystem sourceLts = null)
         {
-            DataPetriNet transformedDpn = sourceDpn;
+            var transformedDpn = (DataPetriNet)sourceDpn.Clone();
             int sourceDpnTransitionCount;
             _outputTransitionsCheck = new HashSet<Transition>();
 

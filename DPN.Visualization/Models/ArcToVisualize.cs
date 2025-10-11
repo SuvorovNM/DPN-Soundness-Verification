@@ -1,4 +1,5 @@
-﻿using DPN.SoundnessVerification.TransitionSystems;
+﻿using DPN.Models.DPNElements;
+using DPN.SoundnessVerification.TransitionSystems;
 
 namespace DPN.Visualization.Models;
 
@@ -29,5 +30,16 @@ public class ArcToVisualize
             SourceStateId = arc.SourceState.Id,
             TargetStateId = arc.TargetState.Id
         };
+    }
+
+    public static ArcToVisualize FromArc(StateSpaceArc arc)
+    {
+	    return new ArcToVisualize
+	    {
+		    TransitionName = arc.Label,
+		    IsSilent = arc.IsSilent,
+		    SourceStateId = arc.SourceNodeId,
+		    TargetStateId = arc.TargetNodeId
+	    };
     }
 }

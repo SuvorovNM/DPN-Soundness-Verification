@@ -36,8 +36,13 @@ public static class SoundnessAnalyzer
                       && isFinalMarkingClean
                       && deadTransitions.Length == 0;
 
-        return new SoundnessProperties(SoundnessType.Classical, stateTypes, cg.IsFullGraph,
-            deadTransitions, hasDeadlocks, isSound);
+        return new SoundnessProperties(
+	        SoundnessType.Classical, 
+	        stateTypes.ToDictionary(x=>x.Key.Id, x=>x.Value), 
+	        cg.IsFullGraph,
+            deadTransitions, 
+	        hasDeadlocks, 
+	        isSound);
     }
 
     private static string[] GetDeadTransitions(DataPetriNet dpn, LabeledTransitionSystem cg)

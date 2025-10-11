@@ -1,171 +1,239 @@
 ﻿using System.Xml.Linq;
 using DPN.Models.Enums;
+using DPN.Models.Extensions;
+using DPN.SoundnessVerification;
+using DPN.SoundnessVerification.TransitionSystems;
 
 namespace DPN.Parsers
 {
-    public class CgmlParser
-    {
-        public GraphToVisualize Deserialize(XDocument document)
-        {
-            ArgumentNullException.ThrowIfNull(document);
+	public class CgmlParser
+	{
+		private const string rootElementName = "cgml";
+		private const string stateSpaceElementName = "state_space";
+		private const string statesElementName = "states";
+		private const string arcsElementName = "arcs";
+		private const string transitionsElementName = "transitions";
+		private const string finalMarkingElementName = "final_marking";
+		private const string tokensElementName = "tokens";
+		private const string constraintElementName = "constraint";
+		private const string stateElementName = "state";
+		private const string arcElementName = "arc";
+		private const string placeElementName = "place";
+		private const string transitionElementName = "transition";
+		private const string nameElementName = "name";
+		private const string textElementName = "text";
+		private const string variablesElementName = "variables";
+		private const string variableElementName = "variable";
+		private const string idAttributeName = "id";
+		private const string labelAttributeName = "label";
+		private const string isSilentAttributeName = "is_silent";
+		private const string sourceIdAttributeName = "source_id";
+		private const string targetIdAttributeName = "target_id";
+		private const string baseTransitionIdAttributeName = "base_transition_id";
+		private const string tokensAttributeName = "tokens";
+		private const string isTauAttributeName = "is_tau";
+		private const string isSplitAttributeName = "is_split";
+		private const string guardAttributeName = "guard";
+		private const string typeAttributeName = "type";
+		private const string graphTypeAttributeName = "graph_type";
+		private const string isFullAttributeName = "is_full";
 
-            var cgElement = document.Root?
-                .Element("cg");
-            if (cgElement == null)
-            {
-                throw new Exception("Document is incorrect. Can't find tag <cg>");
-            }
+		public StateSpaceAbstraction Deserialize(XDocument document)
+		{
+			ArgumentNullException.ThrowIfNull(document);
 
-            var constraintStates = new List<StateToVisualize>();
-            var statesElement = cgElement.Element("states");
-            foreach (var xmlState in statesElement.Elements())
-            {
-                var stateId = int.Parse(xmlState.Attribute("id").Value);
-                var stateType = Enum.Parse<ConstraintStateType>(xmlState.Attribute("type").Value);
+			var cgElement = document.Root?
+				.Element(stateSpaceElementName);
+			if (cgElement == null)
+			{
+				throw new Exception("Document is incorrect. Can't find tag <cg>");
+			}
 
-                var constraintFormula = xmlState.Element("constraint").Value;
+			var constraintStates = new List<StateToVisualize>();
+			var statesElement = cgElement.Element("states");
+			foreach (var xmlState in statesElement.Elements())
+			{
+				var stateId = int.Parse(xmlState.Attribute("id").Value);
+				var stateType = Enum.Parse<ConstraintStateType>(xmlState.Attribute("type").Value);
 
-                var tokensState = xmlState.Element("tokens");
-                var placeTokensDict = new Dictionary<string, int>();
-                foreach (var element in tokensState.Elements())
-                {
-                    placeTokensDict.Add(element.Name.ToString(), int.Parse(element.Value));
-                }
+				var constraintFormula = xmlState.Element("constraint").Value;
 
-                var constraintState = new StateToVisualize
-                {
-                    ConstraintFormula = constraintFormula,
-                    Id = stateId,
-                    StateType = stateType,
-                    Tokens = placeTokensDict
-                };
+				var tokensState = xmlState.Element("tokens");
+				var placeTokensDict = new Dictionary<string, int>();
+				foreach (var element in tokensState.Elements())
+				{
+					placeTokensDict.Add(element.Name.ToString(), int.Parse(element.Value));
+				}
 
-                constraintStates.Add(constraintState);
-            }
+				var constraintState = new StateToVisualize
+				{
+					ConstraintFormula = constraintFormula,
+					Id = stateId,
+					StateType = stateType,
+					Tokens = placeTokensDict
+				};
 
-            var constraintArcs = new List<ArcToVisualize>();
-            var arcsElement = cgElement.Element("arcs");
-            foreach (var xmlArc in arcsElement.Elements())
-            {
-                var transitionName = xmlArc.Attribute("transition_name").Value;
-                var isSilent = bool.Parse(xmlArc.Attribute("is_silent").Value);
-                var sourceStateId = int.Parse(xmlArc.Attribute("source_id").Value);
-                var targetStateId = int.Parse(xmlArc.Attribute("target_id").Value);
+				constraintStates.Add(constraintState);
+			}
 
-                var constraintArc = new ArcToVisualize
-                {
-                    TransitionName = transitionName,
-                    SourceStateId = sourceStateId,
-                    TargetStateId = targetStateId,
-                    IsSilent = isSilent
-                };
+			var constraintArcs = new List<ArcToVisualize>();
+			var arcsElement = cgElement.Element("arcs");
+			foreach (var xmlArc in arcsElement.Elements())
+			{
+				var transitionName = xmlArc.Attribute("transition_name").Value;
+				var isSilent = bool.Parse(xmlArc.Attribute("is_silent").Value);
+				var sourceStateId = int.Parse(xmlArc.Attribute("source_id").Value);
+				var targetStateId = int.Parse(xmlArc.Attribute("target_id").Value);
 
-                constraintArcs.Add(constraintArc);
-            }
+				var constraintArc = new ArcToVisualize
+				{
+					TransitionName = transitionName,
+					SourceStateId = sourceStateId,
+					TargetStateId = targetStateId,
+					IsSilent = isSilent
+				};
 
-            var deadTransitions = new List<string>();
-            var deadTransitionsElement = cgElement.Element("dead_transitions");
-            foreach (var xmlDeadTransition in deadTransitionsElement.Elements())
-            {
-                deadTransitions.Add(xmlDeadTransition.Value);
-            }
+				constraintArcs.Add(constraintArc);
+			}
 
-            var isBounded = bool.Parse(cgElement.Attribute("is_bounded").Value);
-            bool? isRelaxedLazySound = cgElement.Attribute("is_relaxed_lazy_sound") != null
-                ? bool.Parse(cgElement.Attribute("is_relaxed_lazy_sound").Value)
-                : null;
-            bool? isClassicalSound = cgElement.Attribute("is_classical_sound") != null
-                ? bool.Parse(cgElement.Attribute("is_classical_sound").Value)
-                : null;
+			var deadTransitions = new List<string>();
+			var deadTransitionsElement = cgElement.Element("dead_transitions");
+			foreach (var xmlDeadTransition in deadTransitionsElement.Elements())
+			{
+				deadTransitions.Add(xmlDeadTransition.Value);
+			}
 
-            var graphTypeAttribute = cgElement.Attribute("graph_type");
-            if (graphTypeAttribute == null ||
-                !Enum.TryParse(graphTypeAttribute.Value, out GraphType graphType))
-            {
-                graphType = GraphType.Lts;
-            }
 
-            if (cgElement.Attribute("is_full") == null &&
-                !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph)) ;
-            {
-                isFullGraph = true;
-            }
+			var graphTypeAttribute = cgElement.Attribute("graph_type");
+			if (graphTypeAttribute == null ||
+			    !Enum.TryParse(graphTypeAttribute.Value, out GraphType graphType))
+			{
+				graphType = GraphType.Lts;
+			}
 
-            if (cgElement.Attribute("soundness_type") == null ||
-                !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
-            {
-                soundnessType = SoundnessType.Classical;
-            }
+			if (cgElement.Attribute("is_full") == null &&
+			    !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph)) ;
+			{
+				isFullGraph = true;
+			}
 
-            return new GraphToVisualize
-            {
-                States = constraintStates,
-                Arcs = constraintArcs,
-                GraphType = graphType,
-                IsFull = isFullGraph,
-                SoundnessProperties =
-                    new SoundnessPropertiesToVisualize(isBounded, deadTransitions.ToArray(), isClassicalSound, isRelaxedLazySound)
-            };
-        }
+			if (cgElement.Attribute("soundness_type") == null ||
+			    !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
+			{
+				soundnessType = SoundnessType.Classical;
+			}
 
-        public XDocument Serialize(GraphToVisualize cg)
-        {
-            ArgumentNullException.ThrowIfNull(cg);
+			return new GraphToVisualize
+			{
+				States = constraintStates,
+				Arcs = constraintArcs,
+				GraphType = graphType,
+				IsFull = isFullGraph,
+				SoundnessProperties =
+					new SoundnessPropertiesToVisualize(isBounded, deadTransitions.ToArray(), isClassicalSound, isRelaxedLazySound)
+			};
+		}
 
-            var statesElement = new XElement("states");
-            foreach (var state in cg.States)
-            {
-                var tokensElement = new XElement("tokens");
-                foreach (var node in state.Tokens)
-                {
-                    var nodeElement = new XElement(node.Key, node.Value);
-                    tokensElement.Add(nodeElement);
-                }
+		public XDocument Serialize(StateSpaceAbstraction stateSpace)
+		{
+			var statesElement = new XElement(statesElementName);
+			var expressionSerializer = new Z3ExpressionSerializer();
 
-                var constraintElement = new XElement("constraint", state.ConstraintFormula);
+			foreach (var state in stateSpace.Nodes)
+			{
+				var tokensElement = new XElement(tokensElementName);
+				foreach (var node in state.Marking.AsDictionary())
+				{
+					var nodeElement = new XElement(node.Key, node.Value);
+					tokensElement.Add(nodeElement);
+				}
 
-                var stateElement = new XElement("state");
-                stateElement.Add(tokensElement);
-                stateElement.Add(constraintElement);
-                stateElement.SetAttributeValue("id", state.Id.ToString());
-                stateElement.SetAttributeValue("type", state.StateType.ToString()); // Maybe better to int-value?
+				var constraintFormula = expressionSerializer.Serialize(state.StateConstraint!);
+				var constraintElement = new XElement(constraintElementName, constraintFormula);
 
-                statesElement.Add(stateElement);
-            }
+				var stateElement = new XElement(stateElementName);
+				stateElement.Add(tokensElement);
+				stateElement.Add(constraintElement);
+				stateElement.SetAttributeValue(idAttributeName, state.Id.ToString());
 
-            var arcsElement = new XElement("arcs");
-            foreach (var arc in cg.Arcs)
-            {
-                var arcElement = new XElement("arc");
-                arcElement.SetAttributeValue("transition_name", arc.TransitionName);
-                arcElement.SetAttributeValue("is_silent", arc.IsSilent);
-                arcElement.SetAttributeValue("source_id", arc.SourceStateId);
-                arcElement.SetAttributeValue("target_id", arc.TargetStateId);
+				statesElement.Add(stateElement);
+			}
 
-                arcsElement.Add(arcElement);
-            }
+			var arcsElement = new XElement(arcsElementName);
+			foreach (var arc in stateSpace.Arcs)
+			{
+				var arcElement = new XElement(arcElementName);
+				arcElement.SetAttributeValue(labelAttributeName, arc.Label);
+				arcElement.SetAttributeValue(isSilentAttributeName, arc.IsSilent);
+				arcElement.SetAttributeValue(sourceIdAttributeName, arc.SourceNodeId);
+				arcElement.SetAttributeValue(targetIdAttributeName, arc.TargetNodeId);
+				arcElement.SetAttributeValue(baseTransitionIdAttributeName, arc.BaseTransitionId);
 
-            var deadTransitionsElement = new XElement("dead_transitions");
-            foreach (var deadTransition in cg.SoundnessProperties!.DeadTransitions)
-            {
-                deadTransitionsElement.Add(new XElement("transition"), deadTransition);
-            }
+				arcsElement.Add(arcElement);
+			}
 
-            var cgElement = new XElement("cg",
-                statesElement, arcsElement, deadTransitionsElement);
-            cgElement.SetAttributeValue("is_bounded", cg.SoundnessProperties.Boundedness);
-            cgElement.SetAttributeValue("is_classical_sound", cg.SoundnessProperties.ClassicalSoundness);
-            cgElement.SetAttributeValue("is_relaxed_lazy_sound", cg.SoundnessProperties.RelaxedLazySoundness);
-            cgElement.SetAttributeValue("graph_type", cg.GraphType.ToString());
-            cgElement.SetAttributeValue("is_full", cg.IsFull.ToString());
+			var finalMarkingElement = new XElement(finalMarkingElementName);
+			foreach (var (place, tokens) in stateSpace.FinalDpnMarking.AsDictionary())
+			{
+				var placeElement = new XElement(placeElementName, place);
+				placeElement.SetAttributeValue(tokensAttributeName, tokens);
 
-            //cgElement.SetAttributeValue("dead_transitions", cg.DeadTransitions);
+				finalMarkingElement.Add(placeElement);
+			}
 
-            var srcTree = new XElement("cgml", cgElement);
+			var transitionsElement = new XElement(transitionsElementName);
 
-            var document = new XDocument(srcTree);
+			foreach (var transition in stateSpace.DpnTransitions)
+			{
+				var transitionElement = new XElement(transitionElementName,
+					new XElement(nameElementName,
+						new XElement(textElementName, transition.Label)));
+				transitionElement.SetAttributeValue(idAttributeName, transition.Id);
+				transitionElement.SetAttributeValue(baseTransitionIdAttributeName, transition.BaseTransitionId);
+				transitionElement.SetAttributeValue(isTauAttributeName, transition.IsTau);
+				transitionElement.SetAttributeValue(isSplitAttributeName, transition.IsTau);
 
-            return document;
-        }
-    }
+				if (!transition.Guard.ActualConstraintExpression.IsTrue)
+				{
+					var stringExpression = expressionSerializer.Serialize(transition.Guard.ActualConstraintExpression);
+					transitionElement.SetAttributeValue(guardAttributeName, stringExpression);
+				}
+
+				transitionsElement.Add(transitionElement);
+			}
+
+			XElement variablesElement = new XElement(variablesElementName);
+			var variables = stateSpace.TypedVariables
+				.Select(kvp => (kvp.Key, kvp.Value))
+				.GroupBy(kvp => kvp.Value)
+				.ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToArray());
+
+			foreach (var domainType in Enum.GetValues<DomainType>())
+			{
+				foreach (var variable in variables[domainType])
+				{
+					var variableElement = new XElement(variableElementName,
+						new XElement(nameElementName, variable));
+					variableElement.SetAttributeValue(typeAttributeName, domainType.ToString());
+					variablesElement.Add(variableElement);
+				}
+			}
+
+			var cgElement = new XElement(
+				stateSpaceElementName,
+				statesElement,
+				arcsElement,
+				finalMarkingElement,
+				transitionsElement,
+				variablesElement);
+			cgElement.SetAttributeValue(graphTypeAttributeName, stateSpace.StateSpaceType.ToString());
+			cgElement.SetAttributeValue(isFullAttributeName, stateSpace.IsFullGraph.ToString());
+
+			var srcTree = new XElement(rootElementName, cgElement);
+
+			var document = new XDocument(srcTree);
+
+			return document;
+		}
+	}
 }
