@@ -55,9 +55,13 @@ public class Z3ExpressionSerializer
                     return $"({leftStr} != {rightStr})";
                 }
             }
-            else if (notArg.IsTrue || notArg.IsFalse || notArg.IsConst)
+            else if (notArg.IsTrue || notArg.IsFalse)
             {
                 return "!" + SerializeBoolOperand(notArg);
+            }
+            else if (notArg.IsConst)
+            {
+	            return $"({notArg.ToString()} == false)";
             }
             else
             {
@@ -117,7 +121,7 @@ public class Z3ExpressionSerializer
         }
         else if (expr.IsConst && expr.IsBool)
         {
-            return expr.ToString();
+            return $"({expr.ToString()} == true)";
         }
         else
         {

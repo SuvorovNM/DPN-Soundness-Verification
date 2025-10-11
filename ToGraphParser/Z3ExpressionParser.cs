@@ -23,7 +23,7 @@ public class Z3ExpressionParser
 
     public BoolExpr Parse(string? expression)
     {
-        if (string.IsNullOrWhiteSpace(expression))
+        if (string.IsNullOrWhiteSpace(expression) || expression.Equals("true", StringComparison.OrdinalIgnoreCase))
             return _ctx.MkTrue();
 
         var tokens = Tokenize(expression);

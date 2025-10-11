@@ -1291,13 +1291,13 @@
 
 
       <variables>
-      <variable type="Integer">
+      <variable type="Real">
             <name>caseType</name>
          </variable>
-         <variable type="Integer">
+         <variable type="Real">
             <name>closeCode</name>
          </variable>
-		 <variable type="Integer">
+		 <variable type="Real">
             <name>speciality</name>
          </variable>
          <variable type="Boolean">

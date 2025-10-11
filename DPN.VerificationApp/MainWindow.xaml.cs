@@ -81,7 +81,7 @@ namespace DPN.VerificationApp
 			}
 		}
 
-		private async void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
+		private void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
 		{
 			var stateSpace = StateSpaceConstructor.ConstructCoverabilityTree(currentDisplayedNet);
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
@@ -187,7 +187,7 @@ namespace DPN.VerificationApp
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 		}
 
-		private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
+		private void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
 		{
 			var stateSpace = StateSpaceConstructor.ConstructLabeledTransitionSystem(currentDisplayedNet);
 			var soundnessProperties = SoundnessAnalyzer.CheckSoundness(stateSpace);

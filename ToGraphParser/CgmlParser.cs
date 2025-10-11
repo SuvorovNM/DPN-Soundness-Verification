@@ -59,10 +59,10 @@ namespace DPN.Parsers
 				var typeStr = variableElem.Attribute(typeAttributeName)?.Value ?? "Integer";
 				if (Enum.TryParse<DomainType>(typeStr, out var domainType))
 				{
-					typedVariables[name] = domainType;
+					typedVariables[name + "_r"] = domainType;
+					typedVariables[name + "_w"] = domainType;
 				}
 			}
-
 
 			var context = new Context();
 			var expressionParser = new Z3ExpressionParser(context, typedVariables);
@@ -222,7 +222,12 @@ namespace DPN.Parsers
 
 			foreach (var domainType in Enum.GetValues<DomainType>())
 			{
-				foreach (var variable in variables[domainType])
+				if (!variables.TryGetValue(domainType, out var typedVariables))
+				{
+					continue;
+				}
+				
+				foreach (var variable in typedVariables)
 				{
 					var variableElement = new XElement(variableElementName,
 						new XElement(nameElementName, variable));
