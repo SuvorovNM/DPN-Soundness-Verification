@@ -183,14 +183,71 @@ namespace DPN.SoundnessVerification.Services
 			int sourceDpnTransitionCount;
 			_outputTransitionsCheck = new HashSet<Transition>();
 
+			sourceCg = new CoverabilityGraph(transformedDpn);
+			sourceCg.GenerateGraph();
+
+			var ltsMaximumCycles = cyclesFinder.GetCyclesNew(sourceCg);
+
 			do
 			{
-				sourceCg = new CoverabilityGraph(transformedDpn);
-				sourceCg.GenerateGraph();
-
 				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
+
 				transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
-					(transformedDpn, cyclesFinder.GetCycles(sourceCg));
+					(transformedDpn, ltsMaximumCycles);
+
+				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
+				{
+					return (transformedDpn, sourceCg);
+				}
+
+				foreach (var splitTransitions in transformedDpn.Transitions.GroupBy(t => t.BaseTransitionId))
+				{
+					var updatedCycles = new List<LtsCycle>(ltsMaximumCycles.Count);
+					foreach (var cycle in ltsMaximumCycles)
+					{
+						var cycleArcs = new HashSet<LtsArc>();
+						foreach (var arc in cycle.CycleArcs)
+						{
+							if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
+							{
+								foreach (var splitTransition in splitTransitions)
+								{
+									cycleArcs.Add(new LtsArc(
+										arc.SourceState,
+										new LtsTransition(splitTransition),
+										arc.TargetState));
+								}
+							}
+							else
+							{
+								cycleArcs.Add(arc);
+							}
+						}
+
+						var outgoingArcs = new HashSet<LtsArc>();
+						foreach (var arc in cycle.OutputArcs)
+						{
+							if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
+							{
+								foreach (var splitTransition in splitTransitions)
+								{
+									outgoingArcs.Add(new LtsArc(
+										arc.SourceState,
+										new LtsTransition(splitTransition),
+										arc.TargetState));
+								}
+							}
+							else
+							{
+								outgoingArcs.Add(arc);
+							}
+						}
+
+						updatedCycles.Add(new LtsCycle(cycleArcs, outgoingArcs));
+					}
+
+					ltsMaximumCycles = updatedCycles;
+				}
 			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
 
 			return (transformedDpn, sourceCg);
