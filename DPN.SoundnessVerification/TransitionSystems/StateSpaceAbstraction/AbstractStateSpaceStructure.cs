@@ -61,7 +61,7 @@ namespace DPN.SoundnessVerification.TransitionSystems
             var context = dpn.Context;
 
             var variablesList = variables.GetAllVariables();
-            var expressionList = new List<BoolExpr>(variablesList.Count);
+            var expressionList = new List<BoolExpr>(variablesList.Length);
 
             foreach (var variableData in variablesList)
             {

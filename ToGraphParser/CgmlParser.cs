@@ -3,6 +3,7 @@ using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.SoundnessVerification;
 using DPN.SoundnessVerification.TransitionSystems;
+using Microsoft.Z3;
 
 namespace DPN.Parsers
 {
@@ -41,97 +42,108 @@ namespace DPN.Parsers
 		public StateSpaceAbstraction Deserialize(XDocument document)
 		{
 			ArgumentNullException.ThrowIfNull(document);
-
-			var cgElement = document.Root?
-				.Element(stateSpaceElementName);
+			var cgElement = document.Root?.Element(stateSpaceElementName);
 			if (cgElement == null)
+				throw new Exception("Document is incorrect. Can't find <state_space> tag");
+
+			// Deserialize States
+			var statesElement = cgElement.Element(statesElementName);
+			var nodes = new List<StateSpaceNode>();
+
+			// Deserialize Variables
+			var variablesElement = cgElement.Element(variablesElementName);
+			var typedVariables = new Dictionary<string, DomainType>();
+			foreach (var variableElem in variablesElement.Elements(variableElementName))
 			{
-				throw new Exception("Document is incorrect. Can't find tag <cg>");
+				var name = variableElem.Element(nameElementName)?.Value ?? "";
+				var typeStr = variableElem.Attribute(typeAttributeName)?.Value ?? "Integer";
+				if (Enum.TryParse<DomainType>(typeStr, out var domainType))
+				{
+					typedVariables[name] = domainType;
+				}
 			}
 
-			var constraintStates = new List<StateToVisualize>();
-			var statesElement = cgElement.Element("states");
-			foreach (var xmlState in statesElement.Elements())
+
+			var context = new Context();
+			var expressionParser = new Z3ExpressionParser(context, typedVariables);
+
+			foreach (var xmlState in statesElement.Elements(stateElementName))
 			{
-				var stateId = int.Parse(xmlState.Attribute("id").Value);
-				var stateType = Enum.Parse<ConstraintStateType>(xmlState.Attribute("type").Value);
-
-				var constraintFormula = xmlState.Element("constraint").Value;
-
-				var tokensState = xmlState.Element("tokens");
-				var placeTokensDict = new Dictionary<string, int>();
-				foreach (var element in tokensState.Elements())
+				var id = int.Parse(xmlState.Attribute(idAttributeName)?.Value ?? "0");
+				var tokensElement = xmlState.Element(tokensElementName);
+				var markingDict = new Dictionary<string, int>();
+				foreach (var placeElem in tokensElement.Elements())
 				{
-					placeTokensDict.Add(element.Name.ToString(), int.Parse(element.Value));
+					markingDict[placeElem.Name.LocalName] = int.Parse(placeElem.Value);
 				}
 
-				var constraintState = new StateToVisualize
+				var constraintStr = xmlState.Element(constraintElementName)?.Value ?? "true";
+				// NOTE: Actual deserialization of BoolExpr may require a parser, here we keep as string
+				// You may want to parse constraintStr to BoolExpr if needed
+				nodes.Add(new StateSpaceNode(
+					markingDict,
+					expressionParser.Parse(constraintStr), // Constraint parsing to BoolExpr can be added if needed
+					id
+				));
+			}
+
+			// Deserialize Arcs
+			var arcsElement = cgElement.Element(arcsElementName);
+			var arcs = new List<StateSpaceArc>();
+			foreach (var xmlArc in arcsElement.Elements(arcElementName))
+			{
+				arcs.Add(new StateSpaceArc(
+					bool.Parse(xmlArc.Attribute(isSilentAttributeName)?.Value ?? "false"),
+					xmlArc.Attribute(baseTransitionIdAttributeName)?.Value ?? "",
+					int.Parse(xmlArc.Attribute(sourceIdAttributeName)?.Value ?? "0"),
+					int.Parse(xmlArc.Attribute(targetIdAttributeName)?.Value ?? "0"),
+					xmlArc.Attribute(labelAttributeName)?.Value ?? ""
+				));
+			}
+
+			// Deserialize Final Marking
+			var finalMarkingElement = cgElement.Element(finalMarkingElementName);
+			var finalMarkingDict = new Dictionary<string, int>();
+			foreach (var placeElem in finalMarkingElement.Elements(placeElementName))
+			{
+				finalMarkingDict[placeElem.Value] = int.Parse(placeElem.Attribute(tokensAttributeName)?.Value ?? "0");
+			}
+
+			// Deserialize Transitions
+			var transitionsElement = cgElement.Element(transitionsElementName);
+			var transitions = new List<DPN.Models.DPNElements.Transition>();
+			foreach (var xmlTransition in transitionsElement.Elements(transitionElementName))
+			{
+				var id = xmlTransition.Attribute(idAttributeName)?.Value ?? "";
+				var label = xmlTransition.Element(nameElementName)?.Element(textElementName)?.Value ?? "";
+				var baseTransitionId = xmlTransition.Attribute(baseTransitionIdAttributeName)?.Value ?? id;
+				var isTau = bool.Parse(xmlTransition.Attribute(isTauAttributeName)?.Value ?? "false");
+				var isSplit = bool.Parse(xmlTransition.Attribute(isSplitAttributeName)?.Value ?? "false");
+				var constraintStr = xmlTransition.Element(constraintElementName)?.Value ?? "true";
+				// Guard deserialization is skipped for brevity
+				var guard = new DPN.Models.DPNElements.Guard(context, expressionParser.Parse(constraintStr)); // You may want to parse guard from attribute
+				transitions.Add(new DPN.Models.DPNElements.Transition(id, guard, baseTransitionId)
 				{
-					ConstraintFormula = constraintFormula,
-					Id = stateId,
-					StateType = stateType,
-					Tokens = placeTokensDict
-				};
-
-				constraintStates.Add(constraintState);
+					Label = label,
+					IsTau = isTau,
+					IsSplit = isSplit
+				});
 			}
 
-			var constraintArcs = new List<ArcToVisualize>();
-			var arcsElement = cgElement.Element("arcs");
-			foreach (var xmlArc in arcsElement.Elements())
-			{
-				var transitionName = xmlArc.Attribute("transition_name").Value;
-				var isSilent = bool.Parse(xmlArc.Attribute("is_silent").Value);
-				var sourceStateId = int.Parse(xmlArc.Attribute("source_id").Value);
-				var targetStateId = int.Parse(xmlArc.Attribute("target_id").Value);
+			// Get attributes
+			var isFullGraph = bool.Parse(cgElement.Attribute(isFullAttributeName)?.Value ?? "true");
+			var graphTypeStr = cgElement.Attribute(graphTypeAttributeName)?.Value ?? "AbstractReachabilityGraph";
+			var stateSpaceType = Enum.TryParse<TransitionSystemType>(graphTypeStr, out var type) ? type : TransitionSystemType.AbstractReachabilityGraph;
 
-				var constraintArc = new ArcToVisualize
-				{
-					TransitionName = transitionName,
-					SourceStateId = sourceStateId,
-					TargetStateId = targetStateId,
-					IsSilent = isSilent
-				};
-
-				constraintArcs.Add(constraintArc);
-			}
-
-			var deadTransitions = new List<string>();
-			var deadTransitionsElement = cgElement.Element("dead_transitions");
-			foreach (var xmlDeadTransition in deadTransitionsElement.Elements())
-			{
-				deadTransitions.Add(xmlDeadTransition.Value);
-			}
-
-
-			var graphTypeAttribute = cgElement.Attribute("graph_type");
-			if (graphTypeAttribute == null ||
-			    !Enum.TryParse(graphTypeAttribute.Value, out GraphType graphType))
-			{
-				graphType = GraphType.Lts;
-			}
-
-			if (cgElement.Attribute("is_full") == null &&
-			    !bool.TryParse(cgElement.Attribute("is_full").Value, out var isFullGraph)) ;
-			{
-				isFullGraph = true;
-			}
-
-			if (cgElement.Attribute("soundness_type") == null ||
-			    !Enum.TryParse(cgElement.Attribute("soundness_type").Value, out SoundnessType soundnessType))
-			{
-				soundnessType = SoundnessType.Classical;
-			}
-
-			return new GraphToVisualize
-			{
-				States = constraintStates,
-				Arcs = constraintArcs,
-				GraphType = graphType,
-				IsFull = isFullGraph,
-				SoundnessProperties =
-					new SoundnessPropertiesToVisualize(isBounded, deadTransitions.ToArray(), isClassicalSound, isRelaxedLazySound)
-			};
+			return new StateSpaceAbstraction(
+				nodes.ToArray(),
+				arcs.ToArray(),
+				isFullGraph,
+				stateSpaceType,
+				finalMarkingDict,
+				transitions.ToArray(),
+				typedVariables
+			);
 		}
 
 		public XDocument Serialize(StateSpaceAbstraction stateSpace)
@@ -142,7 +154,7 @@ namespace DPN.Parsers
 			foreach (var state in stateSpace.Nodes)
 			{
 				var tokensElement = new XElement(tokensElementName);
-				foreach (var node in state.Marking.AsDictionary())
+				foreach (var node in state.Marking)
 				{
 					var nodeElement = new XElement(node.Key, node.Value);
 					tokensElement.Add(nodeElement);
@@ -173,7 +185,7 @@ namespace DPN.Parsers
 			}
 
 			var finalMarkingElement = new XElement(finalMarkingElementName);
-			foreach (var (place, tokens) in stateSpace.FinalDpnMarking.AsDictionary())
+			foreach (var (place, tokens) in stateSpace.FinalDpnMarking)
 			{
 				var placeElement = new XElement(placeElementName, place);
 				placeElement.SetAttributeValue(tokensAttributeName, tokens);

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,6 +9,7 @@ using System.Xml.Linq;
 using DataPetriNetGeneration;
 using DPN.Models;
 using DPN.Parsers;
+using DPN.SoundnessVerification;
 using DPN.SoundnessVerification.Services;
 using DPN.SoundnessVerification.TransitionSystems;
 using DPN.VerificationApp.Services;
@@ -18,309 +20,233 @@ using Microsoft.Z3;
 
 namespace DPN.VerificationApp
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
-    {
-        private DataPetriNet currentDisplayedNet;
-        private readonly IDpnToGraphConverter dpnConverter;
-        private readonly PnmlParser pnmlParser;
-        private readonly SampleDPNProvider dpnProvider;
-        private Context context;
+	/// <summary>
+	/// Interaction logic for MainWindow.xaml
+	/// </summary>
+	public partial class MainWindow : Window
+	{
+		private DataPetriNet currentDisplayedNet;
+		private readonly IDpnToGraphConverter dpnConverter;
+		private readonly PnmlParser pnmlParser;
+		private readonly SampleDPNProvider dpnProvider;
+		private Context context;
 
-        public MainWindow()
-        {
-            InitializeComponent();
-            dpnConverter = new DpnToGraphConverter();
-            dpnProvider = new SampleDPNProvider();
-            pnmlParser = new PnmlParser();
-            context = new Context();
-            Global.SetParameter("parallel.enable", "true");
-            Global.SetParameter("threads", "4");
-            Global.SetParameter("arith.propagation_mode", "2");
+		public MainWindow()
+		{
+			InitializeComponent();
+			dpnConverter = new DpnToGraphConverter();
+			dpnProvider = new SampleDPNProvider();
+			pnmlParser = new PnmlParser();
+			context = new Context();
+			Global.SetParameter("parallel.enable", "true");
+			Global.SetParameter("threads", "4");
+			Global.SetParameter("arith.propagation_mode", "2");
 
-            currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-        }
+			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+		}
 
 
+		private void OpenDpn_Click(object sender, RoutedEventArgs e)
+		{
+			var ofd = new OpenFileDialog
+			{
+				Filter = "Model files (*.pnmlx) | *.pnmlx"
+			};
+			if (ofd.ShowDialog() == true)
+			{
+				XmlDocument xDoc = new XmlDocument();
+				xDoc.Load(ofd.FileName);
 
-        private void OpenDpn_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new OpenFileDialog
-            {
-                Filter = "Model files (*.pnmlx) | *.pnmlx"
-            };
-            if (ofd.ShowDialog() == true)
-            {
-                XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(ofd.FileName);
+				currentDisplayedNet = pnmlParser.DeserializeDpn(xDoc);
 
-                currentDisplayedNet = pnmlParser.DeserializeDpn(xDoc);
+				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+			}
+		}
 
-                graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-            }
-        }
+		private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
+		{
+			ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
+			if (modelGenerationPropertiesWindow.ShowDialog() == true)
+			{
+				var dpnGenerator = new DPNGenerator(context);
+				currentDisplayedNet = dpnGenerator.Generate(
+					modelGenerationPropertiesWindow.PlacesCount,
+					modelGenerationPropertiesWindow.TransitionCount,
+					modelGenerationPropertiesWindow.ExtraArcsCount,
+					modelGenerationPropertiesWindow.VarsCount,
+					modelGenerationPropertiesWindow.ConditionsCount);
+				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+			}
+		}
 
-        private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
-        {
-            ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
-            if (modelGenerationPropertiesWindow.ShowDialog() == true)
-            {
-                var dpnGenerator = new DPNGenerator(context);
-                currentDisplayedNet = dpnGenerator.Generate(
-                    modelGenerationPropertiesWindow.PlacesCount,
-                    modelGenerationPropertiesWindow.TransitionCount,
-                    modelGenerationPropertiesWindow.ExtraArcsCount,
-                    modelGenerationPropertiesWindow.VarsCount,
-                    modelGenerationPropertiesWindow.ConditionsCount);
-                graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-            }
-        }
+		private async void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
+		{
+			var stateSpace = StateSpaceConstructor.ConstructCoverabilityTree(currentDisplayedNet);
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+		}
 
-        private async void ConstructCoverabilityTree_Click(object sender, RoutedEventArgs e)
-        {
-            var coverabilityTree = new CoverabilityTree(currentDisplayedNet, withTauTransitions: true);
-            var ctToVisualize = await ConstructAndAnalyzeCoverabilityTree(coverabilityTree);
-            VisualizeCoverabilityTree(ctToVisualize);
-        }
+		private void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
+		{
+			// TODO: добавить возможность выбора - строить весь или нет?
+			var stateSpace = StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, false);
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+		}
 
-        private async void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
-        {
-            var coverabilityGraph = new CoverabilityGraph(currentDisplayedNet);
-            var cgToVisualize = await ConstructAndAnalyzeCoverabilityGraph(coverabilityGraph);
-            VisualizeCoverabilityGraph(cgToVisualize);
-        }
-        
-        private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+		private void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
+		{
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
-            var cgToVisualize = await CheckLazySoundness(
-                currentDisplayedNet, 
-                new CoverabilityGraph(currentDisplayedNet, stopOnCoveringFinalPosition: true));
-            
-            stopwatch.Stop();
-            MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			var soundnessVerifier = new RelaxedLazySoundnessVerifier();
+			var verificationResult = soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>());
 
-            VisualizeCoverabilityGraph(cgToVisualize);
-        }
+			stopwatch.Stop();
+			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
 
-        private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+			VisualizeVerificationResult(verificationResult);
+		}
 
-            var dpnTransformation = new TransformerToRefined();
-            (var dpn, var lts) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
-            if (lts.IsFullGraph)
-            {
-                var constraintGraph = new ConstraintGraph(dpn);
-                var constraintGraphToVisualize = await CheckSoundness(dpn, constraintGraph);
+		private void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
+		{
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
-                stopwatch.Stop();
-                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			var soundnessVerifier = new ClassicalSoundnessVerifier();
+			var verificationResult = soundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>());
+			stopwatch.Stop();
+			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			
+			VisualizeVerificationResult(verificationResult);
+		}
 
-                VisualizeConstraintGraph(constraintGraphToVisualize);
-            }
-            else
-            {
-                var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
+		private void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
+		{
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
-                stopwatch.Stop();
-                MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			var soundnessVerifier = new ClassicalSoundnessVerifier();
+			var verificationResult = soundnessVerifier.Verify(
+				currentDisplayedNet,
+				verificationSettings: new Dictionary<string, string>
+				{
+					{ ClassicalSoundnessVerifier.VerificationSettingsConstants.AlgorithmVersion, ClassicalSoundnessVerifier.VerificationSettingsConstants.ImprovedVersion }
+				});
+			
+			stopwatch.Stop();
+			MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			
+			VisualizeVerificationResult(verificationResult);
+		}
 
-                VisualizeConstraintGraph(GraphToVisualize.FromLts(lts, soundnessProperties));
-            }
-        }
+		private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
 
-        private async void CheckSoundnessImprovedItem_Click(object sender, RoutedEventArgs e)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+		private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
 
-            var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet);
+		private void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			var stateSpace = StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet);
+			VisualizeVerificationResult(new VerificationResult(stateSpace, SoundnessAnalyzer.CheckSoundness(stateSpace)));
+		}
 
-            var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
+		private void VisualizeVerificationResult(VerificationResult verificationResult)
+		{
+			var ltsWindow = new LtsWindow(verificationResult, isOpenedFromFile: false)
+			{
+				Owner = this
+			};
+			ltsWindow.Show();
+		}
 
-            if (ltsToVisualize.SoundnessProperties!.ClassicalSoundness!.Value)
-            {
-                var cg = new ConstraintGraph(currentDisplayedNet);
-                ltsToVisualize = await CheckSoundness(currentDisplayedNet, cg);
+		private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
+		{
+			var dpnTransformation = new TransformerToRefined();
 
-                if (ltsToVisualize.SoundnessProperties!.ClassicalSoundness!.Value)
-                {
-                    var dpnTransformation = new TransformerToRefined();
-                    (var dpn, _) = dpnTransformation.TransformUsingLts(currentDisplayedNet);
+			(currentDisplayedNet, _) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
 
-                    var constraintGraph = new ConstraintGraph(dpn);
-                    ltsToVisualize = await CheckSoundness(dpn, constraintGraph);
-                }
-            }
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
 
-            stopwatch.Stop();
+		private void TransformModelToTauItem_Click(object sender, RoutedEventArgs e)
+		{
+			var dpnTransformation = new TransformerToTau();
 
-            MessageBox.Show($"Time spent: {stopwatch.ElapsedMilliseconds}ms");
+			currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
 
-            VisualizeConstraintGraph(ltsToVisualize);
-        }
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
 
-        private void DefaultVOCMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            currentDisplayedNet = dpnProvider.GetVOCDataPetriNet();
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-        }
-        private void DefaultVOVMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-        }
-        private async void QeTacticSoundnessMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var constraintGraph = new ConstraintGraph(currentDisplayedNet);
-            var constraintGraphToVisualize = await CheckSoundness(currentDisplayedNet, constraintGraph);
-            VisualizeConstraintGraph(constraintGraphToVisualize);
-        }
+		private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
+		{
+			var stateSpace = StateSpaceConstructor.ConstructLabeledTransitionSystem(currentDisplayedNet);
+			var soundnessProperties = SoundnessAnalyzer.CheckSoundness(stateSpace);
+			
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+		}
 
-        private void VisualizeCoverabilityTree(GraphToVisualize coverabilityTreeToVisualize)
-        {
-            var coverabilityTreeWindow = new LtsWindow(coverabilityTreeToVisualize, isOpenedFromFile: false)
-            {
-                Owner = this
-            };
-            coverabilityTreeWindow.Show();
-        }
-        
-        private void VisualizeCoverabilityGraph(GraphToVisualize coverabilityGraphToVisualize)
-        {
-            var coverabilityTreeWindow = new LtsWindow(coverabilityGraphToVisualize, isOpenedFromFile: false)
-            {
-                Owner = this
-            };
-            coverabilityTreeWindow.Show();
-        }
+		private void OpenCG_Click(object sender, RoutedEventArgs e)
+		{
+			var ofd = new OpenFileDialog
+			{
+				Filter = "CG files (*.cgml) | *.cgml"
+			};
+			if (ofd.ShowDialog() == true)
+			{
+				using (var fs = new FileStream(ofd.FileName, FileMode.Open))
+				{
+					var cgmlParser = new CgmlParser();
+					var xDocument = XDocument.Load(fs);
 
-        private void VisualizeConstraintGraph(GraphToVisualize constraintGraphToVisualize)
-        {
-            var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize, isOpenedFromFile: false)
-            {
-                Owner = this
-            };
-            constraintGraphWindow.Show();
-        }
+					var stateSpace = cgmlParser.Deserialize(xDocument);
+					SoundnessProperties soundnessProperties;
+					soundnessProperties = stateSpace.StateSpaceType == TransitionSystemType.AbstractReachabilityGraph 
+						? SoundnessAnalyzer.CheckSoundness(stateSpace) 
+						: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-        private async Task<GraphToVisualize> CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem lts)
-        {
-            await Task.Run(lts.GenerateGraph);
-            var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
+					var constraintGraphWindow = new LtsWindow(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
+					constraintGraphWindow.Owner = this;
+					constraintGraphWindow.Show();
+				}
+			}
+		}
 
-            return GraphToVisualize.FromLts(lts, soundnessProperties);
-        }
+		private void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
+		{
+			var dpnRepairment = new Repairment();
 
-        private async Task<GraphToVisualize> CheckLazySoundness(DataPetriNet dpn, CoverabilityGraph cg)
-        {
-            await Task.Run(cg.GenerateGraph);
-            var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
-            
-            return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
-        }
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
-        private async Task<GraphToVisualize> ConstructAndAnalyzeCoverabilityTree
-            (CoverabilityTree ct)
-        {
-            await Task.Run(ct.GenerateGraph);
-            var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(currentDisplayedNet, ct);
-            return GraphToVisualize.FromCoverabilityTree(ct, soundnessProperties);
-        }
-        
-        private async Task<GraphToVisualize> ConstructAndAnalyzeCoverabilityGraph
-            (CoverabilityGraph cg)
-        {
-            await Task.Run(cg.GenerateGraph);
-            var soundnessProperties = SoundnessAnalyzer.CheckSoundness(currentDisplayedNet, cg);
-            return GraphToVisualize.FromCoverabilityGraph(cg, soundnessProperties);
-        }
+			(currentDisplayedNet, var repairSteps, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
 
-        private void TransformModelToRefinedItem_Click(object sender, RoutedEventArgs e)
-        {
-            var dpnTransformation = new TransformerToRefined();
-            
-            (currentDisplayedNet, _) = dpnTransformation.TransformUsingCg(currentDisplayedNet);
+			stopwatch.Stop();
 
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-        }
-        
-        private void TransformModelToTauItem_Click(object sender, RoutedEventArgs e)
-        {
-            var dpnTransformation = new TransformerToTau();
-            
-            currentDisplayedNet = dpnTransformation.Transform(currentDisplayedNet);
+			MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds} ms. Repair steps: {repairSteps}." : "Failure!");
+			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+		}
 
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-        }
-
-        private async void ConstructLtsItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentDisplayedNet != null)
-            {
-                var lts = new ClassicalLabeledTransitionSystem(currentDisplayedNet);
-
-                var ltsToVisualize = await CheckSoundness(currentDisplayedNet, lts);
-                VisualizeConstraintGraph(ltsToVisualize);
-            }
-        }
-
-        private void OpenCG_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new OpenFileDialog
-            {
-                Filter = "CG files (*.cgml) | *.cgml"
-            };
-            if (ofd.ShowDialog() == true)
-            {
-                using (var fs = new FileStream(ofd.FileName, FileMode.Open))
-                {
-                    var cgmlParser = new CgmlParser();
-                    var xDocument = XDocument.Load(fs);
-
-                    var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
-
-                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize, isOpenedFromFile: true);
-                    constraintGraphWindow.Owner = this;
-                    constraintGraphWindow.Show();
-                }
-            }
-        }
-
-        private void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
-        {
-            var dpnRepairment = new Repairment();
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            (currentDisplayedNet, var repairSteps, var result) = dpnRepairment.RepairDpn(currentDisplayedNet);
-
-            stopwatch.Stop();
-
-            MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds} ms. Repair steps: {repairSteps}." : "Failure!");
-            graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
-        }
-
-        private void SaveDpn_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new SaveFileDialog()
-            {
-                Filter = "Model files (*.pnmlx) | *.pnmlx",
-            };
-            if (ofd.ShowDialog() == true)
-            {
-                var xDocument = pnmlParser.SerializeDpn(currentDisplayedNet);
-                xDocument.Save(ofd.FileName);
-            }
-        }
-    }
+		private void SaveDpn_Click(object sender, RoutedEventArgs e)
+		{
+			var ofd = new SaveFileDialog()
+			{
+				Filter = "Model files (*.pnmlx) | *.pnmlx",
+			};
+			if (ofd.ShowDialog() == true)
+			{
+				var xDocument = pnmlParser.SerializeDpn(currentDisplayedNet);
+				xDocument.Save(ofd.FileName);
+			}
+		}
+	}
 }

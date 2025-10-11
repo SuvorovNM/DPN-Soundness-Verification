@@ -28,7 +28,7 @@ public class StateToVisualize
 	    {
 		    Id = node.Id,
 		    ConstraintFormula = node.StateConstraint?.ToString() ?? string.Empty,
-		    Tokens = node.Marking.AsDictionary(),
+		    Tokens = node.Marking,
 		    StateType = stateType
 	    };
     }

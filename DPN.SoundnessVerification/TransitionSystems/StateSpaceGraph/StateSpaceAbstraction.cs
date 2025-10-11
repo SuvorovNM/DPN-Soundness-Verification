@@ -10,7 +10,7 @@ public class StateSpaceAbstraction
     public bool IsFullGraph { get; set; }
     public TransitionSystemType StateSpaceType { get; set; }
     
-    public Marking FinalDpnMarking { get; set; }
+    public Dictionary<string, int> FinalDpnMarking { get; set; }
     public Transition[] DpnTransitions { get; set; }
     public Dictionary<string, DomainType> TypedVariables { get; set; }
 
@@ -19,7 +19,7 @@ public class StateSpaceAbstraction
         StateSpaceArc[] arcs,
         bool isFullGraph,
         TransitionSystemType stateSpaceType,
-        Marking finalDpnMarking,
+        Dictionary<string, int> finalDpnMarking,
         Transition[] dpnTransitions,
         Dictionary<string, DomainType> typedVariables)
     {
