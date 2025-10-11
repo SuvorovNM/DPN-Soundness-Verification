@@ -49,7 +49,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 			stateSpaceAbstraction.Nodes
 				.Where(x => !stateDictionary[x.Id].HasFlag(ConstraintStateType.Final) && !stateDictionary[x.Id].HasFlag(ConstraintStateType.UncleanFinal))
-				.Where(x => successors[x.Id].Length == 0)
+				.Where(x => !successors.ContainsKey(x.Id))
 				.ToList()
 				.ForEach(x => stateDictionary[x.Id] |= ConstraintStateType.Deadlock);
 

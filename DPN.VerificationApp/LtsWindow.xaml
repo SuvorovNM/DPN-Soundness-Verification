@@ -12,14 +12,57 @@
             <RowDefinition Height="120"/>
         </Grid.RowDefinitions>
         
-        <!-- Содержимое первой строки -->
+        <!-- Graph visualization area -->
         <wpfgraphcontrol:AutomaticGraphLayoutControl Grid.Row="0" x:Name="graphControl"
                                                      HorizontalAlignment="Stretch"
                                                      VerticalAlignment="Stretch"
                                                      HorizontalScrollBarVisibility="Disabled"
                                                      VerticalScrollBarVisibility="Disabled"/>
         
-        <!-- Menu в первой строке, справа снизу -->
+        <!-- "Graph too large" overlay -->
+        <Border x:Name="GraphTooLargeOverlay"
+                Grid.Row="0"
+                Background="#E6FFFFFF"
+                Visibility="Collapsed"
+                Panel.ZIndex="1000">
+            <Border Background="White" 
+                    BorderBrush="#FFCC0000" 
+                    BorderThickness="2"
+                    CornerRadius="8"
+                    Padding="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="⚠️ Graph Too Large" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               Foreground="#FFCC0000"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,10"/>
+                    <TextBlock x:Name="GraphSizeText"
+                               Text="The graph contains too many nodes for visualization."
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               MaxWidth="300"/>
+                    <Button x:Name="ShowGraphAnywayButton"
+                            Content="Show Graph Anyway"
+                            Margin="0,15,0,0"
+                            Padding="10,5"
+                            Click="ShowGraphAnywayButton_Click"
+                            HorizontalAlignment="Center"/>
+                    <Button x:Name="SaveGraphAnywayButton"
+                            Content="Export Graph"
+                            Margin="0,15,0,0"
+                            Padding="10,5"
+                            Click="SaveStateSpace_Click"
+                            HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Border>
+        
+        <!-- Menu in first row, bottom right -->
         <Menu Name="SaveMenu" Grid.Row="0" HorizontalAlignment="Right" Height="26" Margin="0,0,10,10" VerticalAlignment="Bottom">
             <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558" Click="SaveStateSpace_Click">
                 <MenuItem.Header>
@@ -28,7 +71,7 @@
             </MenuItem>
         </Menu>
         
-        <!-- Содержимое второй строки -->
+        <!-- Second row content -->
         <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="Black"/>
         <ScrollViewer Grid.Row="1">
             <TextBlock x:Name="logControl" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>

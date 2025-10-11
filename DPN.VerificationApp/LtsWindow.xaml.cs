@@ -12,46 +12,96 @@ using Microsoft.Win32;
 
 namespace DPN.VerificationApp
 {
-    public partial class LtsWindow : Window
-    {
-        private readonly StateSpaceAbstraction stateSpaceStructure;
-        
-        public LtsWindow(VerificationResult verificationResult, bool isOpenedFromFile)
-        {
-            InitializeComponent();
+	public partial class LtsWindow : Window
+	{
+		private const int maxNodesToVisualize = 2;
+		private const int maxArcsToVisualize = 10;
 
-            var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
-            IToGraphConverter constraintGraphToGraphParser = graphToVisualize.GraphType == GraphType.Lts
-                ? new LtsToGraphConverter()
-                : new CoverabilityGraphToGraphConverter();
-            
-            graphControl.Graph = constraintGraphToGraphParser.Convert(graphToVisualize);
-            graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-            
-            if (FindName("SaveMenu") is Menu menu && isOpenedFromFile)
-                menu.Visibility = Visibility.Collapsed;
+		private readonly VerificationResult verificationResult;
 
-            logControl.FormOutput(graphToVisualize, verificationResult.VerificationTime);
-            
-            stateSpaceStructure = verificationResult.StateSpaceAbstraction;
-        }
+		public LtsWindow(VerificationResult verificationResult, bool isOpenedFromFile)
+		{
+			InitializeComponent();
 
-        private void SaveStateSpace_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new SaveFileDialog()
-            {
-                Filter = "State space files (*.asml) | *.asml"
-            };
-            if (ofd.ShowDialog() == true)
-            {
-                using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
-                {
-                    var asmlParser = new AsmlParser();
-                    var xDocument = asmlParser.Serialize(stateSpaceStructure);
+			this.verificationResult = verificationResult;
+			
+			CheckGraphSizeAndSetVisibility(
+				verificationResult.StateSpaceAbstraction.Nodes.Length, 
+				verificationResult.StateSpaceAbstraction.Arcs.Length);
 
-                    xDocument.Save(fs,SaveOptions.None);
-                }
-            }
-        }
-    }
+			if (FindName("SaveMenu") is Menu menu && (isOpenedFromFile || IsOverlayVisible))
+				menu.Visibility = Visibility.Collapsed;
+
+			ShowGraph(showOnlyLog: IsOverlayVisible);
+		}
+
+		private void SaveStateSpace_Click(object sender, RoutedEventArgs e)
+		{
+			var ofd = new SaveFileDialog()
+			{
+				Filter = "State space files (*.asml) | *.asml"
+			};
+			if (ofd.ShowDialog() == true)
+			{
+				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
+				{
+					var asmlParser = new AsmlParser();
+					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceAbstraction);
+
+					xDocument.Save(fs, SaveOptions.None);
+				}
+			}
+		}
+		
+		private void CheckGraphSizeAndSetVisibility(int nodeCount, int edgeCount)
+		{
+			Dispatcher.Invoke(() =>
+			{
+				if (nodeCount <= maxNodesToVisualize || edgeCount <= maxArcsToVisualize)
+				{
+					GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
+					graphControl.Visibility = Visibility.Visible;
+				}
+				else
+				{
+					GraphTooLargeOverlay.Visibility = Visibility.Visible;
+					graphControl.Visibility = Visibility.Collapsed;
+					
+					GraphSizeText.Text = $"The graph is too large for visualization.\n" +
+					                     $"Nodes: {nodeCount}, Edges: {edgeCount}\n";
+				}
+			});
+		}
+		
+		public void ShowGraph(bool showOnlyLog)
+		{
+			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
+			logControl.FormOutput(graphToVisualize, verificationResult.VerificationTime);
+			if (showOnlyLog)
+			{
+				return;
+			}
+			
+			GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
+			graphControl.Visibility = Visibility.Visible;
+			
+			IToGraphConverter constraintGraphToGraphParser = graphToVisualize.GraphType == GraphType.Lts
+				? new LtsToGraphConverter()
+				: new CoverabilityGraphToGraphConverter();
+			
+			graphControl.Graph = constraintGraphToGraphParser.Convert(graphToVisualize);
+			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+			
+			graphControl.InvalidateMeasure();
+			graphControl.InvalidateArrange();
+			graphControl.InvalidateVisual();
+		}
+		
+		private void ShowGraphAnywayButton_Click(object sender, RoutedEventArgs e)
+		{
+			ShowGraph(false);
+		}
+		
+		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
+	}
 }
