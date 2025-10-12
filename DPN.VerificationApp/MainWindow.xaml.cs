@@ -146,10 +146,10 @@ namespace DPN.VerificationApp
 			VisualizeVerificationResult(verificationResult);
 		}
 
-		private void ConstructConstraintGraphMenuItem_Click(object sender, RoutedEventArgs e)
+		private async void ConstructConstraintGraphMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Constructing Constraint Graph");
-			var stateSpace = StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet);
+			var stateSpace = await Task.Run(()=> StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet));
 			HideLoader();
 			
 			VisualizeVerificationResult(new VerificationResult(stateSpace, SoundnessAnalyzer.CheckSoundness(stateSpace)));

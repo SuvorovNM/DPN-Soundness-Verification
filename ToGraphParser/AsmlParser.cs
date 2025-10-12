@@ -119,7 +119,7 @@ namespace DPN.Parsers
 				var baseTransitionId = xmlTransition.Attribute(baseTransitionIdAttributeName)?.Value ?? id;
 				var isTau = bool.Parse(xmlTransition.Attribute(isTauAttributeName)?.Value ?? "false");
 				var isSplit = bool.Parse(xmlTransition.Attribute(isSplitAttributeName)?.Value ?? "false");
-				var constraintStr = xmlTransition.Element(constraintElementName)?.Value ?? "true";
+				var constraintStr = xmlTransition.Attribute(guardAttributeName)?.Value ?? "true";
 				// Guard deserialization is skipped for brevity
 				var guard = new DPN.Models.DPNElements.Guard(context, expressionParser.Parse(constraintStr)); // You may want to parse guard from attribute
 				transitions.Add(new DPN.Models.DPNElements.Transition(id, guard, baseTransitionId)

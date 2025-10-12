@@ -47,15 +47,15 @@ namespace DPN.Models.Extensions
             {
                 if (variable.IsBool)
                 {
-                    result.Add(variable.ToString()[..^2], DomainType.Boolean);
+                    result.TryAdd(variable.ToString()[..^2], DomainType.Boolean);
                 }
                 if (variable.IsInt)
                 {
-                    result.Add(variable.ToString()[..^2], DomainType.Integer);
+                    result.TryAdd(variable.ToString()[..^2], DomainType.Integer);
                 }
                 if (variable.IsReal)
                 {
-                    result.Add(variable.ToString()[..^2], DomainType.Real);
+                    result.TryAdd(variable.ToString()[..^2], DomainType.Real);
                 }
             }
 

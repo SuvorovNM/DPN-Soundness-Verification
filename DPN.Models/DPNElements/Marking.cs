@@ -2,58 +2,64 @@
 
 namespace DPN.Models.DPNElements
 {
-    public sealed class Marking// : Dictionary<Node, int>
+    public sealed class Marking
     {
-        private IDictionary<Place, int> markingDictionary;
-        private Marking(IDictionary<Place, int> marking)
+        private Dictionary<string, int> placeIdToTokens;
+        private Marking(Dictionary<string, int> marking)
         {
-            this.markingDictionary = marking;
+            this.placeIdToTokens = marking;
         }
         public Marking(Marking marking)
         {
-            markingDictionary = new Dictionary<Place, int>(marking.markingDictionary);
+	        placeIdToTokens = new Dictionary<string, int>(marking.placeIdToTokens);
         }
         public Marking()
         {
-            markingDictionary= new Dictionary<Place, int>();
+	        placeIdToTokens= new Dictionary<string, int>();
         }
 
         public int this[Place place]
         {
-            get { return markingDictionary[place]; }
-            set { markingDictionary[place] = value; }
+            get { return placeIdToTokens[place.Id]; }
+            set { placeIdToTokens[place.Id] = value; }
+        }
+        
+        public int this[string placeId]
+        {
+	        get { return placeIdToTokens[placeId]; }
+	        set { placeIdToTokens[placeId] = value; }
         }
 
-        public ICollection<Place> Keys
+        public ICollection<string> Keys
         {
             get
             {
-                return markingDictionary.Keys;
+                return placeIdToTokens.Keys;
             }
         }
 
         public Dictionary<string, int> AsDictionary()
         {
-            return markingDictionary.ToDictionary(x=> x.Key.Id, y=>y.Value);
+            return placeIdToTokens;
         }
 
         public static Marking FromDpnPlaces(List<Place> places)
         {
-            return new Marking(places.ToDictionary(x => x, y => y.Tokens));
+            return new Marking(places.ToDictionary(x => x.Id, y => y.Tokens));
         }
 
         public static Marking FinalMarkingFromDpnPlaces(List<Place> places)
         {
-            return new Marking(places.ToDictionary(x => x, y => y.IsFinal ? 1 : 0));
+            return new Marking(places.ToDictionary(x => x.Id, y => y.IsFinal ? 1 : 0));
         }
 
         public override string ToString()
         {
-            return string.Join(", ", markingDictionary
+            return string.Join(", ", placeIdToTokens
                     .Where(x => x.Value > 0)
                     .Select(x => x.Value > 1
-                        ? x.Value.ToString() + x.Key.Label
-                        : x.Key.Label));
+                        ? x.Value.ToString() + x.Key
+                        : x.Key));
         }
 
 
@@ -63,7 +69,7 @@ namespace DPN.Models.DPNElements
 
             foreach (var transition in dpn.Transitions)
             {
-                var preSetArcs = dpn.Arcs.Where(x => x.Destination == transition).ToList();
+                var preSetArcs = dpn.Arcs.Where(x => x.Destination.Id == transition.Id).ToList();
 
                 var canFire = preSetArcs.All(x => this[(Place)x.Source] >= x.Weight);
 

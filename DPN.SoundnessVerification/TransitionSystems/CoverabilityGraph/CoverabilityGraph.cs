@@ -40,44 +40,39 @@ public class CoverabilityGraph : LabeledTransitionSystem
                 var smtExpression = transition.Guard.ActualConstraintExpression;
 
                 var overwrittenVarNames = transition.Guard.WriteVars;
-                var readExpression = transitionGuards[transition];
 
-                if (ExpressionService.CanBeSatisfied(ExpressionService.ConcatExpressions(currentState.Constraints,
-                        readExpression, overwrittenVarNames)))
+                var constraintsIfTransitionFires = ExpressionService
+	                .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+
+                if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
                 {
-                    var constraintsIfTransitionFires = ExpressionService
-                        .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+	                var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
+	                var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                    if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
-                    {
-                        var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
-                        var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
-
-                        var coveredNodes = FindAllParentNodesForWhichComparisonResultForCurrentNodeHolds
-                            (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
-                        foreach (var coveredNode in coveredNodes)
-                        {
-                            foreach (var place in DataPetriNet.Places)
-                            {
-                                if (coveredNode.Marking[place] < updatedMarking[place])
-                                {
-                                    updatedMarking[place] = int.MaxValue;
-                                }
-                            }
-                        }
+	                var coveredNodes = FindAllParentNodesForWhichComparisonResultForCurrentNodeHolds
+		                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+	                foreach (var coveredNode in coveredNodes)
+	                {
+		                foreach (var place in DataPetriNet.Places)
+		                {
+			                if (coveredNode.Marking[place] < updatedMarking[place])
+			                {
+				                updatedMarking[place] = int.MaxValue;
+			                }
+		                }
+	                }
 
 
-                        AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
+	                AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
 
 
-                        if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)
-                        {
-                            stopwatch.Stop();
-                            Milliseconds = stopwatch.ElapsedMilliseconds;
-                            IsFullGraph = false;
-                            return;
-                        }
-                    }
+	                if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)
+	                {
+		                stopwatch.Stop();
+		                Milliseconds = stopwatch.ElapsedMilliseconds;
+		                IsFullGraph = false;
+		                return;
+	                }
                 }
             }
         }

@@ -11,12 +11,12 @@ namespace DPN.Models.DPNElements
         public bool IsTau { get; set; }
         public string BaseTransitionId { get; set; }
 
-        public Transition(string id, Guard guard, string? baseTransitionId = null)
+        public Transition(string id, Guard guard, string? baseTransitionId = null, bool isSplit = false)
         {
             Guard = guard;
             Label = id;
             Id = id;
-            IsSplit = baseTransitionId != null;
+            IsSplit = isSplit;
             IsTau = id.StartsWith("τ");
             BaseTransitionId = baseTransitionId ?? id;
         }
@@ -42,11 +42,14 @@ namespace DPN.Models.DPNElements
             {
                 var positiveTransition = new Transition(
                     Id + "+[" + secondTransitionId+"]",
-                    Guard.MakeRefined(Guard, positiveConstraint), BaseTransitionId);
+                    Guard.MakeRefined(Guard, positiveConstraint), 
+                    BaseTransitionId,
+                    isSplit: true);
 
                 var negativeTransition = new Transition(
                     Id + "-[" + secondTransitionId+"]",
-                    Guard.MakeRefined(Guard, negativeConstraint), BaseTransitionId);
+                    Guard.MakeRefined(Guard, negativeConstraint), BaseTransitionId, 
+                    isSplit: true);
 
                 return (positiveTransition, negativeTransition);
             }
@@ -57,9 +60,9 @@ namespace DPN.Models.DPNElements
             var readExpression = Guard.Context.GetReadExpression(Guard.ActualConstraintExpression, Guard.WriteVars);
             var negatedExpression = Guard.Context.MkNot(readExpression);
 
-            if (readExpression is { IsTrue: false, IsFalse: false })
+            if (readExpression is { IsTrue: false, IsFalse: false } && Guard.Context.CanBeSatisfied(negatedExpression))
             {
-                return new Transition($"τ({Id})", new Guard(Guard.Context, negatedExpression), Id);
+                return new Transition($"τ({Label})", new Guard(Guard.Context, negatedExpression), Id);
             }
 
             return null;

@@ -1,4 +1,6 @@
-﻿using DPN.Models.Extensions;
+﻿using DPN.Models.DPNElements;
+using DPN.Models.Enums;
+using DPN.Models.Extensions;
 
 namespace DPN.SoundnessVerification.TransitionSystems.Converters;
 
@@ -38,6 +40,29 @@ public static class ToStateSpaceConverter
     
     public static StateSpaceAbstraction Convert(LabeledTransitionSystem labeledTransitionSystem)
     {
+	    var extraTransitions = new List<Transition>(labeledTransitionSystem.DataPetriNet.Transitions);
+	    if (labeledTransitionSystem is ConstraintGraph)
+	    {
+		    var tauTransitions = labeledTransitionSystem.ConstraintArcs
+			    .Where(a => a.Transition.IsSilent)
+			    .Select(a => a.Transition.Id)
+			    .ToHashSet();
+
+		    var context = labeledTransitionSystem.DataPetriNet.Context;
+		    foreach (var baseTransitionId in tauTransitions)
+		    {
+			    var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.Single(t => t.Id == baseTransitionId);
+
+			    var tauTransition = baseTransition.MakeTau()!;
+				    
+				/*    new Transition(
+				    $"τ({baseTransition.Label})", 
+				    new Guard(context, context.MkNot(context.GetReadExpression(baseTransition.Guard.ActualConstraintExpression, new Dictionary<string, DomainType>()))),
+				    baseTransitionId);*/
+			    extraTransitions.Add(tauTransition);
+		    }
+	    }
+	    
         return new StateSpaceAbstraction(
             labeledTransitionSystem.ConstraintStates
                 .Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
@@ -48,7 +73,7 @@ public static class ToStateSpaceConverter
             labeledTransitionSystem.IsFullGraph,
             TransitionSystemType.AbstractReachabilityGraph,
             labeledTransitionSystem.DataPetriNet.FinalMarking.AsDictionary(),
-            labeledTransitionSystem.DataPetriNet.Transitions.ToArray(),
+            labeledTransitionSystem.DataPetriNet.Transitions.Union(extraTransitions).ToArray(),
             labeledTransitionSystem.DataPetriNet.GetVariablesDictionary());
     }
 }

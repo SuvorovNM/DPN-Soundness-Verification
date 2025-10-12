@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.SoundnessVerification;
 using DPN.Visualization.Models;
@@ -13,7 +14,12 @@ namespace DPN.VerificationApp.Extensions
 {
     public static class TextBlockExtension
     {
-        public static void FormOutput(this TextBlock textBlock, GraphToVisualize graph, TimeSpan? verificationTime)
+        public static void FormOutput(
+	        this TextBlock textBlock, 
+	        GraphToVisualize graph, 
+	        Transition[] dpnTransitions,
+	        Dictionary<string, DomainType> typedVariables,
+	        TimeSpan? verificationTime)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -31,6 +37,23 @@ namespace DPN.VerificationApp.Extensions
             else
             {
                 textBlock.Inlines.Add(FormGraphInfoLines(graph));
+            }
+            
+            textBlock.Inlines.Add("\nTransitions: \n");
+
+            foreach (var transition in dpnTransitions)
+            {
+	            textBlock.Inlines.Add($" {transition.Label}" + 
+	                                  (transition.Label == transition.Id ? "" : $" ({transition.Id})") + ": " + 
+	                                  transition.Guard.ActualConstraintExpression +
+	                                  (string.IsNullOrEmpty(transition.BaseTransitionId) || transition.BaseTransitionId == transition.Id ? "" : $" (base transition id: {transition.BaseTransitionId})") + "\n");
+            }
+            
+            textBlock.Inlines.Add("\nVariables: \n");
+
+            foreach (var variable in typedVariables)
+            {
+	            textBlock.Inlines.Add($" {variable.Key}: {variable.Value.ToString()} \n");
             }
 
             if (verificationTime.HasValue)

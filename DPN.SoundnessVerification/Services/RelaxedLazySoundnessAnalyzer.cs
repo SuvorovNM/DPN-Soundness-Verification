@@ -110,7 +110,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			cg.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);
 
 		DefineInitialState(cg, stateDictionary);
-		var finalMarking = dpn.Places.Where(x => x.IsFinal).ToArray();
+		var finalMarking = dpn.Places.Where(x => x.IsFinal).Select(p=>p.Id).ToArray();
 
 		var finalStates = cg.ConstraintStates
 			.Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] == 1))
@@ -158,7 +158,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			ct.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);
 
 		DefineInitialState(ct, stateDictionary);
-		var finalMarking = dpn.Places.Where(x => x.IsFinal).ToArray();
+		var finalMarking = dpn.Places.Where(x => x.IsFinal).Select(p=>p.Id).ToArray();
 
 		var finalStates = ct.ConstraintStates
 			.Where(x => x.Marking.Keys.Intersect(finalMarking).All(y => x.Marking[y] == 1))
@@ -303,16 +303,16 @@ public static class RelaxedLazySoundnessAnalyzer
 	}
 
 	private static void DefineUncleanFinals(
-		Place[] terminalNodes,
+		string[] terminalNodesIds,
 		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
 	{
 		var uncleanFinalNodes = stateDictionary
-			.Where(x => x.Key.Marking.Keys.Intersect(terminalNodes).Any(y => x.Key.Marking[y] > 1))
+			.Where(x => x.Key.Marking.Keys.Intersect(terminalNodesIds).Any(y => x.Key.Marking[y] > 1))
 			.Select(x => x.Key);
 
 		foreach (var cgNode in uncleanFinalNodes)
 		{
-			if (cgNode.Marking.Keys.Intersect(terminalNodes).Any(y => cgNode.Marking[y] > 1))
+			if (cgNode.Marking.Keys.Intersect(terminalNodesIds).Any(y => cgNode.Marking[y] > 1))
 			{
 				stateDictionary[cgNode] |= ConstraintStateType.UncleanFinal;
 			}

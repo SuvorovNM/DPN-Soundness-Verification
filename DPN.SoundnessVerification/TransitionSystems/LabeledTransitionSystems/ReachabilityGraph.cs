@@ -6,61 +6,58 @@ using DPN.Models.Extensions;
 
 namespace DPN.SoundnessVerification.TransitionSystems
 {
-    public class ReachabilityGraph : LabeledTransitionSystem
-    {
+	public class ReachabilityGraph : LabeledTransitionSystem
+	{
+		public ReachabilityGraph(DataPetriNet dataPetriNet)
+			: base(dataPetriNet)
+		{
+		}
 
-        public ReachabilityGraph(DataPetriNet dataPetriNet)
-        : base(dataPetriNet)
-        {
+		public override void GenerateGraph()
+		{
+			IsFullGraph = false;
+			Stopwatch stopwatch = Stopwatch.StartNew();
 
-        }
+			while (StatesToConsider.Count > 0)
+			{
+				var currentState = StatesToConsider.Pop();
 
-        public override void GenerateGraph()
-        {
-            IsFullGraph = false;
-            Stopwatch stopwatch = Stopwatch.StartNew();
+				foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
+				{
+					var smtExpression = transition.Guard.ActualConstraintExpression;
 
-            while (StatesToConsider.Count > 0)
-            {
-                var currentState = StatesToConsider.Pop();
+					var overwrittenVarNames = transition.Guard.WriteVars;
 
-                foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
-                {
-                    var smtExpression = transition.Guard.ActualConstraintExpression;
+					var constraintsIfTransitionFires = ExpressionService
+						.ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
 
-                    var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
-                    
-                    if (ExpressionService.CanBeSatisfied(ExpressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
-                    {
-                        var constraintsIfTransitionFires = ExpressionService
-                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+					
 
-                        if (constraintsIfTransitionFires.IsAnd && (constraintsIfTransitionFires.Args.LastOrDefault()?.IsFalse ?? false))
-                        {
-	                        
-                        }
+					if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
+					{
+						var updatedMarking = (Marking)transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
+						var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
+						
+						if (transition.IsTau && updatedMarking.CompareTo(currentState.Marking) != MarkingComparisonResult.Equal)
+						{
+						
+						}
 
-                        if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
-                        {
-                            var updatedMarking = (Marking)transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
-                            var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
+						var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+							(stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+						if (coveredNode != null)
+						{
+							return; // The net is unbounded
+						}
 
-                            var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
-                                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
-                            if (coveredNode != null)
-                            {
-                                return; // The net is unbounded
-                            }
+						AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
+					}
+				}
+			}
 
-                            AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
-                        }
-                    }
-                }
-            }
-            stopwatch.Stop();
-            Milliseconds = stopwatch.ElapsedMilliseconds;
-            IsFullGraph = true;
-        }
-    }
+			stopwatch.Stop();
+			Milliseconds = stopwatch.ElapsedMilliseconds;
+			IsFullGraph = true;
+		}
+	}
 }

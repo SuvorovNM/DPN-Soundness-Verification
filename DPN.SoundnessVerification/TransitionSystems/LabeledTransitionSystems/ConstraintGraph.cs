@@ -29,25 +29,22 @@ namespace DPN.SoundnessVerification.TransitionSystems
                     var overwrittenVarNames = transition.Guard.WriteVars;
                     var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
 
-                    if (ExpressionService.CanBeSatisfied(ExpressionService.ConcatExpressions(currentState.Constraints, readExpression, overwrittenVarNames)))
+                    var constraintsIfTransitionFires = ExpressionService
+	                    .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+
+                    if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
                     {
-                        var constraintsIfTransitionFires = ExpressionService
-                            .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+	                    var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
+	                    var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
 
-                        if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
-                        {
-                            var updatedMarking = transition.FireOnGivenMarking(currentState.Marking, DataPetriNet.Arcs);
-                            var stateToAddInfo = new BaseStateInfo(updatedMarking, constraintsIfTransitionFires);
+	                    var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+		                    (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
+	                    if (coveredNode != null)
+	                    {
+		                    return; // The net is unbounded
+	                    }
 
-                            var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
-                                (stateToAddInfo, currentState, MarkingComparisonResult.GreaterThan);
-                            if (coveredNode != null)
-                            {
-                                return; // The net is unbounded
-                            }
-
-                            AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
-                        }
+	                    AddNewState(currentState, new LtsTransition(transition, transition.IsTau), stateToAddInfo);
                     }
 
                     if (transition.IsTau)

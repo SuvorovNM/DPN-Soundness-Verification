@@ -14,8 +14,8 @@ namespace DPN.VerificationApp
 {
 	public partial class LtsWindow : Window
 	{
-		private const int maxNodesToVisualize = 2;
-		private const int maxArcsToVisualize = 10;
+		private const int maxNodesToVisualize = 2000;
+		private const int maxArcsToVisualize = 5000;
 
 		private readonly VerificationResult verificationResult;
 
@@ -24,9 +24,9 @@ namespace DPN.VerificationApp
 			InitializeComponent();
 
 			this.verificationResult = verificationResult;
-			
+
 			CheckGraphSizeAndSetVisibility(
-				verificationResult.StateSpaceAbstraction.Nodes.Length, 
+				verificationResult.StateSpaceAbstraction.Nodes.Length,
 				verificationResult.StateSpaceAbstraction.Arcs.Length);
 
 			if (FindName("SaveMenu") is Menu menu && (isOpenedFromFile || IsOverlayVisible))
@@ -52,56 +52,57 @@ namespace DPN.VerificationApp
 				}
 			}
 		}
-		
+
 		private void CheckGraphSizeAndSetVisibility(int nodeCount, int edgeCount)
 		{
-			Dispatcher.Invoke(() =>
+			if (nodeCount <= maxNodesToVisualize && edgeCount <= maxArcsToVisualize)
 			{
-				if (nodeCount <= maxNodesToVisualize || edgeCount <= maxArcsToVisualize)
-				{
-					GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
-					graphControl.Visibility = Visibility.Visible;
-				}
-				else
-				{
-					GraphTooLargeOverlay.Visibility = Visibility.Visible;
-					graphControl.Visibility = Visibility.Collapsed;
-					
-					GraphSizeText.Text = $"The graph is too large for visualization.\n" +
-					                     $"Nodes: {nodeCount}, Edges: {edgeCount}\n";
-				}
-			});
+				GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
+				graphControl.Visibility = Visibility.Visible;
+			}
+			else
+			{
+				GraphTooLargeOverlay.Visibility = Visibility.Visible;
+				graphControl.Visibility = Visibility.Collapsed;
+
+				GraphSizeText.Text = $"The graph is too large for visualization.\n" +
+				                     $"Nodes: {nodeCount}, Edges: {edgeCount}\n";
+			}
 		}
-		
+
 		public void ShowGraph(bool showOnlyLog)
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
-			logControl.FormOutput(graphToVisualize, verificationResult.VerificationTime);
+			logControl.FormOutput(
+				graphToVisualize, 
+				verificationResult.StateSpaceAbstraction.DpnTransitions, 
+				verificationResult.StateSpaceAbstraction.TypedVariables, 
+				verificationResult.VerificationTime);
 			if (showOnlyLog)
 			{
 				return;
 			}
-			
+
 			GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
 			graphControl.Visibility = Visibility.Visible;
-			
+
 			IToGraphConverter constraintGraphToGraphParser = graphToVisualize.GraphType == GraphType.Lts
 				? new LtsToGraphConverter()
 				: new CoverabilityGraphToGraphConverter();
-			
+
 			graphControl.Graph = constraintGraphToGraphParser.Convert(graphToVisualize);
 			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-			
+
 			graphControl.InvalidateMeasure();
 			graphControl.InvalidateArrange();
 			graphControl.InvalidateVisual();
 		}
-		
+
 		private void ShowGraphAnywayButton_Click(object sender, RoutedEventArgs e)
 		{
 			ShowGraph(false);
 		}
-		
+
 		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
 	}
 }
