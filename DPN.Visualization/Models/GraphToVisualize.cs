@@ -1,6 +1,8 @@
 ﻿using DPN.Models.Enums;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness;
+using DPN.Soundness.TransitionSystems.CoverabilityGraph;
+using DPN.Soundness.TransitionSystems.CoverabilityTree;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
 
 namespace DPN.Visualization.Models;
 

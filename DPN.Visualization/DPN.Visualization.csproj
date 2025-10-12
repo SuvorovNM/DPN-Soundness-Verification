@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DPN.SoundnessVerification\DPN.SoundnessVerification.csproj" />
+      <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
       <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
     </ItemGroup>
 

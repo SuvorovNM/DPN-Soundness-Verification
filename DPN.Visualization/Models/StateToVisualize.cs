@@ -1,5 +1,6 @@
 ﻿using DPN.Models.Enums;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
+using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
 namespace DPN.Visualization.Models;
 

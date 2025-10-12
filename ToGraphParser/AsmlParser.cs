@@ -1,8 +1,8 @@
 ﻿using System.Xml.Linq;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness.TransitionSystems;
+using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 using Microsoft.Z3;
 
 namespace DPN.Parsers

@@ -1,6 +1,6 @@
 ﻿using DPN.Models.Enums;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness;
+using DPN.Soundness.TransitionSystems;
 using DPN.Visualization.Models;
 
 namespace DPN.Visualization.Converters;

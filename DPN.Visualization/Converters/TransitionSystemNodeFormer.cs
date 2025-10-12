@@ -1,5 +1,5 @@
 ﻿using DPN.Models.Enums;
-using DPN.SoundnessVerification;
+using DPN.Soundness;
 using DPN.Visualization.Models;
 using Microsoft.Msagl.Drawing;
 

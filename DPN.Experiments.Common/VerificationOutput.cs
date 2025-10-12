@@ -1,6 +1,6 @@
 ﻿using DPN.Models;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
 
 namespace DPN.Experiments.Common
 {
@@ -46,7 +46,7 @@ namespace DPN.Experiments.Common
             Places = (ushort)dpn.Places.Count;
             Transitions = (ushort)dpn.Transitions.Count;
             Arcs = (ushort)dpn.Arcs.Count;
-            Variables = (ushort)dpn.Variables.GetAllVariables().Count;
+            Variables = (ushort)dpn.Variables.GetAllVariables().Length;
             Conditions = (ushort)dpn.Transitions
                 .Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
             Boundedness = soundnessProperties?.Boundedness ?? false ;

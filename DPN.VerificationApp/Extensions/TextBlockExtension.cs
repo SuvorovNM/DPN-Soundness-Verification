@@ -6,7 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
-using DPN.SoundnessVerification;
+using DPN.Soundness;
 using DPN.Visualization.Models;
 using EnumsNET;
 

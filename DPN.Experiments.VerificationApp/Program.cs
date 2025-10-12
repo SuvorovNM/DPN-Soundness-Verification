@@ -10,9 +10,10 @@ using System.Xml;
 using System.Xml.Serialization;
 using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.Services;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness;
+using DPN.Soundness.Services;
+using DPN.Soundness.TransitionSystems.CoverabilityGraph;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -215,7 +216,7 @@ namespace DataPetriNetVerificationApplication
                     .Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
                 var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
                 File.AppendAllText(badCasesPath,
-                    $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Count}, {conditionsCount}\n");
+                    $"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}\n");
 
                 throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
             }

@@ -7,7 +7,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using DPN.Models;
 using DPN.Models.Enums;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
 using DPN.Visualization.Models;
 
 namespace DataPetriNetIterativeVerificationApplication.Extensions

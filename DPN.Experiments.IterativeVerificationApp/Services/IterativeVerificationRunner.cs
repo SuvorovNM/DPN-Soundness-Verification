@@ -16,7 +16,7 @@ using System.Xml.Linq;
 using System.Collections.ObjectModel;
 using DPN.Experiments.Common;
 using DPN.Models;
-using DPN.SoundnessVerification;
+using DPN.Soundness;
 
 namespace DataPetriNetIterativeVerificationApplication.Services
 {

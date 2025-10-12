@@ -1,5 +1,7 @@
 ﻿using DPN.Models.DPNElements;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness.TransitionSystems.CoverabilityTree;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
 namespace DPN.Visualization.Models;
 

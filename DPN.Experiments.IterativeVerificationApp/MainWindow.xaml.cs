@@ -14,9 +14,9 @@ using System.Windows.Input;
 using System.Xml;
 using System.Xml.Linq;
 using DPN.Experiments.Common;
-using DPN.SoundnessVerification;
-using DPN.SoundnessVerification.Services;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness;
+using DPN.Soundness.Services;
+using DPN.Soundness.TransitionSystems;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
@@ -93,16 +93,18 @@ namespace DataPetriNetIterativeVerificationApplication
         {
             if (item != null)
             {
-                using (var fs = new FileStream(paths[item.Number] + ".cgml", FileMode.Open))// + "_" + item.VerificationType
+                using (var fs = new FileStream(paths[item.Number] + ".asml", FileMode.Open))
                 {
                     var cgmlParser = new AsmlParser();
                     var xDocument = XDocument.Load(fs);
 
                     var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
-                    var soundnessProperties = constraintGraphToVisualize.StateSpaceType == TransitionSystemType.AbstractReachabilityGraph
-	                    ? SoundnessAnalyzer.CheckSoundness()
+                    var soundnessProperties = constraintGraphToVisualize.StateSpaceType ==
+                                              TransitionSystemType.AbstractReachabilityGraph
+                        ? SoundnessAnalyzer.CheckSoundness(constraintGraphToVisualize)
+                        : RelaxedLazySoundnessAnalyzer.CheckSoundness(constraintGraphToVisualize);
 
-                    var constraintGraphWindow = new LtsWindow(constraintGraphToVisualize);
+                    var constraintGraphWindow = new LtsWindow();
                     constraintGraphWindow.Owner = this;
                     constraintGraphWindow.Show();
                 }

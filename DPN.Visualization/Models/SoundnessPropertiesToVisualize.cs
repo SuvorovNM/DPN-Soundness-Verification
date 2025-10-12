@@ -1,4 +1,4 @@
-﻿using DPN.SoundnessVerification;
+﻿using DPN.Soundness;
 
 namespace DPN.Visualization.Models;
 

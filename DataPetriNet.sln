@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Visualization", "DPN.Vi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Experiments.Common", "DPN.Experiments.Common\DPN.Experiments.Common.csproj", "{9CB4239B-4CDB-429B-92B9-65EF9FC50BAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.SoundnessVerification", "DPN.SoundnessVerification\DPN.SoundnessVerification.csproj", "{0E598079-CF35-43F3-ADEB-7EBC5170251B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Soundness", "DPN.Soundness\DPN.Soundness.csproj", "{0E598079-CF35-43F3-ADEB-7EBC5170251B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

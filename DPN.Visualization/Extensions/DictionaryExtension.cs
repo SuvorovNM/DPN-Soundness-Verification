@@ -1,5 +1,5 @@
 ﻿using DPN.Models.Enums;
-using DPN.SoundnessVerification.TransitionSystems;
+using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
 
 namespace DPN.Visualization.Extensions
 {
