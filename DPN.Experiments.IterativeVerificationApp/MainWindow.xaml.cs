@@ -17,6 +17,7 @@ using DPN.Experiments.Common;
 using DPN.Soundness;
 using DPN.Soundness.Services;
 using DPN.Soundness.TransitionSystems;
+using DPN.Visualization.Models;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
@@ -95,17 +96,19 @@ namespace DataPetriNetIterativeVerificationApplication
             {
                 using (var fs = new FileStream(paths[item.Number] + ".asml", FileMode.Open))
                 {
-                    var cgmlParser = new AsmlParser();
+                    var asmlParser = new AsmlParser();
                     var xDocument = XDocument.Load(fs);
 
-                    var constraintGraphToVisualize = cgmlParser.Deserialize(xDocument);
-                    var soundnessProperties = constraintGraphToVisualize.StateSpaceType ==
+                    var stateSpace = asmlParser.Deserialize(xDocument);
+                    var soundnessProperties = stateSpace.StateSpaceType ==
                                               TransitionSystemType.AbstractReachabilityGraph
-                        ? SoundnessAnalyzer.CheckSoundness(constraintGraphToVisualize)
-                        : RelaxedLazySoundnessAnalyzer.CheckSoundness(constraintGraphToVisualize);
+                        ? SoundnessAnalyzer.CheckSoundness(stateSpace)
+                        : RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-                    var constraintGraphWindow = new LtsWindow();
-                    constraintGraphWindow.Owner = this;
+                    var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), true)
+                    {
+	                    Owner = this
+                    };
                     constraintGraphWindow.Show();
                 }
             }
@@ -277,7 +280,7 @@ namespace DataPetriNetIterativeVerificationApplication
 
                     var dataPetriNet = pnmlParser.DeserializeDpn(xDocument);
 
-                    DpnWindow dpnWindow = new DpnWindow(dataPetriNet);
+                    var dpnWindow = new DpnWindow(dataPetriNet);
                     dpnWindow.Owner = this;
                     dpnWindow.Show();
                 }

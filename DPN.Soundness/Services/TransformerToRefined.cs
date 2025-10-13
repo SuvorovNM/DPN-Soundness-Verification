@@ -211,10 +211,19 @@ namespace DPN.Soundness.Services
 						var cycleArcs = new HashSet<LtsArc>();
 						foreach (var arc in cycle.CycleArcs)
 						{
+							if (splitTransitions.Key == "Update request" && arc.Transition.Id.Contains("Update request+[Refuse proposal]"))
+							{
+								
+							}
 							if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
 							{
 								foreach (var splitTransition in splitTransitions)
 								{
+									if (splitTransitions.Key == "Update request")
+									{
+										
+									}
+									
 									cycleArcs.Add(new LtsArc(
 										arc.SourceState,
 										new LtsTransition(splitTransition),

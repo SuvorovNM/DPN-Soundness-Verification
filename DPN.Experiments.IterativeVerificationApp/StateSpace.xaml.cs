@@ -2,23 +2,23 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Xml.Linq;
+using DataPetriNetIterativeVerificationApplication.Extensions;
 using DPN.Parsers;
 using DPN.Soundness;
-using DPN.VerificationApp.Extensions;
 using DPN.Visualization.Converters;
 using DPN.Visualization.Models;
 using Microsoft.Win32;
 
-namespace DPN.VerificationApp
+namespace DataPetriNetIterativeVerificationApplication
 {
-	public partial class LtsWindow : Window
+	public partial class StateSpace : Window
 	{
 		private const int maxNodesToVisualize = 2000;
 		private const int maxArcsToVisualize = 5000;
 
 		private readonly VerificationResult verificationResult;
 
-		public LtsWindow(VerificationResult verificationResult, bool isOpenedFromFile)
+		public StateSpace(VerificationResult verificationResult, bool isOpenedFromFile)
 		{
 			InitializeComponent();
 
@@ -32,6 +32,7 @@ namespace DPN.VerificationApp
 				menu.Visibility = Visibility.Collapsed;
 
 			ShowGraph(showOnlyLog: IsOverlayVisible);
+			
 		}
 
 		private void SaveStateSpace_Click(object sender, RoutedEventArgs e)

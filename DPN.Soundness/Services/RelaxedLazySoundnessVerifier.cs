@@ -8,38 +8,51 @@ namespace DPN.Soundness.Services;
 
 public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 {
-    public VerificationResult Verify(DataPetriNet dpn, Dictionary<string, string> verificationSettings)
-    {
-	    var stopWatch = Stopwatch.StartNew();
-	    verificationSettings.TryGetValue(VerificationSettingsConstants.BaseStructure, out var baseStructure);
+	public VerificationResult Verify(DataPetriNet dpn, Dictionary<string, string> verificationSettings)
+	{
+		var stopWatch = Stopwatch.StartNew();
+		verificationSettings.TryGetValue(VerificationSettingsConstants.BaseStructure, out var baseStructure);
 
-	    if (baseStructure is VerificationSettingsConstants.CoverabilityGraph or null)
-	    {
-		    var cg = new CoverabilityGraph(dpn, stopOnCoveringFinalPosition: true);
-		    cg.GenerateGraph();
-		    var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
+		var stopOnCoveringFinalPosition = true;
+		if (verificationSettings.TryGetValue(VerificationSettingsConstants.StopOnCoveringFinalPosition, out var stopOnCoveringFinalPositionString))
+		{
+			if (!bool.TryParse(stopOnCoveringFinalPositionString, out stopOnCoveringFinalPosition))
+			{
+				throw new ArgumentException($"Invalid value for parameter {nameof(VerificationSettingsConstants.StopOnCoveringFinalPosition)}");
+			}
+		}
 
-		    stopWatch.Stop();
-		    return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
-	    }
+		if (baseStructure is VerificationSettingsConstants.CoverabilityGraph or null)
+		{
+			var cg = new CoverabilityGraph(dpn, stopOnCoveringFinalPosition);
+			cg.GenerateGraph();
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
 
-	    if (baseStructure == VerificationSettingsConstants.CoverabilityTree)
-	    {
-		    var ct = new CoverabilityTree(dpn, stopOnCoveringFinalPosition: true);
-		    ct.GenerateGraph();
-		    var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, ct);
+			stopWatch.Stop();
+			return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
+		}
 
-		    stopWatch.Stop();
-		    return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties, stopWatch.Elapsed);
-	    }
-	    
-        throw new ArgumentException($"{nameof(RelaxedLazySoundnessVerifier)} does not support base structure {baseStructure}");
-    }
-    
-    public static class VerificationSettingsConstants
-    {
-	    public const string BaseStructure = nameof(BaseStructure);
-	    public const string CoverabilityGraph = nameof(CoverabilityGraph);
-	    public const string CoverabilityTree = nameof(CoverabilityTree);
-    }
+		if (baseStructure == VerificationSettingsConstants.CoverabilityTree)
+		{
+			var ct = new CoverabilityTree(dpn, stopOnCoveringFinalPosition);
+			ct.GenerateGraph();
+			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, ct);
+
+			stopWatch.Stop();
+			return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties, stopWatch.Elapsed);
+		}
+
+		throw new ArgumentException($"{nameof(RelaxedLazySoundnessVerifier)} does not support base structure {baseStructure}");
+	}
+
+	public static class VerificationSettingsConstants
+	{
+		public const string BaseStructure = nameof(BaseStructure);
+		public const string CoverabilityGraph = nameof(CoverabilityGraph);
+		public const string CoverabilityTree = nameof(CoverabilityTree);
+
+		public const string StopOnCoveringFinalPosition = nameof(StopOnCoveringFinalPosition);
+		public const string True = nameof(True);
+		public const string False = nameof(False);
+	}
 }

@@ -12,8 +12,8 @@ public static class AtomicFormulaCounter
 
     private static int CountAtomicFormulasRecursive(Expr expr, HashSet<Expr> visitedExpressions)
     {
-        if (expr == null || visitedExpressions.Contains(expr))
-            return 0;
+	    // if (expr == null || visitedExpressions.Contains(expr))
+        //    return 0;
 
         visitedExpressions.Add(expr);
 
@@ -66,8 +66,8 @@ public static class AtomicFormulaCounter
             var declKind = decl.DeclKind;
 
             // Check if it's one of the relational operators
-            if (declKind == Z3_decl_kind.Z3_OP_ULT || declKind == Z3_decl_kind.Z3_OP_ULEQ ||
-                declKind == Z3_decl_kind.Z3_OP_UGT || declKind == Z3_decl_kind.Z3_OP_UGEQ ||
+            if (declKind == Z3_decl_kind.Z3_OP_LT || declKind == Z3_decl_kind.Z3_OP_LE ||
+                declKind == Z3_decl_kind.Z3_OP_GT || declKind == Z3_decl_kind.Z3_OP_GE ||
                 declKind == Z3_decl_kind.Z3_OP_SLT || declKind == Z3_decl_kind.Z3_OP_SLEQ ||
                 declKind == Z3_decl_kind.Z3_OP_SGT || declKind == Z3_decl_kind.Z3_OP_SGEQ ||
                 declKind == Z3_decl_kind.Z3_OP_EQ || declKind == Z3_decl_kind.Z3_OP_DISTINCT)

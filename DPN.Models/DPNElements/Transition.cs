@@ -101,7 +101,7 @@ namespace DPN.Models.DPNElements
 
         public object Clone()
         {
-            return new Transition(Id, (Guard)Guard.Clone(), string.IsNullOrEmpty(BaseTransitionId) ? null : BaseTransitionId) { Label = this.Label};
+            return new Transition(Id, (Guard)Guard.Clone(), string.IsNullOrEmpty(BaseTransitionId) ? null : BaseTransitionId, IsSplit) { Label = this.Label};
         }
     }
 }

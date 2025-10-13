@@ -157,7 +157,7 @@ namespace DPN.VerificationApp
 
 		private void VisualizeVerificationResult(VerificationResult verificationResult)
 		{
-			var ltsWindow = new LtsWindow(verificationResult, isOpenedFromFile: false)
+			var ltsWindow = new StateSpace(verificationResult, isOpenedFromFile: false)
 			{
 				Owner = this
 			};
@@ -211,7 +211,7 @@ namespace DPN.VerificationApp
 					? SoundnessAnalyzer.CheckSoundness(stateSpace)
 					: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-				var constraintGraphWindow = new LtsWindow(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
+				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
 				constraintGraphWindow.Owner = this;
 				constraintGraphWindow.Show();
 			}
@@ -219,19 +219,15 @@ namespace DPN.VerificationApp
 
 		private async void TransformModelToRepairedItem_Click(object sender, RoutedEventArgs e)
 		{
-			var dpnRepairment = new Repairment();
-
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
+			var dpnRepairer = new ClassicalSoundnessRepairer();
 
 			ShowLoader("Repairing DPN");
-			(currentDisplayedNet, var repairSteps, var result) = await Task.Run(() => dpnRepairment.RepairDpn(currentDisplayedNet));
+			var repairResult = await Task.Run(() => dpnRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
 
-			stopwatch.Stop();
-
-			MessageBox.Show(result ? $"Success! Time spent: {stopwatch.ElapsedMilliseconds} ms. Repair steps: {repairSteps}." : "Failure!");
-			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
+			MessageBox.Show(repairResult.IsSuccess ? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}." : "Failure!");
+			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
+			currentDisplayedNet =  repairResult.Dpn;
 		}
 
 		private void SaveDpn_Click(object sender, RoutedEventArgs e)
