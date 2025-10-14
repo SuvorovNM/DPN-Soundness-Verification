@@ -48,8 +48,7 @@ namespace DPN.Soundness.Transformations
 			{
 				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
 
-				transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
-					(transformedDpn, maximumCycles);
+				transformedDpn = PerformTransformationStep(transformedDpn, maximumCycles);
 
 				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
 				{
@@ -62,13 +61,7 @@ namespace DPN.Soundness.Transformations
 			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
 		}
 
-		private DataPetriNet PerformTransformationStep<TAbsState, TAbsTransition, TAbsArc, TSelf>
-			(DataPetriNet sourceDpn, List<TSelf> cycles)
-			where TAbsArc : AbstractArc<TAbsState, TAbsTransition>
-			where TAbsState : AbstractState
-			where TAbsTransition : AbstractTransition
-			where TSelf : Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>
-
+		private DataPetriNet PerformTransformationStep(DataPetriNet sourceDpn, List<LtsCycle> cycles)
 		{
 			var newDpn = (DataPetriNet)sourceDpn.Clone();
 			var context = sourceDpn.Context;
@@ -89,27 +82,27 @@ namespace DPN.Soundness.Transformations
 				var updatedTransitions = new List<Transition> { sourceTransition };
 
 				var writeVarsInSourceTransition = sourceTransition.Guard.WriteVars;
+				var writeVarsNames = writeVarsInSourceTransition.Select(wv => wv.Key).ToHashSet();
 
 				if (writeVarsInSourceTransition.Count > 0)
 				{
 					var cyclesWithTransition = cycles
 						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
-
-					var outputTransitions = cyclesWithTransition
-						.SelectMany(x => x.OutputArcs)
-						.Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars
-							.Intersect(writeVarsInSourceTransition).Any())
+					
+					var transitionsToInvestigate = cyclesWithTransition
+						.SelectMany(c=>c.CycleArcsWithAdjacent)
+						.Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars.Select(v=>v.Key)
+							.Intersect(writeVarsNames).Any())
 						.Select(x => transitionsDict[x.Transition.Id])
 						.Distinct()
 						.ToArray();
 
-					foreach (var outputTransition in outputTransitions)
+					foreach (var outputTransition in transitionsToInvestigate)
 					{
 						var updatedTransitionsBasis = new List<Transition>(updatedTransitions);
 
 						var overwrittenVarsInOutTransition = outputTransition.Guard.WriteVars;
 						var readFormula = context.GetReadExpression(outputTransition.Guard.ActualConstraintExpression, overwrittenVarsInOutTransition);
-
 
 						var formulaToConjunct = readFormula;
 						foreach (var overwrittenVar in writeVarsInSourceTransition)
@@ -182,18 +175,10 @@ namespace DPN.Soundness.Transformations
 					var cycleArcs = new HashSet<LtsArc>();
 					foreach (var arc in cycle.CycleArcs)
 					{
-						if (splitTransitions.Key == "Update request" && arc.Transition.Id.Contains("Update request+[Refuse proposal]"))
-						{
-						}
-
 						if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
 						{
 							foreach (var splitTransition in splitTransitions)
 							{
-								if (splitTransitions.Key == "Update request")
-								{
-								}
-
 								cycleArcs.Add(new LtsArc(
 									arc.SourceState,
 									new LtsTransition(splitTransition),
@@ -207,7 +192,7 @@ namespace DPN.Soundness.Transformations
 					}
 
 					var outgoingArcs = new HashSet<LtsArc>();
-					foreach (var arc in cycle.OutputArcs)
+					foreach (var arc in cycle.CycleArcsWithAdjacent)
 					{
 						if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
 						{

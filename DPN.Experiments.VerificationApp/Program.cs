@@ -14,6 +14,7 @@ using DPN.Soundness;
 using DPN.Soundness.Repair;
 using DPN.Soundness.Transformations;
 using DPN.Soundness.Verification;
+using Microsoft.Z3;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -104,6 +105,10 @@ namespace DataPetriNetVerificationApplication
 
 			ArgumentNullException.ThrowIfNull(dpnFilePath);
 			ArgumentNullException.ThrowIfNull(outputDirectory);
+			
+			Global.SetParameter("parallel.enable", "true");
+			Global.SetParameter("threads", "4");
+			Global.SetParameter("arith.propagation_mode", "2");
 
 			var conditionsInfo = new ConditionsInfo
 			{

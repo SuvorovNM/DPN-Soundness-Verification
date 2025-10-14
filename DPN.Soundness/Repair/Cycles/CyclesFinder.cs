@@ -1,27 +1,12 @@
 ﻿using DPN.Soundness.TransitionSystems.Reachability;
-using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 
 namespace DPN.Soundness.Repair.Cycles
 {
-	internal class Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>(HashSet<TAbsArc> cycleArcs, HashSet<TAbsArc> outputArcs)
-		where TAbsArc : AbstractArc<TAbsState, TAbsTransition>
-		where TAbsState : AbstractState
-		where TAbsTransition : AbstractTransition
-		where TSelf : Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>
-	{
-		public HashSet<TAbsArc> CycleArcs { get; init; } = cycleArcs;
-		public HashSet<TAbsArc> OutputArcs { get; init; } = outputArcs;
-	}
-
-	internal class LtsCycle(HashSet<LtsArc> cycleArcs, HashSet<LtsArc> outputArcs)
-		: Cycle<LtsArc, LtsState, LtsTransition, LtsCycle>(cycleArcs, outputArcs);
-
 	internal static class CyclesFinder
 	{
 		public static List<LtsCycle> GetCycles(LabeledTransitionSystem lts)
 		{
 			var reachableNodes = ComputeReachableNodesBfs(lts);
-
 
 			var remainedNodes = lts.ConstraintStates.ToHashSet();
 			var cycles = new List<HashSet<LtsState>>(lts.ConstraintStates.Count);
@@ -55,11 +40,6 @@ namespace DPN.Soundness.Repair.Cycles
 				.GroupBy(a => a.SourceState)
 				.ToDictionary(a => a.Key, a => a.Select(x => x).ToArray());
 
-			var incomingArcs = lts
-				.ConstraintArcs
-				.GroupBy(a => a.TargetState)
-				.ToDictionary(a => a.Key, a => a.Select(x => x).ToArray());
-
 			var ltsCycles = new List<LtsCycle>(cycles.Count);
 			foreach (var cycle in cycles)
 			{
@@ -71,10 +51,11 @@ namespace DPN.Soundness.Repair.Cycles
 					.Where(a => cycle.Contains(a.TargetState))
 					.ToHashSet();
 
-				var arcsGoingOutside = outgoingFromCycleNodes.Except(arcsInsideLoop).ToHashSet();
+				var arcsOutsideLoop = outgoingFromCycleNodes
+					.Except(arcsInsideLoop)
+					.ToHashSet();
 
-				// TODO: нужен костыль - должны отдавать тут все
-				ltsCycles.Add(new LtsCycle(arcsInsideLoop, outgoingFromCycleNodes)); //arcsGoingOutside
+				ltsCycles.Add(new LtsCycle(arcsInsideLoop, arcsOutsideLoop));
 			}
 
 			return ltsCycles;
