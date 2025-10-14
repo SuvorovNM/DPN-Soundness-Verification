@@ -62,10 +62,9 @@ namespace DPN.VerificationApp.Extensions
             }
         }
 
-        public static void FormRelaxedLazySoundnessVerificationLog(
+        private static void FormRelaxedLazySoundnessVerificationLog(
             this TextBlock textBlock,
-            GraphToVisualize graph,
-            Action? detailedInfoAction = null)
+            GraphToVisualize graph)
         {
             ArgumentNullException.ThrowIfNull(graph);
 
@@ -91,7 +90,7 @@ namespace DPN.VerificationApp.Extensions
             }
         }
 
-        public static void FormSoundnessVerificationLog(
+        private static void FormSoundnessVerificationLog(
             this TextBlock textBlock,
             GraphToVisualize graph)
         {

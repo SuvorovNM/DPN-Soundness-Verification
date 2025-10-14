@@ -1,80 +1,42 @@
 ﻿using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.CoverabilityTree;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 
 namespace DPN.Soundness.Services
 {
-	public class ArcForInvestigation<TAbsState, TAbsTransition, TAbsArc, TSelf>
+	public class ArcForInvestigation<TAbsState, TAbsTransition, TAbsArc, TSelf>(TAbsArc arc)
 		where TAbsState : AbstractState
 		where TAbsTransition : AbstractTransition
 		where TAbsArc : AbstractArc<TAbsState, TAbsTransition>
 		where TSelf : ArcForInvestigation<TAbsState, TAbsTransition, TAbsArc, TSelf>
 	{
-		public TAbsArc Arc { get; set; }
-		public bool IsVisited { get; set; }
-
-		public ArcForInvestigation(TAbsArc arc)
-		{
-			Arc = arc;
-			IsVisited = false;
-		}
+		public TAbsArc Arc { get; set; } = arc;
+		public bool IsVisited { get; set; } = false;
 	}
 
-	public class LtsArcForInvestigation : ArcForInvestigation<LtsState, LtsTransition, LtsArc, LtsArcForInvestigation>
-	{
-		public LtsArcForInvestigation(LtsArc arc) : base(arc)
-		{
-		}
-	}
+	internal class LtsArcForInvestigation(LtsArc arc) : ArcForInvestigation<LtsState, LtsTransition, LtsArc, LtsArcForInvestigation>(arc);
 
-	public class CtArcForInvestigation : ArcForInvestigation<CtState, CtTransition, CtArc, CtArcForInvestigation>
-	{
-		public CtArcForInvestigation(CtArc arc) : base(arc)
-		{
-		}
-	}
-
-	public class Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>
+	internal class Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>(HashSet<TAbsArc> cycleArcs, HashSet<TAbsArc> outputArcs)
 		where TAbsArc : AbstractArc<TAbsState, TAbsTransition>
 		where TAbsState : AbstractState
 		where TAbsTransition : AbstractTransition
 		where TSelf : Cycle<TAbsArc, TAbsState, TAbsTransition, TSelf>
 	{
-		public HashSet<TAbsArc> CycleArcs { get; init; }
-		public HashSet<TAbsArc> OutputArcs { get; init; }
+		public HashSet<TAbsArc> CycleArcs { get; init; } = cycleArcs;
+		public HashSet<TAbsArc> OutputArcs { get; init; } = outputArcs;
 
-		public Cycle()
-		{
-			CycleArcs = new HashSet<TAbsArc>();
-			OutputArcs = new HashSet<TAbsArc>();
-		}
-
-		public Cycle(HashSet<TAbsArc> cycleArcs, HashSet<TAbsArc> outputArcs)
-		{
-			CycleArcs = cycleArcs;
-			OutputArcs = outputArcs;
-		}
-	}
-
-	public class LtsCycle : Cycle<LtsArc, LtsState, LtsTransition, LtsCycle>
-	{
-		public LtsCycle(HashSet<LtsArc> cycleArcs, HashSet<LtsArc> outputArcs)
-			: base(cycleArcs, outputArcs)
+		public Cycle() : this(new HashSet<TAbsArc>(), new HashSet<TAbsArc>())
 		{
 		}
 	}
 
-	public class CtCycle : Cycle<CtArc, CtState, CtTransition, CtCycle>
-	{
-		public CtCycle(HashSet<CtArc> cycleArcs, HashSet<CtArc> outputArcs)
-			: base(cycleArcs, outputArcs)
-		{
-		}
-	}
+	internal class LtsCycle(HashSet<LtsArc> cycleArcs, HashSet<LtsArc> outputArcs) : Cycle<LtsArc, LtsState, LtsTransition, LtsCycle>(cycleArcs, outputArcs);
 
-	public class CyclesFinder
+	internal class CtCycle(HashSet<CtArc> cycleArcs, HashSet<CtArc> outputArcs) : Cycle<CtArc, CtState, CtTransition, CtCycle>(cycleArcs, outputArcs);
+
+	internal class CyclesFinder
 	{
 		public List<CtCycle> GetCycles(CoverabilityTree ct)
 		{

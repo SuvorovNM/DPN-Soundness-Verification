@@ -6,16 +6,12 @@ using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNConditionsGenerator : IDisposable
+    public class DPNConditionsGenerator(Context context) : IDisposable
     {
         private const int VOC = 0;
         private readonly Random random = new Random();
-        public Context Context { get; private set; }
+        public Context Context { get; private set; } = context;
 
-        public DPNConditionsGenerator(Context context)
-        {
-            Context = context;
-        }
         public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount, bool soundnessPreference = false)
         {
             if ((varsCount < 0) || (conditionsCount < 0))

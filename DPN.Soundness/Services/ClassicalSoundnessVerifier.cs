@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using DPN.Models;
 using DPN.Soundness.TransitionSystems.Converters;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Reachability;
 
 namespace DPN.Soundness.Services;
 

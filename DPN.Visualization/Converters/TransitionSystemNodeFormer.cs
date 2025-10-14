@@ -22,8 +22,13 @@ internal static class TransitionSystemNodeFormer
 
     private static Node CreateNodeDespiteSoundness(StateToVisualize state, string name)
     {
-        var node = new Node(name);
-        node.Attr.Shape = Shape.Box;
+        var node = new Node(name)
+        {
+	        Attr =
+	        {
+		        Shape = Shape.Box
+	        }
+        };
 
         if (state.Tokens.Any(x => x.Value == int.MaxValue))
         {
@@ -35,9 +40,14 @@ internal static class TransitionSystemNodeFormer
 
     private static Node CreateNodeForClassicalSoundness(StateToVisualize state, string name)
     {
-        var node = new Node(name);
-        node.Attr.Shape = Shape.Box;
-        
+        var node = new Node(name)
+        {
+	        Attr =
+	        {
+		        Shape = Shape.Box
+	        }
+        };
+
         if (state.StateType.HasFlag(ConstraintStateType.Initial))
         {
             node.Attr.LineWidth = 2;
@@ -73,8 +83,13 @@ internal static class TransitionSystemNodeFormer
 
     private static Node CreateNodeForLazySoundness(StateToVisualize state, string name)
     {
-        var node = new Node(name);
-        node.Attr.Shape = Shape.Box;
+        var node = new Node(name)
+        {
+	        Attr =
+	        {
+		        Shape = Shape.Box
+	        }
+        };
 
         if (state.StateType.HasFlag(ConstraintStateType.Initial))
         {

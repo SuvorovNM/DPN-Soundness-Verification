@@ -1,16 +1,11 @@
 ﻿using DPN.Models;
 using DPN.Models.Enums;
 
-namespace DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+namespace DPN.Soundness.TransitionSystems.Reachability;
 
-public class ColoredConstraintGraph : ConstraintGraph
+internal class ColoredConstraintGraph(DataPetriNet dataPetriNet) : ConstraintGraph(dataPetriNet)
 {
-    public Dictionary<LtsState, CtStateColor> StateColorDictionary { get; set; }
-    public ColoredConstraintGraph(DataPetriNet dataPetriNet)
-        : base(dataPetriNet)
-    {
-        StateColorDictionary = new Dictionary<LtsState, CtStateColor>();
-    }
+    public Dictionary<LtsState, CtStateColor> StateColorDictionary { get; set; } = new();
 
     public override void GenerateGraph()
     {

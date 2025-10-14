@@ -4,9 +4,9 @@ using DPN.Models.Enums;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.LabeledTransitionSystems
+namespace DPN.Soundness.TransitionSystems.Reachability
 {
-    public abstract class LabeledTransitionSystem : AbstractStateSpaceStructure<LtsState, LtsTransition, LtsArc>
+    internal abstract class LabeledTransitionSystem : AbstractStateSpaceStructure<LtsState, LtsTransition, LtsArc>
     {
         public bool IsFullGraph { get; set; }
         public long Milliseconds { get; set; }

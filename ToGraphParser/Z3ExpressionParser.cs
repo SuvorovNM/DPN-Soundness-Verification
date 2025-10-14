@@ -4,27 +4,16 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers;
 
-public class Z3ExpressionParser
+public class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> variablesToTypes)
 {
-    private readonly Context _ctx;
-    private readonly Dictionary<string, BoolExpr> _boolVariables;
-    private readonly Dictionary<string, RealExpr> _realVariables;
-    private readonly Dictionary<string, IntExpr> _intVariables;
-    private readonly Dictionary<string, DomainType> variablesToTypes;
-
-    public Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> variablesToTypes)
-    {
-        _ctx = ctx;
-        _boolVariables = new Dictionary<string, BoolExpr>();
-        _realVariables = new Dictionary<string, RealExpr>();
-        _intVariables = new Dictionary<string, IntExpr>();
-        this.variablesToTypes = variablesToTypes;
-    }
+	private readonly Dictionary<string, BoolExpr> _boolVariables = new();
+    private readonly Dictionary<string, RealExpr> _realVariables = new();
+    private readonly Dictionary<string, IntExpr> _intVariables = new();
 
     public BoolExpr Parse(string? expression)
     {
         if (string.IsNullOrWhiteSpace(expression) || expression.Equals("true", StringComparison.OrdinalIgnoreCase))
-            return _ctx.MkTrue();
+            return ctx.MkTrue();
 
         var tokens = Tokenize(expression);
         int index = 0;
@@ -142,7 +131,7 @@ public class Z3ExpressionParser
         {
             index++;
             var right = ParseAndExpression(tokens, ref index);
-            left = _ctx.MkOr(left, right);
+            left = ctx.MkOr(left, right);
         }
         
         return left;
@@ -156,7 +145,7 @@ public class Z3ExpressionParser
         {
             index++;
             var right = ParseComparison(tokens, ref index);
-            left = _ctx.MkAnd(left, right);
+            left = ctx.MkAnd(left, right);
         }
         
         return left;
@@ -178,7 +167,7 @@ public class Z3ExpressionParser
         {
             index++;
             var operand = ParseComparison(tokens, ref index);
-            return _ctx.MkNot(operand);
+            return ctx.MkNot(operand);
         }
 
         var boolComparison = TryParseBooleanComparison(tokens, ref index);
@@ -205,12 +194,12 @@ public class Z3ExpressionParser
         // All numerics are real, no type promotion needed
         return op switch
         {
-            ">" => _ctx.MkGt(left, right),
-            "<" => _ctx.MkLt(left, right),
-            ">=" => _ctx.MkGe(left, right),
-            "<=" => _ctx.MkLe(left, right),
-            "==" => _ctx.MkEq(left, right),
-            "!=" => _ctx.MkNot(_ctx.MkEq(left, right)),
+            ">" => ctx.MkGt(left, right),
+            "<" => ctx.MkLt(left, right),
+            ">=" => ctx.MkGe(left, right),
+            "<=" => ctx.MkLe(left, right),
+            "==" => ctx.MkEq(left, right),
+            "!=" => ctx.MkNot(ctx.MkEq(left, right)),
             _ => throw new ArgumentException($"Unknown operator: {op}")
         };
     }
@@ -233,8 +222,8 @@ public class Z3ExpressionParser
             
             return op switch
             {
-                "==" => _ctx.MkEq(left, right),
-                "!=" => _ctx.MkNot(_ctx.MkEq(left, right)),
+                "==" => ctx.MkEq(left, right),
+                "!=" => ctx.MkNot(ctx.MkEq(left, right)),
                 _ => throw new ArgumentException($"Invalid boolean operator: {op}")
             };
         }
@@ -264,7 +253,7 @@ public class Z3ExpressionParser
         {
             index++;
             var operand = ParseBooleanOperand(tokens, ref index);
-            return _ctx.MkNot(operand);
+            return ctx.MkNot(operand);
         }
 
         string token = tokens[index];
@@ -272,11 +261,11 @@ public class Z3ExpressionParser
 
         if (token.Equals("true",  StringComparison.InvariantCultureIgnoreCase))
         {
-            return _ctx.MkBool(true);
+            return ctx.MkBool(true);
         }
         else if (token.Equals("false",  StringComparison.InvariantCultureIgnoreCase))
         {
-            return _ctx.MkBool(false);
+            return ctx.MkBool(false);
         }
         else if (IsVariable(token))
         {
@@ -309,12 +298,12 @@ public class Z3ExpressionParser
             var operand = ParseNumericOperand(tokens, ref index);
             if (operand.IsInt || operand.IsIntNum)
             {
-                return (IntExpr)_ctx.MkSub(_ctx.MkInt(0), operand);
+                return (IntExpr)ctx.MkSub(ctx.MkInt(0), operand);
             }
 
             if (operand.IsReal || operand.IsRatNum)
             {
-                return (RealExpr)_ctx.MkSub(_ctx.MkReal(0), operand);
+                return (RealExpr)ctx.MkSub(ctx.MkReal(0), operand);
             }
             
             throw new ArgumentException($"Invalid numeric operand: {tokens[index]}");
@@ -333,13 +322,13 @@ public class Z3ExpressionParser
         if (int.TryParse(token, out int intValue))
         {
             // Convert integer literals to real
-            return domainType == DomainType.Integer ? _ctx.MkInt(intValue) :  _ctx.MkReal(intValue);
+            return domainType == DomainType.Integer ? ctx.MkInt(intValue) :  ctx.MkReal(intValue);
         }
         else if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out double realValue))
         {
             return domainType == DomainType.Integer ? 
-                _ctx.MkInt((int)realValue) : 
-                _ctx.MkReal(realValue.ToString(CultureInfo.InvariantCulture));
+                ctx.MkInt((int)realValue) : 
+                ctx.MkReal(realValue.ToString(CultureInfo.InvariantCulture));
         }
         else if (IsVariable(token))
         {
@@ -367,7 +356,7 @@ public class Z3ExpressionParser
     private BoolExpr GetOrCreateBoolVariable(string name)
     {
         if (!_boolVariables.ContainsKey(name))
-            _boolVariables[name] = _ctx.MkBoolConst(name);
+            _boolVariables[name] = ctx.MkBoolConst(name);
         return _boolVariables[name];
     }
 
@@ -380,11 +369,11 @@ public class Z3ExpressionParser
         {
             case DomainType.Integer:
                 if (!_intVariables.ContainsKey(name))
-                    _intVariables[name] = _ctx.MkIntConst(name);
+                    _intVariables[name] = ctx.MkIntConst(name);
                 return _intVariables[name];
             case DomainType.Real:
                 if (!_realVariables.ContainsKey(name))
-                    _realVariables[name] = _ctx.MkRealConst(name);
+                    _realVariables[name] = ctx.MkRealConst(name);
                 return _realVariables[name];
             case DomainType.Boolean:
             default:

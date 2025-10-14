@@ -5,7 +5,7 @@ using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.CoverabilityTree
+namespace DPN.Soundness.TransitionSystems.Coverability
 {
     public class CoverabilityTree : AbstractStateSpaceStructure<CtState, CtTransition, CtArc>
     // Покрасить все вершины, а затем обходить дерево в глубину до листьев или красных вершин

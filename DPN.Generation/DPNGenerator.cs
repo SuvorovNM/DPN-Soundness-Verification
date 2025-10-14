@@ -3,16 +3,10 @@ using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNGenerator : IDisposable
+    public class DPNGenerator(Context context) : IDisposable
     {
-        private readonly DPNBackboneGenerator backboneGenerator;
-        private readonly DPNConditionsGenerator conditionsGenerator;
-
-        public DPNGenerator(Context context)
-        {
-            backboneGenerator = new DPNBackboneGenerator(context);
-            conditionsGenerator = new DPNConditionsGenerator(context);
-        }
+        private readonly DPNBackboneGenerator backboneGenerator = new(context);
+        private readonly DPNConditionsGenerator conditionsGenerator = new(context);
 
         public void Dispose()
         {

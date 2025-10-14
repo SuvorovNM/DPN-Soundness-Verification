@@ -169,7 +169,7 @@ namespace DPN.VerificationApp
 			var dpnTransformation = new TransformerToRefined();
 
 			ShowLoader("Refining DPN");
-			(currentDisplayedNet, _) = await Task.Run(() => dpnTransformation.TransformUsingCg(currentDisplayedNet));
+			currentDisplayedNet = await Task.Run(() => dpnTransformation.TransformUsingCg(currentDisplayedNet));
 			HideLoader();
 
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);

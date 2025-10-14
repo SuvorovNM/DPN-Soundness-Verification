@@ -3,13 +3,13 @@ using DPN.Models;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.CoverabilityGraph;
+namespace DPN.Soundness.TransitionSystems.Coverability;
 
-public class CoverabilityGraph : LabeledTransitionSystem
+internal class CoverabilityGraph : LabeledTransitionSystem
 {
     private bool StopOnCoveringFinalPosition { get; init; }
     private Place FinalPosition { get; init; }

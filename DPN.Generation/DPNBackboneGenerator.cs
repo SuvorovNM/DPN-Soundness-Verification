@@ -6,13 +6,9 @@ using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNBackboneGenerator
+    public class DPNBackboneGenerator(Context context)
     {
-        public Context Context { get; private set; }
-        public DPNBackboneGenerator(Context context)
-        {
-            Context = context;
-        }
+        public Context Context { get; private set; } = context;
 
         private readonly int minTransitionPerPlace = 1;
         private readonly Random random = new Random();

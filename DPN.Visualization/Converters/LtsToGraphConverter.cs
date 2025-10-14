@@ -8,7 +8,7 @@ namespace DPN.Visualization.Converters
     {
         public Graph Convert(GraphToVisualize graphToVisualize)
         {
-            Graph graph = new Graph();
+            var graph = new Graph();
 
             var states = AddStatesToGraph(graphToVisualize.States, graph);
             AddArcsToGraph(graphToVisualize, graph, states);

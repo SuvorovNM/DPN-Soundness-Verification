@@ -1,6 +1,7 @@
 ﻿using DPN.Models;
 using DPN.Soundness;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Reachability;
+using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
 namespace DPN.Experiments.Common
 {
@@ -13,10 +14,8 @@ namespace DPN.Experiments.Common
         public ushort Variables { get; init; }
         public ushort Conditions { get; init; }
         public bool Boundedness { get; init; }
-        public int LtsStates { get; init; }
-        public int LtsArcs { get; init; }
-        public int CgRefStates { get; init; }
-        public int CgRefArcs { get; init; }
+        public int StateSpaceNodes { get; init; }
+        public int StateSpaceArcs { get; init; }
         public ushort DeadTransitions { get; init; }
         public bool Deadlocks { get; init; }
         public bool Soundness { get; init; }
@@ -35,9 +34,7 @@ namespace DPN.Experiments.Common
         public MainVerificationInfo(
             DataPetriNet dpn, 
             bool satisfiesConditions,
-            ReachabilityGraph lts,
-            ConstraintGraph? cg,
-            ConstraintGraph? cgRefined,
+            StateSpaceAbstraction stateSpace,
             SoundnessProperties? soundnessProperties,
             long millisecondsForVerification,
             long millisecondsForRepair,
@@ -50,10 +47,8 @@ namespace DPN.Experiments.Common
             Conditions = (ushort)dpn.Transitions
                 .Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
             Boundedness = soundnessProperties?.Boundedness ?? false ;
-            LtsStates = lts.ConstraintStates.Count;
-            LtsArcs = lts.ConstraintArcs.Count;
-            CgStates = cg?.ConstraintStates.Count ?? -1;
-            CgArcs = cg?.ConstraintArcs.Count ?? -1;
+            StateSpaceNodes = stateSpace.Nodes.Length;
+            StateSpaceArcs = stateSpace.Arcs.Length;
             DeadTransitions = (ushort)(soundnessProperties?.DeadTransitions.Length ?? 0);
             Deadlocks = soundnessProperties?.Deadlocks ?? false;
             Soundness = soundnessProperties?.Soundness ?? false;
@@ -61,8 +56,6 @@ namespace DPN.Experiments.Common
             SatisfiesCounditions = satisfiesConditions;
             Id = dpn.Name;
 
-            CgRefArcs = cgRefined?.ConstraintArcs?.Count ?? -1;
-            CgRefStates= cgRefined?.ConstraintStates?.Count ?? -1;
             RepairTime = millisecondsForRepair.ToString();
             RepairSuccess = repairSuccess;
         }
@@ -80,10 +73,6 @@ namespace DPN.Experiments.Common
             Variables = verificationOutput.Variables;
             Conditions = verificationOutput.Conditions;
             Boundedness = verificationOutput.Boundedness;
-            LtsStates = verificationOutput.LtsStates;
-            LtsArcs = verificationOutput.LtsArcs;
-            CgRefArcs = verificationOutput.CgRefArcs;
-            CgRefStates= verificationOutput.CgRefStates;
             DeadTransitions = verificationOutput.DeadTransitions;
             Deadlocks = verificationOutput.Deadlocks;
             Soundness = verificationOutput.Soundness;

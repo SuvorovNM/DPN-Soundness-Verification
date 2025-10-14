@@ -2,19 +2,12 @@
 
 namespace DPN.Soundness;
 
-public class VerificationResult
+public class VerificationResult(
+	StateSpaceAbstraction stateSpaceAbstraction,
+	SoundnessProperties soundnessProperties,
+	TimeSpan? verificationTime = null)
 {
-    public StateSpaceAbstraction StateSpaceAbstraction { get; }
-    public SoundnessProperties SoundnessProperties { get; }
-    public TimeSpan? VerificationTime { get; }
-
-    public VerificationResult(
-	    StateSpaceAbstraction stateSpaceAbstraction, 
-	    SoundnessProperties soundnessProperties,
-	    TimeSpan? verificationTime = null)
-    {
-        StateSpaceAbstraction = stateSpaceAbstraction;
-        SoundnessProperties = soundnessProperties;
-        VerificationTime = verificationTime;
-    }
+    public StateSpaceAbstraction StateSpaceAbstraction { get; } = stateSpaceAbstraction;
+    public SoundnessProperties SoundnessProperties { get; } = soundnessProperties;
+    public TimeSpan? VerificationTime { get; } = verificationTime;
 }

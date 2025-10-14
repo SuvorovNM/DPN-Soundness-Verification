@@ -2,7 +2,7 @@
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.CoverabilityTree
+namespace DPN.Soundness.TransitionSystems.Coverability
 {
     public class CtStateEqualityComparer : IEqualityComparer<CtState?>
     {

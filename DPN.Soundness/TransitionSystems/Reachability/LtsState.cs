@@ -1,9 +1,9 @@
 ﻿using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.LabeledTransitionSystems
+namespace DPN.Soundness.TransitionSystems.Reachability
 {
-    public class LtsState : AbstractState
+	internal class LtsState : AbstractState
     {
         public bool IsCyclic { get; set; } = false;
         public HashSet<LtsState> ParentStates { get; set; }

@@ -2,9 +2,8 @@
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.CoverabilityGraph;
-using DPN.Soundness.TransitionSystems.CoverabilityTree;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
@@ -13,12 +12,7 @@ namespace DPN.Soundness.Services
 	public class TransformerToRefined
 	{
 		private static HashSet<Transition> _outputTransitionsCheck = new HashSet<Transition>();
-		private CyclesFinder cyclesFinder;
-
-		public TransformerToRefined()
-		{
-			cyclesFinder = new CyclesFinder();
-		}
+		private CyclesFinder cyclesFinder = new();
 
 		private DataPetriNet PerformTransformationStep<TAbsState, TAbsTransition, TAbsArc, TSelf>
 			(DataPetriNet sourceDpn, List<TSelf> cycles)
@@ -154,7 +148,7 @@ namespace DPN.Soundness.Services
 			return (transformedDpn, sourceCt);
 		}
 
-		public (DataPetriNet dpn, ReachabilityGraph lts) TransformUsingLts
+		internal (DataPetriNet dpn, ReachabilityGraph lts) TransformUsingLts
 			(DataPetriNet sourceDpn, ReachabilityGraph sourceLts = null)
 		{
 			var transformedDpn = (DataPetriNet)sourceDpn.Clone();
@@ -179,14 +173,13 @@ namespace DPN.Soundness.Services
 			return (transformedDpn, sourceLts);
 		}
 
-		public (DataPetriNet dpn, CoverabilityGraph lts) TransformUsingCg
-			(DataPetriNet sourceDpn, CoverabilityGraph sourceCg = null)
+		public DataPetriNet TransformUsingCg(DataPetriNet sourceDpn)
 		{
 			DataPetriNet transformedDpn = sourceDpn;
 			int sourceDpnTransitionCount;
 			_outputTransitionsCheck = new HashSet<Transition>();
 
-			sourceCg = new CoverabilityGraph(transformedDpn);
+			var sourceCg = new CoverabilityGraph(transformedDpn);
 			sourceCg.GenerateGraph();
 
 			var ltsMaximumCycles = cyclesFinder.GetCyclesNew(sourceCg);
@@ -200,7 +193,7 @@ namespace DPN.Soundness.Services
 
 				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
 				{
-					return (transformedDpn, sourceCg);
+					return transformedDpn;
 				}
 
 				foreach (var splitTransitions in transformedDpn.Transitions.GroupBy(t => t.BaseTransitionId))
@@ -262,7 +255,7 @@ namespace DPN.Soundness.Services
 				}
 			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
 
-			return (transformedDpn, sourceCg);
+			return transformedDpn;
 		}
 
 

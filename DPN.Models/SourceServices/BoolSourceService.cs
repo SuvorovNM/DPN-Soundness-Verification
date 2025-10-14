@@ -4,11 +4,7 @@ namespace DPN.Models.SourceServices
 {
     public class BoolSourceService : ISourceService
     {
-        private readonly Dictionary<string, DefinableValue<bool>> booleanVariablesDict;
-        public BoolSourceService()
-        {
-            booleanVariablesDict = new Dictionary<string, DefinableValue<bool>>();
-        }
+        private readonly Dictionary<string, DefinableValue<bool>> booleanVariablesDict = new();
 
         public void Clear()
         {

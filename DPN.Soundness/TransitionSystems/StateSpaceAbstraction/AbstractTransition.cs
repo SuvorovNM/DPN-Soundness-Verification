@@ -8,7 +8,7 @@ namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
         public bool IsSilent { get; set; }
         public string NonRefinedTransitionId { get; set; }
 
-        public AbstractTransition(Transition transition, bool isSilent = false)
+        protected AbstractTransition(Transition transition, bool isSilent = false)
         {
             IsSilent = isSilent;
             Label = transition.Label;

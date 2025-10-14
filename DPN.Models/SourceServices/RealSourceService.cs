@@ -4,12 +4,7 @@ namespace DPN.Models.SourceServices
 {
     public class RealSourceService : ISourceService
     {
-        private readonly Dictionary<string, DefinableValue<double>> realVariablesDict;
-
-        public RealSourceService()
-        {
-            realVariablesDict = new Dictionary<string, DefinableValue<double>>();
-        }
+        private readonly Dictionary<string, DefinableValue<double>> realVariablesDict = new();
 
         public void Clear()
         {

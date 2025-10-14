@@ -1,13 +1,14 @@
 ﻿using DPN.Models.DPNElements;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
 namespace DPN.Soundness.TransitionSystems.Converters;
 
 public static class ToStateSpaceConverter
 {
-    public static StateSpaceGraph.StateSpaceAbstraction Convert(CoverabilityGraph.CoverabilityGraph coverabilityGraph)
+    internal static StateSpaceGraph.StateSpaceAbstraction Convert(CoverabilityGraph coverabilityGraph)
     {
         return new StateSpaceGraph.StateSpaceAbstraction(
             coverabilityGraph.ConstraintStates
@@ -23,7 +24,7 @@ public static class ToStateSpaceConverter
             coverabilityGraph.DataPetriNet.GetVariablesDictionary());
     }
     
-    public static StateSpaceGraph.StateSpaceAbstraction Convert(CoverabilityTree.CoverabilityTree coverabilityTree)
+    internal static StateSpaceGraph.StateSpaceAbstraction Convert(CoverabilityTree coverabilityTree)
     {
         return new StateSpaceGraph.StateSpaceAbstraction(
             coverabilityTree.ConstraintStates
@@ -39,7 +40,7 @@ public static class ToStateSpaceConverter
             coverabilityTree.DataPetriNet.GetVariablesDictionary());
     }
     
-    public static StateSpaceGraph.StateSpaceAbstraction Convert(LabeledTransitionSystem labeledTransitionSystem)
+    internal static StateSpaceGraph.StateSpaceAbstraction Convert(LabeledTransitionSystem labeledTransitionSystem)
     {
 	    var extraTransitions = new List<Transition>(labeledTransitionSystem.DataPetriNet.Transitions);
 	    if (labeledTransitionSystem is ConstraintGraph)
@@ -55,11 +56,7 @@ public static class ToStateSpaceConverter
 			    var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.Single(t => t.Id == baseTransitionId);
 
 			    var tauTransition = baseTransition.MakeTau()!;
-				    
-				/*    new Transition(
-				    $"τ({baseTransition.Label})", 
-				    new Guard(context, context.MkNot(context.GetReadExpression(baseTransition.Guard.ActualConstraintExpression, new Dictionary<string, DomainType>()))),
-				    baseTransitionId);*/
+
 			    extraTransitions.Add(tauTransition);
 		    }
 	    }

@@ -2,16 +2,9 @@
 
 namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
-public class StateSpaceNode
+public class StateSpaceNode(Dictionary<string, int> marking, BoolExpr? stateConstraint, int id)
 { 
-    public Dictionary<string, int> Marking { get; init; }
-    public BoolExpr? StateConstraint { get; init; }
-    public int Id { get; }
-
-    public StateSpaceNode(Dictionary<string, int> marking, BoolExpr? stateConstraint, int id)
-    {
-        Marking = marking;
-        StateConstraint = stateConstraint;
-        Id = id;
-    }
+    public Dictionary<string, int> Marking { get; init; } = marking;
+    public BoolExpr? StateConstraint { get; init; } = stateConstraint;
+    public int Id { get; } = id;
 }

@@ -3,32 +3,21 @@ using DPN.Models.Enums;
 
 namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
-public class StateSpaceAbstraction
+public class StateSpaceAbstraction(
+	StateSpaceNode[] nodes,
+	StateSpaceArc[] arcs,
+	bool isFullGraph,
+	TransitionSystemType stateSpaceType,
+	Dictionary<string, int> finalDpnMarking,
+	Transition[] dpnTransitions,
+	Dictionary<string, DomainType> typedVariables)
 {
-    public StateSpaceNode[] Nodes { get; set; }
-    public StateSpaceArc[] Arcs { get; set; }
-    public bool IsFullGraph { get; set; }
-    public TransitionSystemType StateSpaceType { get; set; }
-    
-    public Dictionary<string, int> FinalDpnMarking { get; set; }
-    public Transition[] DpnTransitions { get; set; }
-    public Dictionary<string, DomainType> TypedVariables { get; set; }
+    public StateSpaceNode[] Nodes { get; set; } = nodes;
+    public StateSpaceArc[] Arcs { get; set; } = arcs;
+    public bool IsFullGraph { get; set; } = isFullGraph;
+    public TransitionSystemType StateSpaceType { get; set; } = stateSpaceType;
 
-    public StateSpaceAbstraction(
-        StateSpaceNode[] nodes,
-        StateSpaceArc[] arcs,
-        bool isFullGraph,
-        TransitionSystemType stateSpaceType,
-        Dictionary<string, int> finalDpnMarking,
-        Transition[] dpnTransitions,
-        Dictionary<string, DomainType> typedVariables)
-    {
-        Nodes = nodes;
-        Arcs = arcs;
-        IsFullGraph = isFullGraph;
-        StateSpaceType = stateSpaceType;
-        FinalDpnMarking = finalDpnMarking;
-        DpnTransitions = dpnTransitions;
-        TypedVariables = typedVariables;
-    }
+    public Dictionary<string, int> FinalDpnMarking { get; set; } = finalDpnMarking;
+    public Transition[] DpnTransitions { get; set; } = dpnTransitions;
+    public Dictionary<string, DomainType> TypedVariables { get; set; } = typedVariables;
 }

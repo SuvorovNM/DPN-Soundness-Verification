@@ -4,17 +4,11 @@ using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 
-namespace DPN.Soundness.TransitionSystems.LabeledTransitionSystems
+namespace DPN.Soundness.TransitionSystems.Reachability
 {
-    public class ConstraintGraph : LabeledTransitionSystem // TODO: insert Ids
+    internal class ConstraintGraph(DataPetriNet dataPetriNet) : LabeledTransitionSystem(dataPetriNet)
     {
-        public ConstraintGraph(DataPetriNet dataPetriNet)
-        : base(dataPetriNet)
-        {
-
-        }
-
-        public override void GenerateGraph()
+	    public override void GenerateGraph()
         {
             IsFullGraph = false;
             Stopwatch stopwatch = Stopwatch.StartNew();

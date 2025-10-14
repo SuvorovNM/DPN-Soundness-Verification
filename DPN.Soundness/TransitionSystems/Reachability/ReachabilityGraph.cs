@@ -4,15 +4,10 @@ using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 
-namespace DPN.Soundness.TransitionSystems.LabeledTransitionSystems
+namespace DPN.Soundness.TransitionSystems.Reachability
 {
-	public class ReachabilityGraph : LabeledTransitionSystem
+	internal class ReachabilityGraph(DataPetriNet dataPetriNet) : LabeledTransitionSystem(dataPetriNet)
 	{
-		public ReachabilityGraph(DataPetriNet dataPetriNet)
-			: base(dataPetriNet)
-		{
-		}
-
 		public override void GenerateGraph()
 		{
 			IsFullGraph = false;

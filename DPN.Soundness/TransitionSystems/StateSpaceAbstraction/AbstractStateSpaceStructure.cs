@@ -11,15 +11,14 @@ namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
         where TAbsTransition : AbstractTransition
         where TAbsArc : AbstractArc<TAbsState,TAbsTransition>
     {
-        protected ConstraintExpressionService ExpressionService;
-        private bool disposedValue;
+        protected readonly ConstraintExpressionService ExpressionService;
 
         public DataPetriNet DataPetriNet { get; init; }
         public TAbsState InitialState { get; set; }
         public List<TAbsState> ConstraintStates { get; set; }
         public List<TAbsArc> ConstraintArcs { get; set; }
 
-        public AbstractStateSpaceStructure(DataPetriNet dataPetriNet)
+        protected AbstractStateSpaceStructure(DataPetriNet dataPetriNet)
         {
             ExpressionService = new ConstraintExpressionService(dataPetriNet.Context);
 
@@ -27,9 +26,9 @@ namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
 
             InitialState = FormInitialState(dataPetriNet);
 
-            ConstraintStates = new List<TAbsState> { InitialState };
+            ConstraintStates = [InitialState];
 
-            ConstraintArcs = new List<TAbsArc>();
+            ConstraintArcs = [];
         }
 
         public abstract void GenerateGraph();

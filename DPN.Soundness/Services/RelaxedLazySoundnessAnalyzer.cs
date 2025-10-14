@@ -1,9 +1,8 @@
 ﻿using DPN.Models;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.CoverabilityGraph;
-using DPN.Soundness.TransitionSystems.CoverabilityTree;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
@@ -107,7 +106,7 @@ public static class RelaxedLazySoundnessAnalyzer
 		}
 	}
 
-	public static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityGraph cg)
+	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityGraph cg)
 	{
 		var stateDictionary =
 			cg.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);

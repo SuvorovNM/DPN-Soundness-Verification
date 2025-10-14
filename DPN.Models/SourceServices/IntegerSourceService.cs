@@ -4,12 +4,7 @@ namespace DPN.Models.SourceServices
 {
     public class IntegerSourceService : ISourceService
     {
-        private readonly Dictionary<string, DefinableValue<long>> integerVariablesDict;
-
-        public IntegerSourceService()
-        {
-            integerVariablesDict = new Dictionary<string, DefinableValue<long>>();
-        }
+        private readonly Dictionary<string, DefinableValue<long>> integerVariablesDict = new();
 
         public void Clear()
         {

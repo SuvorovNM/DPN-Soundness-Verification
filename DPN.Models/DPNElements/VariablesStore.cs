@@ -5,16 +5,12 @@ namespace DPN.Models.DPNElements
 {
     public class VariablesStore
     {
-        private readonly Dictionary<DomainType, ISourceService> variableSources;
-        public VariablesStore()
+        private readonly Dictionary<DomainType, ISourceService> variableSources = new()
         {
-            variableSources = new Dictionary<DomainType, ISourceService>
-            {
-                [DomainType.Boolean] = new BoolSourceService(),
-                [DomainType.Integer] = new IntegerSourceService(),
-                [DomainType.Real] = new RealSourceService()
-            };
-        }
+	        [DomainType.Boolean] = new BoolSourceService(),
+	        [DomainType.Integer] = new IntegerSourceService(),
+	        [DomainType.Real] = new RealSourceService()
+        };
 
         public ISourceService this[DomainType domain]
         {

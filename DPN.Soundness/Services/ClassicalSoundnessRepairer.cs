@@ -5,14 +5,12 @@ using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.CoverabilityTree;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
 namespace DPN.Soundness.Services;
-
-public record RepairResult(DataPetriNet Dpn, bool IsSuccess, uint RepairSteps, TimeSpan RepairTime);
 
 [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
 public class ClassicalSoundnessRepairer
@@ -24,7 +22,8 @@ public class ClassicalSoundnessRepairer
 		public const string False = nameof(False);
 	}
 	
-	// Repair is done until stabilization. Algorithm terminates either if all are green or all are red
+	// Repair is done until stabilization.
+	// Algorithm terminates either if no paths remain leading to failure points or if all paths start to leading to failure points
 	public RepairResult Repair(DataPetriNet sourceDpn, Dictionary<string, string> repairProperties)
 	{
 		var mergeTransitionsBack = GetMergeTransitionsBackProperty(repairProperties);

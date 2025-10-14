@@ -1,7 +1,7 @@
 ﻿using DPN.Models;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
@@ -54,7 +54,7 @@ public static class SoundnessAnalyzer
 		}
 	}
 
-	public static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
+	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
 	{
 		var boundedness = cg.IsFullGraph;
 		var stateTypes = boundedness
@@ -90,7 +90,7 @@ public static class SoundnessAnalyzer
 			isSound);
 	}
 
-	public static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypesNew
+	internal static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypesNew
 		(LabeledTransitionSystem graph, Dictionary<string, int> finalMarking)
 	{
 		var stateDictionary =

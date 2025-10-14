@@ -4,13 +4,9 @@ using DPN.Models.Enums;
 
 namespace DPN.Models.Abstractions
 {
-    public class ConstraintExpressionService
+    public class ConstraintExpressionService(Context context)
     {
-        public Context Context { get; private set; }
-        public ConstraintExpressionService(Context context)
-        {
-            Context = context;
-        }
+        public Context Context { get; private set; } = context;
 
         public bool CanBeSatisfied(BoolExpr expression)
         {

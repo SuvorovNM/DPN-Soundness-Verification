@@ -12,8 +12,7 @@ using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
 using DPN.Soundness;
 using DPN.Soundness.Services;
-using DPN.Soundness.TransitionSystems.CoverabilityGraph;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Reachability;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -119,10 +118,6 @@ namespace DataPetriNetVerificationApplication
 			var timer = new Stopwatch();
 
 			timer.Start();
-			
-			var lts = new ReachabilityGraph(dpnToVerify);
-			ConstraintGraph? cg = null;
-			ConstraintGraph? cgRefined = null;
 			var satisfiesConditions = false;
 
 			VerificationResult verificationResult;
@@ -164,9 +159,7 @@ namespace DataPetriNetVerificationApplication
 				outputRow = new MainVerificationInfo(
 					dpnToVerify,
 					satisfiesConditions,
-					lts,
-					cg,
-					cgRefined,
+					verificationResult.StateSpaceAbstraction, // TODO: вести подсчет всех построенных вершин и дуг?
 					verificationResult.SoundnessProperties,
 					verificationResult.VerificationTime!.Value.Milliseconds,
 					(long?)repairResult?.RepairTime.TotalMilliseconds ?? -1,

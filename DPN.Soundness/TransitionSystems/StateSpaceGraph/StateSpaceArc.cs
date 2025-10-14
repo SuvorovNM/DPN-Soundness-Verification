@@ -1,24 +1,15 @@
 ﻿namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
-public class StateSpaceArc
+public class StateSpaceArc(
+	bool isSilent,
+	string baseTransitionId,
+	int sourceNodeId,
+	int targetNodeId,
+	string label)
 {
-    public bool IsSilent { get; init; }
-    public string BaseTransitionId { get; init; }
-    public int SourceNodeId { get; init; }
-    public int TargetNodeId { get; init; }
-    public string Label { get; init; }
-
-    public StateSpaceArc(
-        bool isSilent,
-        string baseTransitionId,
-        int sourceNodeId,
-        int targetNodeId,
-        string label)
-    {
-        IsSilent = isSilent;
-        BaseTransitionId = baseTransitionId;
-        SourceNodeId = sourceNodeId;
-        TargetNodeId = targetNodeId;
-        Label = label;
-    }
+    public bool IsSilent { get; init; } = isSilent;
+    public string BaseTransitionId { get; init; } = baseTransitionId;
+    public int SourceNodeId { get; init; } = sourceNodeId;
+    public int TargetNodeId { get; init; } = targetNodeId;
+    public string Label { get; init; } = label;
 }

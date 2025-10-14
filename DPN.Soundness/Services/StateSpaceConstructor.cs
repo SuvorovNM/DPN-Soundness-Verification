@@ -1,8 +1,7 @@
 ﻿using DPN.Models;
 using DPN.Soundness.TransitionSystems.Converters;
-using DPN.Soundness.TransitionSystems.CoverabilityGraph;
-using DPN.Soundness.TransitionSystems.CoverabilityTree;
-using DPN.Soundness.TransitionSystems.LabeledTransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
+using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
 namespace DPN.Soundness.Services;
