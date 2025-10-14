@@ -3,26 +3,26 @@ using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;
+using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
-using DPN.Soundness.TransitionSystems.StateSpaceGraph;
 
-namespace DPN.Soundness.Services;
+namespace DPN.Soundness.Verification;
 
 public static class RelaxedLazySoundnessAnalyzer
 {
-	public static SoundnessProperties CheckSoundness(StateSpaceAbstraction stateSpaceAbstraction)
+	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
 	{
-		var stateDictionary = stateSpaceAbstraction
+		var stateDictionary = stateSpaceGraph
 			.Nodes.ToDictionary(x => x.Id, x => ConstraintStateType.Default);
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= ConstraintStateType.Initial;
 
-		var finalStates = stateSpaceAbstraction.Nodes
+		var finalStates = stateSpaceGraph.Nodes
 			.Where(x => x.Marking.All(y =>
-				stateSpaceAbstraction.FinalDpnMarking[y.Key] == 0
+				stateSpaceGraph.FinalDpnMarking[y.Key] == 0
 					? y.Value >= 0
-					: y.Value == stateSpaceAbstraction.FinalDpnMarking[y.Key]))
+					: y.Value == stateSpaceGraph.FinalDpnMarking[y.Key]))
 			.ToArray();
 
 		foreach (var finalState in finalStates)
@@ -30,11 +30,11 @@ public static class RelaxedLazySoundnessAnalyzer
 			stateDictionary[finalState.Id] |= ConstraintStateType.Final;
 		}
 
-		var uncleanFinals = stateSpaceAbstraction.Nodes
+		var uncleanFinals = stateSpaceGraph.Nodes
 			.Where(x => x.Marking.All(y =>
-				stateSpaceAbstraction.FinalDpnMarking[y.Key] == 0
+				stateSpaceGraph.FinalDpnMarking[y.Key] == 0
 					? y.Value >= 0
-					: y.Value >= stateSpaceAbstraction.FinalDpnMarking[y.Key]))
+					: y.Value >= stateSpaceGraph.FinalDpnMarking[y.Key]))
 			.ToArray();
 
 		foreach (var uncleanFinal in uncleanFinals)
@@ -42,20 +42,20 @@ public static class RelaxedLazySoundnessAnalyzer
 			stateDictionary[uncleanFinal.Id] |= ConstraintStateType.UncleanFinal;
 		}
 
-		if (stateSpaceAbstraction.IsFullGraph)
+		if (stateSpaceGraph.IsFullGraph)
 		{
-			var successors = stateSpaceAbstraction
+			var successors = stateSpaceGraph
 				.Arcs
 				.GroupBy(a => a.SourceNodeId)
 				.ToDictionary(a => a.Key, a => a.ToArray());
 
-			stateSpaceAbstraction.Nodes
+			stateSpaceGraph.Nodes
 				.Where(x => !stateDictionary[x.Id].HasFlag(ConstraintStateType.Final) && !stateDictionary[x.Id].HasFlag(ConstraintStateType.UncleanFinal))
 				.Where(x => !successors.ContainsKey(x.Id))
 				.ToList()
 				.ForEach(x => stateDictionary[x.Id] |= ConstraintStateType.Deadlock);
 
-			var predecessors = stateSpaceAbstraction
+			var predecessors = stateSpaceGraph
 				.Arcs
 				.GroupBy(a => a.TargetNodeId)
 				.ToDictionary(g => g.Key, g => g.Select(a => a.SourceNodeId).ToArray());
@@ -73,7 +73,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			} while (intermediateStates.Count > 0);
 		}
 
-		var unfeasibleTransitions = stateSpaceAbstraction.Arcs
+		var unfeasibleTransitions = stateSpaceGraph.Arcs
 			.GroupBy(a => a.BaseTransitionId)
 			.ToDictionary(
 				arcsGroup => arcsGroup.Key,
@@ -81,7 +81,7 @@ public static class RelaxedLazySoundnessAnalyzer
 					arcsGroup.All(a => stateDictionary[a.TargetNodeId].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
 			.Where(a => a.Value)
 			.Select(a => a.Key)
-			.Union(GetDeadTransitions(stateSpaceAbstraction))
+			.Union(GetDeadTransitions(stateSpaceGraph))
 			.ToArray();
 
 		var hasDeadlocks = stateDictionary.Any(kvp=>kvp.Value.HasFlag(ConstraintStateType.Deadlock));
@@ -91,16 +91,16 @@ public static class RelaxedLazySoundnessAnalyzer
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
 			stateDictionary,
-			stateSpaceAbstraction.IsFullGraph,
+			stateSpaceGraph.IsFullGraph,
 			unfeasibleTransitions,
 			hasDeadlocks,
 			isSound);
 		
-		static string[] GetDeadTransitions(StateSpaceAbstraction stateSpaceAbstraction)
+		static string[] GetDeadTransitions(StateSpaceGraph stateSpaceGraph)
 		{
-			var deadTransitions = stateSpaceAbstraction.DpnTransitions
+			var deadTransitions = stateSpaceGraph.DpnTransitions
 				.Select(x => x.BaseTransitionId)
-				.Except(stateSpaceAbstraction.Arcs.Select(y => y.BaseTransitionId))
+				.Except(stateSpaceGraph.Arcs.Select(y => y.BaseTransitionId))
 				.ToArray();
 			return deadTransitions;
 		}
@@ -143,8 +143,7 @@ public static class RelaxedLazySoundnessAnalyzer
 				current | stateDictionary[constraintState].HasFlag(ConstraintStateType.Deadlock));
 
 		var isSound = unfeasibleTransitions.Length == 0;
-
-		// TODO: update dictionary
+		
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
 			stateDictionary.ToDictionary(x => x.Key.Id, x => x.Value),
@@ -154,7 +153,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			isSound);
 	}
 
-	public static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityTree ct)
+	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityTree ct)
 	{
 		var stateDictionary =
 			ct.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);

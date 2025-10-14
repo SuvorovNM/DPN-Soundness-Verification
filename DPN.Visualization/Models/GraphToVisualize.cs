@@ -1,7 +1,4 @@
-﻿using DPN.Models.Enums;
-using DPN.Soundness;
-
-namespace DPN.Visualization.Models;
+﻿namespace DPN.Visualization.Models;
 
 public class GraphToVisualize
 {

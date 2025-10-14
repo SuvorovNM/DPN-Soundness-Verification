@@ -25,8 +25,8 @@ namespace DPN.VerificationApp
 			this.verificationResult = verificationResult;
 
 			CheckGraphSizeAndSetVisibility(
-				verificationResult.StateSpaceAbstraction.Nodes.Length,
-				verificationResult.StateSpaceAbstraction.Arcs.Length);
+				verificationResult.StateSpaceGraph.Nodes.Length,
+				verificationResult.StateSpaceGraph.Arcs.Length);
 
 			if (FindName("SaveMenu") is Menu menu && (isOpenedFromFile || IsOverlayVisible))
 				menu.Visibility = Visibility.Collapsed;
@@ -45,7 +45,7 @@ namespace DPN.VerificationApp
 				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
 				{
 					var asmlParser = new AsmlParser();
-					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceAbstraction);
+					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceGraph);
 
 					xDocument.Save(fs, SaveOptions.None);
 				}
@@ -74,8 +74,8 @@ namespace DPN.VerificationApp
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
 				graphToVisualize, 
-				verificationResult.StateSpaceAbstraction.DpnTransitions, 
-				verificationResult.StateSpaceAbstraction.TypedVariables, 
+				verificationResult.StateSpaceGraph.DpnTransitions, 
+				verificationResult.StateSpaceGraph.TypedVariables, 
 				verificationResult.VerificationTime);
 			if (showOnlyLog)
 			{

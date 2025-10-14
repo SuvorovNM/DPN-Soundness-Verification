@@ -14,7 +14,7 @@ public static class ToGraphToVisualizeConverter
 		bool? classicalSoundness = soundnessType == SoundnessType.Classical ? soundnessProperties.Soundness : null;
 		bool? relaxedLazySoundness = soundnessType == SoundnessType.RelaxedLazy ? soundnessProperties.Soundness : null;
 		
-		var stateSpaceAbstraction = verificationResult.StateSpaceAbstraction;
+		var stateSpaceAbstraction = verificationResult.StateSpaceGraph;
 		
 		return new GraphToVisualize
 		{

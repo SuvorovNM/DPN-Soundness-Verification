@@ -3,7 +3,7 @@ using DPN.Models.DPNElements;
 
 namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
 {
-    public class AbstractTransition : Node
+	internal class AbstractTransition : Node
     {
         public bool IsSilent { get; set; }
         public string NonRefinedTransitionId { get; set; }

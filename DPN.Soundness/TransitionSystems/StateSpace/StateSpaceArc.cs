@@ -1,4 +1,4 @@
-﻿namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
+﻿namespace DPN.Soundness.TransitionSystems.StateSpace;
 
 public class StateSpaceArc(
 	bool isSilent,

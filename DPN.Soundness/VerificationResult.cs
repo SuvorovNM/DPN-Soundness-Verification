@@ -1,13 +1,13 @@
-﻿using DPN.Soundness.TransitionSystems.StateSpaceGraph;
+﻿using DPN.Soundness.TransitionSystems.StateSpace;
 
 namespace DPN.Soundness;
 
 public class VerificationResult(
-	StateSpaceAbstraction stateSpaceAbstraction,
+	StateSpaceGraph stateSpaceGraph,
 	SoundnessProperties soundnessProperties,
 	TimeSpan? verificationTime = null)
 {
-    public StateSpaceAbstraction StateSpaceAbstraction { get; } = stateSpaceAbstraction;
+    public StateSpaceGraph StateSpaceGraph { get; } = stateSpaceGraph;
     public SoundnessProperties SoundnessProperties { get; } = soundnessProperties;
     public TimeSpan? VerificationTime { get; } = verificationTime;
 }

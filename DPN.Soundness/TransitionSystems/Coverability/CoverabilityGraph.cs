@@ -1,18 +1,15 @@
-﻿using System.Diagnostics;
-using DPN.Models;
+﻿using DPN.Models;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
-using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
-using Microsoft.Z3;
 
 namespace DPN.Soundness.TransitionSystems.Coverability;
 
 internal class CoverabilityGraph : LabeledTransitionSystem
 {
-    private bool StopOnCoveringFinalPosition { get; init; }
-    private Place FinalPosition { get; init; }
+    private bool StopOnCoveringFinalPosition { get; }
+    private Place FinalPosition { get; }
 
     public CoverabilityGraph(DataPetriNet dataPetriNet, bool stopOnCoveringFinalPosition = false)
         : base(dataPetriNet)
@@ -23,16 +20,6 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 
     public override void GenerateGraph()
     {
-        var stopwatch = Stopwatch.StartNew();
-        var transitionGuards = new Dictionary<Transition, BoolExpr>();
-        foreach (var transition in DataPetriNet.Transitions)
-        {
-            var smtExpression = transition.Guard.ActualConstraintExpression;
-            var overwrittenVarNames = transition.Guard.WriteVars;
-            var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
-            transitionGuards.Add(transition, readExpression);
-        }
-        
         while (StatesToConsider.Count > 0)
         {
             var currentState = StatesToConsider.Pop();
@@ -70,17 +57,13 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 
 	                if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)
 	                {
-		                stopwatch.Stop();
-		                Milliseconds = stopwatch.ElapsedMilliseconds;
 		                IsFullGraph = false;
 		                return;
 	                }
                 }
             }
         }
-
-        stopwatch.Stop();
-        Milliseconds = stopwatch.ElapsedMilliseconds;
+        
         IsFullGraph = true;
     }
 

@@ -1,6 +1,6 @@
 ﻿using DPN.Models;
 
-namespace DPN.Soundness.Services;
+namespace DPN.Soundness.Verification;
 
 public interface ISoundnessVerifier
 {

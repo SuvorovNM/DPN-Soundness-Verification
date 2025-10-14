@@ -6,7 +6,7 @@ using Microsoft.Z3;
 
 namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
 {
-    public abstract class AbstractStateSpaceStructure<TAbsState,TAbsTransition, TAbsArc>
+	internal abstract class AbstractStateSpaceStructure<TAbsState,TAbsTransition, TAbsArc>
         where TAbsState : AbstractState, new()
         where TAbsTransition : AbstractTransition
         where TAbsArc : AbstractArc<TAbsState,TAbsTransition>
@@ -30,15 +30,6 @@ namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
 
             ConstraintArcs = [];
         }
-
-        public abstract void GenerateGraph();
-
-        protected abstract void AddNewState(TAbsState currentState,
-                                TAbsTransition transition,
-                                BaseStateInfo stateInfo);
-
-        protected abstract TAbsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
-            (BaseStateInfo stateInfo, TAbsState parentNode, MarkingComparisonResult comparisonResult);
 
         private static TAbsState FormInitialState(DataPetriNet dpn)
         {

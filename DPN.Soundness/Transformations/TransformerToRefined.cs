@@ -2,17 +2,65 @@
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
+using DPN.Soundness.Repair.Cycles;
+using DPN.Soundness.TransitionSystems.Converters;
 using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.Services
+namespace DPN.Soundness.Transformations
 {
+	public static class RefinementSettingsConstants
+	{
+		public const string BaseStructure = nameof(BaseStructure);
+		public const string CoverabilityGraph = nameof(CoverabilityGraph);
+		public const string FiniteReachabilityGraph = nameof(FiniteReachabilityGraph);
+	}
+
 	public class TransformerToRefined
 	{
-		private static HashSet<Transition> _outputTransitionsCheck = new HashSet<Transition>();
-		private CyclesFinder cyclesFinder = new();
+		public RefinementResult Transform(DataPetriNet sourceDpn, Dictionary<string, string> transformationProperties)
+		{
+			transformationProperties.TryGetValue(RefinementSettingsConstants.BaseStructure, out var baseStructure);
+
+			var transformedDpn = (DataPetriNet)sourceDpn.Clone();
+			int sourceDpnTransitionCount;
+
+			LabeledTransitionSystem sourceLts;
+			if (baseStructure is null or RefinementSettingsConstants.CoverabilityGraph)
+			{
+				sourceLts = new CoverabilityGraph(transformedDpn);
+			}
+			else if (baseStructure == RefinementSettingsConstants.FiniteReachabilityGraph)
+			{
+				sourceLts = new ReachabilityGraph(transformedDpn);
+			}
+			else
+			{
+				throw new ArgumentException($"{nameof(TransformerToRefined)} does not support base structure {baseStructure}");
+			}
+
+			sourceLts.GenerateGraph();
+			var maximumCycles = CyclesFinder.GetCycles(sourceLts);
+
+			do
+			{
+				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
+
+				transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
+					(transformedDpn, maximumCycles);
+
+				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
+				{
+					break;
+				}
+
+				maximumCycles = EnrichCyclesWithRefinedTransitions(transformedDpn, maximumCycles);
+			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
+
+			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
+		}
 
 		private DataPetriNet PerformTransformationStep<TAbsState, TAbsTransition, TAbsArc, TSelf>
 			(DataPetriNet sourceDpn, List<TSelf> cycles)
@@ -52,9 +100,8 @@ namespace DPN.Soundness.Services
 						.Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars
 							.Intersect(writeVarsInSourceTransition).Any())
 						.Select(x => transitionsDict[x.Transition.Id])
-						.Distinct();
-
-					_outputTransitionsCheck.AddRange(outputTransitions);
+						.Distinct()
+						.ToArray();
 
 					foreach (var outputTransition in outputTransitions)
 					{
@@ -125,137 +172,66 @@ namespace DPN.Soundness.Services
 			return newDpn;
 		}
 
-		public (DataPetriNet dpn, CoverabilityTree ct) TransformUsingCt(DataPetriNet sourceDpn, CoverabilityTree sourceCt = null)
+		private static List<LtsCycle> EnrichCyclesWithRefinedTransitions(DataPetriNet transformedDpn, List<LtsCycle> ltsMaximumCycles)
 		{
-			DataPetriNet transformedDpn = sourceDpn;
-			int sourceDpnTransitionCount;
-
-			do
+			foreach (var splitTransitions in transformedDpn.Transitions.GroupBy(t => t.BaseTransitionId))
 			{
-				sourceCt = new CoverabilityTree(transformedDpn, stopOnCoveringFinalPosition: false);
-				sourceCt.GenerateGraph();
-
-				if (sourceCt.LeafStates.Any(x => x.StateType == CtStateType.StrictlyCovered))
+				var updatedCycles = new List<LtsCycle>(ltsMaximumCycles.Count);
+				foreach (var cycle in ltsMaximumCycles)
 				{
-					return (transformedDpn, sourceCt);
-				}
-
-				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
-				transformedDpn = PerformTransformationStep<CtState, CtTransition, CtArc, CtCycle>
-					(transformedDpn, cyclesFinder.GetCycles(sourceCt));
-			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
-
-			return (transformedDpn, sourceCt);
-		}
-
-		internal (DataPetriNet dpn, ReachabilityGraph lts) TransformUsingLts
-			(DataPetriNet sourceDpn, ReachabilityGraph sourceLts = null)
-		{
-			var transformedDpn = (DataPetriNet)sourceDpn.Clone();
-			int sourceDpnTransitionCount;
-			_outputTransitionsCheck = new HashSet<Transition>();
-
-			do
-			{
-				sourceLts = new ReachabilityGraph(transformedDpn);
-				sourceLts.GenerateGraph();
-
-				if (!sourceLts.IsFullGraph)
-				{
-					return (transformedDpn, sourceLts);
-				}
-
-				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
-				transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
-					(transformedDpn, cyclesFinder.GetCycles(sourceLts));
-			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
-
-			return (transformedDpn, sourceLts);
-		}
-
-		public DataPetriNet TransformUsingCg(DataPetriNet sourceDpn)
-		{
-			DataPetriNet transformedDpn = sourceDpn;
-			int sourceDpnTransitionCount;
-			_outputTransitionsCheck = new HashSet<Transition>();
-
-			var sourceCg = new CoverabilityGraph(transformedDpn);
-			sourceCg.GenerateGraph();
-
-			var ltsMaximumCycles = cyclesFinder.GetCyclesNew(sourceCg);
-
-			do
-			{
-				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
-
-				transformedDpn = PerformTransformationStep<LtsState, LtsTransition, LtsArc, LtsCycle>
-					(transformedDpn, ltsMaximumCycles);
-
-				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
-				{
-					return transformedDpn;
-				}
-
-				foreach (var splitTransitions in transformedDpn.Transitions.GroupBy(t => t.BaseTransitionId))
-				{
-					var updatedCycles = new List<LtsCycle>(ltsMaximumCycles.Count);
-					foreach (var cycle in ltsMaximumCycles)
+					var cycleArcs = new HashSet<LtsArc>();
+					foreach (var arc in cycle.CycleArcs)
 					{
-						var cycleArcs = new HashSet<LtsArc>();
-						foreach (var arc in cycle.CycleArcs)
+						if (splitTransitions.Key == "Update request" && arc.Transition.Id.Contains("Update request+[Refuse proposal]"))
 						{
-							if (splitTransitions.Key == "Update request" && arc.Transition.Id.Contains("Update request+[Refuse proposal]"))
-							{
-								
-							}
-							if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
-							{
-								foreach (var splitTransition in splitTransitions)
-								{
-									if (splitTransitions.Key == "Update request")
-									{
-										
-									}
-									
-									cycleArcs.Add(new LtsArc(
-										arc.SourceState,
-										new LtsTransition(splitTransition),
-										arc.TargetState));
-								}
-							}
-							else
-							{
-								cycleArcs.Add(arc);
-							}
 						}
 
-						var outgoingArcs = new HashSet<LtsArc>();
-						foreach (var arc in cycle.OutputArcs)
+						if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
 						{
-							if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
+							foreach (var splitTransition in splitTransitions)
 							{
-								foreach (var splitTransition in splitTransitions)
+								if (splitTransitions.Key == "Update request")
 								{
-									outgoingArcs.Add(new LtsArc(
-										arc.SourceState,
-										new LtsTransition(splitTransition),
-										arc.TargetState));
 								}
-							}
-							else
-							{
-								outgoingArcs.Add(arc);
+
+								cycleArcs.Add(new LtsArc(
+									arc.SourceState,
+									new LtsTransition(splitTransition),
+									arc.TargetState));
 							}
 						}
-
-						updatedCycles.Add(new LtsCycle(cycleArcs, outgoingArcs));
+						else
+						{
+							cycleArcs.Add(arc);
+						}
 					}
 
-					ltsMaximumCycles = updatedCycles;
-				}
-			} while (transformedDpn.Transitions.Count > sourceDpnTransitionCount);
+					var outgoingArcs = new HashSet<LtsArc>();
+					foreach (var arc in cycle.OutputArcs)
+					{
+						if (arc.Transition.NonRefinedTransitionId == splitTransitions.Key)
+						{
+							foreach (var splitTransition in splitTransitions)
+							{
+								outgoingArcs.Add(new LtsArc(
+									arc.SourceState,
+									new LtsTransition(splitTransition),
+									arc.TargetState));
+							}
+						}
+						else
+						{
+							outgoingArcs.Add(arc);
+						}
+					}
 
-			return transformedDpn;
+					updatedCycles.Add(new LtsCycle(cycleArcs, outgoingArcs));
+				}
+
+				ltsMaximumCycles = updatedCycles;
+			}
+
+			return ltsMaximumCycles;
 		}
 
 

@@ -15,9 +15,8 @@ using System.Xml;
 using System.Xml.Linq;
 using DPN.Experiments.Common;
 using DPN.Soundness;
-using DPN.Soundness.Services;
 using DPN.Soundness.TransitionSystems;
-using DPN.Visualization.Models;
+using DPN.Soundness.Verification;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
@@ -102,7 +101,7 @@ namespace DataPetriNetIterativeVerificationApplication
                     var stateSpace = asmlParser.Deserialize(xDocument);
                     var soundnessProperties = stateSpace.StateSpaceType ==
                                               TransitionSystemType.AbstractReachabilityGraph
-                        ? SoundnessAnalyzer.CheckSoundness(stateSpace)
+                        ? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
                         : RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
                     var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), true)

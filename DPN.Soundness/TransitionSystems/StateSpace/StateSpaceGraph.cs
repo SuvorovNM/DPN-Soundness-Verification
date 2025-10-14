@@ -1,9 +1,9 @@
 ﻿using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 
-namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
+namespace DPN.Soundness.TransitionSystems.StateSpace;
 
-public class StateSpaceAbstraction(
+public class StateSpaceGraph(
 	StateSpaceNode[] nodes,
 	StateSpaceArc[] arcs,
 	bool isFullGraph,

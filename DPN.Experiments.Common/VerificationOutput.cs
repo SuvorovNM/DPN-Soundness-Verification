@@ -1,7 +1,6 @@
 ﻿using DPN.Models;
 using DPN.Soundness;
-using DPN.Soundness.TransitionSystems.Reachability;
-using DPN.Soundness.TransitionSystems.StateSpaceGraph;
+using DPN.Soundness.TransitionSystems.StateSpace;
 
 namespace DPN.Experiments.Common
 {
@@ -34,7 +33,7 @@ namespace DPN.Experiments.Common
         public MainVerificationInfo(
             DataPetriNet dpn, 
             bool satisfiesConditions,
-            StateSpaceAbstraction stateSpace,
+            StateSpaceGraph stateSpace,
             SoundnessProperties? soundnessProperties,
             long millisecondsForVerification,
             long millisecondsForRepair,

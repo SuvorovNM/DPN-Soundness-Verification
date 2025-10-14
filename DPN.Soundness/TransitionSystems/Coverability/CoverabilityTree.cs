@@ -7,15 +7,15 @@ using Microsoft.Z3;
 
 namespace DPN.Soundness.TransitionSystems.Coverability
 {
-    public class CoverabilityTree : AbstractStateSpaceStructure<CtState, CtTransition, CtArc>
+    internal sealed class CoverabilityTree : AbstractStateSpaceStructure<CtState, CtTransition, CtArc>
     // Покрасить все вершины, а затем обходить дерево в глубину до листьев или красных вершин
     {
-        protected Stack<CtState> StatesToConsider { get; set; }
-        public List<CtState> LeafStates { get; protected set; }
-        protected bool WithTauTransitions { get; init; }
+	    private Stack<CtState> StatesToConsider { get; }
+	    private List<CtState> LeafStates { get; }
+        private bool WithTauTransitions { get; }
         public bool IsFullGraph { get; private set; }
-        private bool StopOnCoveringFinalPosition { get; init; }
-        private Place FinalPosition { get; init; }
+        private bool StopOnCoveringFinalPosition { get; }
+        private Place FinalPosition { get; }
 
         public CoverabilityTree(DataPetriNet dataPetriNet, bool stopOnCoveringFinalPosition, bool withTauTransitions = false) : base(dataPetriNet)
         {
@@ -27,7 +27,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
             FinalPosition = dataPetriNet.Places.Single(p => p.IsFinal);
         }
 
-        public override void GenerateGraph()
+        public void GenerateGraph()
         {
             var transitionGuards = new Dictionary<Transition, BoolExpr>();
             var tauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
@@ -164,7 +164,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
             }
         }
 
-        protected override void AddNewState(CtState currentState, CtTransition transition, BaseStateInfo stateInfo)
+        private void AddNewState(CtState currentState, CtTransition transition, BaseStateInfo stateInfo)
         {
             // Since it is a tree, there can be only one node that is greater than or equal
             var coveredNode = FindParentNodeForWhichComparisonResultForCurrentNodeHolds
@@ -200,7 +200,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
             }
         }
 
-        protected override CtState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+        private CtState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
             (BaseStateInfo stateInfo, CtState parentNode, MarkingComparisonResult comparisonResult)
         {
             var currentNode = parentNode;

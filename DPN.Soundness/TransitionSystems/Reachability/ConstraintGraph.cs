@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using DPN.Models;
+﻿using DPN.Models;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
@@ -11,7 +10,6 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 	    public override void GenerateGraph()
         {
             IsFullGraph = false;
-            Stopwatch stopwatch = Stopwatch.StartNew();
 
             while (StatesToConsider.Count > 0)
             {
@@ -71,8 +69,6 @@ namespace DPN.Soundness.TransitionSystems.Reachability
                     }
                 }
             }
-            stopwatch.Stop();
-            Milliseconds = stopwatch.ElapsedMilliseconds;
             IsFullGraph = true;
         }
     }

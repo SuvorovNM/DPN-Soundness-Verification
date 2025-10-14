@@ -8,21 +8,21 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 {
     internal abstract class LabeledTransitionSystem : AbstractStateSpaceStructure<LtsState, LtsTransition, LtsArc>
     {
-        public bool IsFullGraph { get; set; }
-        public long Milliseconds { get; set; }
+        public bool IsFullGraph { get; protected set; }
 
         protected Stack<LtsState> StatesToConsider { get; set; }
 
-        public LabeledTransitionSystem(DataPetriNet dataPetriNet) : base(dataPetriNet)
+        protected LabeledTransitionSystem(DataPetriNet dataPetriNet) : base(dataPetriNet)
         {
             IsFullGraph = false;
-            Milliseconds = 0;
 
             StatesToConsider = new Stack<LtsState>();
             StatesToConsider.Push(InitialState);
         }
 
-        protected override void AddNewState(LtsState currentState,
+        public abstract void GenerateGraph();
+
+        protected void AddNewState(LtsState currentState,
             LtsTransition transition,
             BaseStateInfo stateInfo)
         {
@@ -48,10 +48,10 @@ namespace DPN.Soundness.TransitionSystems.Reachability
             }
         }
 
-        protected override LtsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
+        protected LtsState? FindParentNodeForWhichComparisonResultForCurrentNodeHolds
             (BaseStateInfo stateInfo, LtsState parentNode, MarkingComparisonResult comparisonResult)
         {
-            foreach (var stateInGraph in parentNode.ParentStates.Union(new[] { parentNode }))
+            foreach (var stateInGraph in parentNode.ParentStates.Union([parentNode]))
             {
                 var isConditionHoldsForTokens =
                     stateInfo.Marking.CompareTo(stateInGraph.Marking) == comparisonResult;

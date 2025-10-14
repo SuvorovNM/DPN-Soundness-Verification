@@ -1,7 +1,7 @@
 ﻿using DPN.Models;
 using DPN.Models.DPNElements;
 
-namespace DPN.Soundness.Services;
+namespace DPN.Soundness.Transformations;
 
 public class TransformerToTau
 {
@@ -10,7 +10,8 @@ public class TransformerToTau
         var tauTransitions = sourceDpn
             .Transitions
             .Select(t => t.MakeTau())
-            .Where(t => t != null);
+            .Where(t => t != null)
+            .ToArray();
 
         var sourceTransitions = sourceDpn
             .Transitions

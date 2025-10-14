@@ -1,22 +1,30 @@
 ﻿using System.Diagnostics;
 using DPN.Models;
+using DPN.Soundness.Transformations;
 using DPN.Soundness.TransitionSystems.Converters;
 using DPN.Soundness.TransitionSystems.Reachability;
 
-namespace DPN.Soundness.Services;
+namespace DPN.Soundness.Verification;
+
+public static class ClassicalVerificationSettingsConstants
+{
+	public const string AlgorithmVersion = nameof(AlgorithmVersion);
+	public const string DirectVersion = nameof(DirectVersion);
+	public const string ImprovedVersion = nameof(ImprovedVersion);
+}
 
 public class ClassicalSoundnessVerifier : ISoundnessVerifier
 {
 	public VerificationResult Verify(DataPetriNet dpn, Dictionary<string, string> verificationSettings)
 	{
-		verificationSettings.TryGetValue(VerificationSettingsConstants.AlgorithmVersion, out var algorithmVersion);
+		verificationSettings.TryGetValue(ClassicalVerificationSettingsConstants.AlgorithmVersion, out var algorithmVersion);
 
-		if (algorithmVersion == VerificationSettingsConstants.ImprovedVersion)
+		if (algorithmVersion == ClassicalVerificationSettingsConstants.ImprovedVersion)
 		{
 			return VerifyImproved(dpn);
 		}
 
-		if (algorithmVersion is VerificationSettingsConstants.DirectVersion or null)
+		if (algorithmVersion is ClassicalVerificationSettingsConstants.DirectVersion or null)
 		{
 			return VerifyClassical(dpn);
 		}
@@ -28,21 +36,26 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	{
 		var stopWatch = Stopwatch.StartNew();
 		var dpnTransformation = new TransformerToRefined();
-		var (refinedDpn, lts) = dpnTransformation.TransformUsingLts(dpn);
-
+		var (refinedDpn, stateSpace) = dpnTransformation.Transform(
+			dpn,
+			new Dictionary<string, string>
+			{
+				{RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph}
+			});
+		
 		SoundnessProperties soundnessProperties;
-		if (lts.IsFullGraph)
+		if (stateSpace.IsFullGraph)
 		{
 			var constraintGraph = new ConstraintGraph(refinedDpn);
 			constraintGraph.GenerateGraph();
-			soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
+			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
 			stopWatch.Stop();
 			return new VerificationResult(ToStateSpaceConverter.Convert(constraintGraph), soundnessProperties, stopWatch.Elapsed);
 		}
 
-		soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
+		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 		stopWatch.Stop();
-		return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties, stopWatch.Elapsed);
+		return new VerificationResult(stateSpace, soundnessProperties, stopWatch.Elapsed);
 	}
 
 	private static VerificationResult VerifyImproved(DataPetriNet dpn)
@@ -50,7 +63,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		var stopWatch = Stopwatch.StartNew();
 		var lts = new ReachabilityGraph(dpn);
 		lts.GenerateGraph();
-		var soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, lts);
+		var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, lts);
 
 		if (!soundnessProperties.Soundness)
 		{
@@ -60,22 +73,15 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 
 		var cg = new ConstraintGraph(dpn);
 		cg.GenerateGraph();
-		soundnessProperties = SoundnessAnalyzer.CheckSoundness(dpn, cg);
+		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, cg);
 		stopWatch.Stop();
 
 		if (soundnessProperties.Soundness)
 		{
 			var verificationResult = VerifyClassical(dpn);
-			return new VerificationResult(verificationResult.StateSpaceAbstraction, verificationResult.SoundnessProperties, stopWatch.Elapsed + verificationResult.VerificationTime);
+			return new VerificationResult(verificationResult.StateSpaceGraph, verificationResult.SoundnessProperties, stopWatch.Elapsed + verificationResult.VerificationTime);
 		}
 
 		return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
-	}
-
-	public static class VerificationSettingsConstants
-	{
-		public const string AlgorithmVersion = nameof(AlgorithmVersion);
-		public const string DirectVersion = nameof(DirectVersion);
-		public const string ImprovedVersion = nameof(ImprovedVersion);
 	}
 }

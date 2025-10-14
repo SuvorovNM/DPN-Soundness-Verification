@@ -11,8 +11,9 @@ using System.Xml.Serialization;
 using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
 using DPN.Soundness;
-using DPN.Soundness.Services;
-using DPN.Soundness.TransitionSystems.Reachability;
+using DPN.Soundness.Repair;
+using DPN.Soundness.Transformations;
+using DPN.Soundness.Verification;
 
 namespace DataPetriNetVerificationApplication
 {
@@ -159,7 +160,7 @@ namespace DataPetriNetVerificationApplication
 				outputRow = new MainVerificationInfo(
 					dpnToVerify,
 					satisfiesConditions,
-					verificationResult.StateSpaceAbstraction, // TODO: вести подсчет всех построенных вершин и дуг?
+					verificationResult.StateSpaceGraph, // TODO: вести подсчет всех построенных вершин и дуг?
 					verificationResult.SoundnessProperties,
 					verificationResult.VerificationTime!.Value.Milliseconds,
 					(long?)repairResult?.RepairTime.TotalMilliseconds ?? -1,

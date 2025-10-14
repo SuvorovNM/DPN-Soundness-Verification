@@ -1,6 +1,4 @@
-﻿using DPN.Soundness;
-
-namespace DPN.Visualization.Models;
+﻿namespace DPN.Visualization.Models;
 
 public class SoundnessPropertiesToVisualize(
 	bool boundedness,

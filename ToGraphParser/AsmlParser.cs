@@ -1,8 +1,7 @@
 ﻿using System.Xml.Linq;
 using DPN.Models.Enums;
-using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems;
-using DPN.Soundness.TransitionSystems.StateSpaceGraph;
+using DPN.Soundness.TransitionSystems.StateSpace;
 using Microsoft.Z3;
 
 namespace DPN.Parsers
@@ -39,7 +38,7 @@ namespace DPN.Parsers
 		private const string graphTypeAttributeName = "graph_type";
 		private const string isFullAttributeName = "is_full";
 
-		public StateSpaceAbstraction Deserialize(XDocument document)
+		public StateSpaceGraph Deserialize(XDocument document)
 		{
 			ArgumentNullException.ThrowIfNull(document);
 			var cgElement = document.Root?.Element(stateSpaceElementName);
@@ -135,7 +134,7 @@ namespace DPN.Parsers
 			var graphTypeStr = cgElement.Attribute(graphTypeAttributeName)?.Value ?? "AbstractReachabilityGraph";
 			var stateSpaceType = Enum.TryParse<TransitionSystemType>(graphTypeStr, out var type) ? type : TransitionSystemType.AbstractReachabilityGraph;
 
-			return new StateSpaceAbstraction(
+			return new StateSpaceGraph(
 				nodes.ToArray(),
 				arcs.ToArray(),
 				isFullGraph,
@@ -146,7 +145,7 @@ namespace DPN.Parsers
 			);
 		}
 
-		public XDocument Serialize(StateSpaceAbstraction stateSpace)
+		public XDocument Serialize(StateSpaceGraph stateSpace)
 		{
 			var statesElement = new XElement(statesElementName);
 			var expressionSerializer = new Z3ExpressionSerializer();

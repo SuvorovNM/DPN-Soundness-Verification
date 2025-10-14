@@ -5,23 +5,24 @@ using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
+using DPN.Soundness.Transformations;
 using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
-namespace DPN.Soundness.Services;
+namespace DPN.Soundness.Repair;
+
+public static class ClassicalRepairSettingsConstants
+{
+	public const string MergeTransitionsBack = nameof(MergeTransitionsBack);
+	public const string True = nameof(True);
+	public const string False = nameof(False);
+}
 
 [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
 public class ClassicalSoundnessRepairer
 {
-	public static class RepairSettingsConstants
-	{
-		public const string MergeTransitionsBack = nameof(MergeTransitionsBack);
-		public const string True = nameof(True);
-		public const string False = nameof(False);
-	}
-	
 	// Repair is done until stabilization.
 	// Algorithm terminates either if no paths remain leading to failure points or if all paths start to leading to failure points
 	public RepairResult Repair(DataPetriNet sourceDpn, Dictionary<string, string> repairProperties)
@@ -47,7 +48,14 @@ public class ClassicalSoundnessRepairer
 		{
 			if (firstIteration || allGreenOnPreviousStep)
 			{
-				(var refinedDpn, _) = transformerToRefined.TransformUsingLts(dpnToConsider);
+				var refinedDpn = transformerToRefined
+					.Transform(
+						dpnToConsider, 
+						new Dictionary<string, string>
+						{
+							{RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph}
+						})
+					.RefinedDpn;
 				if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
 				{
 					transitionsToTrySimplify = transitionsToTrySimplify
@@ -177,11 +185,11 @@ public class ClassicalSoundnessRepairer
 	private static bool GetMergeTransitionsBackProperty(Dictionary<string, string> repairProperties)
 	{
 		var mergeTransitionsBack = true;
-		if (repairProperties.TryGetValue(RepairSettingsConstants.MergeTransitionsBack, out var mergeTransitionsBackString))
+		if (repairProperties.TryGetValue(ClassicalRepairSettingsConstants.MergeTransitionsBack, out var mergeTransitionsBackString))
 		{
 			if (!bool.TryParse(mergeTransitionsBackString, out mergeTransitionsBack))
 			{
-				throw new ArgumentException($"Invalid value for parameter {nameof(RepairSettingsConstants.MergeTransitionsBack)}");
+				throw new ArgumentException($"Invalid value for parameter {nameof(ClassicalRepairSettingsConstants.MergeTransitionsBack)}");
 			}
 		}
 

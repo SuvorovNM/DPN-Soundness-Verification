@@ -1,6 +1,6 @@
 ﻿namespace DPN.Soundness.TransitionSystems.StateSpaceAbstraction
 {
-    public class AbstractArc<TAbsState, TAbsTransition>(TAbsState sourceState, TAbsTransition transitionToFire, TAbsState targetState)
+    internal class AbstractArc<TAbsState, TAbsTransition>(TAbsState sourceState, TAbsTransition transitionToFire, TAbsState targetState)
 	    where TAbsState : AbstractState
 	    where TAbsTransition : AbstractTransition
     {

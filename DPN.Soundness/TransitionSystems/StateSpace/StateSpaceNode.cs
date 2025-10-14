@@ -1,6 +1,6 @@
 ﻿using Microsoft.Z3;
 
-namespace DPN.Soundness.TransitionSystems.StateSpaceGraph;
+namespace DPN.Soundness.TransitionSystems.StateSpace;
 
 public class StateSpaceNode(Dictionary<string, int> marking, BoolExpr? stateConstraint, int id)
 { 
