@@ -43,12 +43,20 @@ namespace DPN.Soundness.Transformations
 
 			sourceLts.GenerateGraph();
 			var maximumCycles = CyclesFinder.GetCycles(sourceLts);
+			
+			// TODO: пытаемся найти порядок, в котором применять изменения. Иначе уточнений может быть очень много
+			// Храним маппинг t -> list(read_vars), list(transitions_to_split_on)
+			
+			
+			var baseTransitionIds = transformedDpn
+				.Transitions
+				.ToDictionary(t => t.BaseTransitionId, t => new HashSet<string>(){t.BaseTransitionId});
 
 			do
 			{
 				sourceDpnTransitionCount = transformedDpn.Transitions.Count;
 
-				transformedDpn = PerformTransformationStep(transformedDpn, maximumCycles);
+				transformedDpn = PerformTransformationStep(transformedDpn, maximumCycles, baseTransitionIds);
 
 				if (sourceDpnTransitionCount == transformedDpn.Transitions.Count)
 				{
@@ -61,7 +69,7 @@ namespace DPN.Soundness.Transformations
 			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
 		}
 
-		private DataPetriNet PerformTransformationStep(DataPetriNet sourceDpn, List<LtsCycle> cycles)
+		private DataPetriNet PerformTransformationStep(DataPetriNet sourceDpn, List<LtsCycle> cycles, Dictionary<string, HashSet<string>> baseTransitionIds)
 		{
 			var newDpn = (DataPetriNet)sourceDpn.Clone();
 			var context = sourceDpn.Context;
@@ -88,10 +96,10 @@ namespace DPN.Soundness.Transformations
 				{
 					var cyclesWithTransition = cycles
 						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
-					
+
 					var transitionsToInvestigate = cyclesWithTransition
-						.SelectMany(c=>c.CycleArcsWithAdjacent)
-						.Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars.Select(v=>v.Key)
+						.SelectMany(c => c.CycleArcsWithAdjacent)
+						.Where(x => transitionsDict[x.Transition.Id].Guard.ReadVars.Select(v => v.Key)
 							.Intersect(writeVarsNames).Any())
 						.Select(x => transitionsDict[x.Transition.Id])
 						.Distinct()
@@ -120,12 +128,39 @@ namespace DPN.Soundness.Transformations
 								continue;
 							}
 
+							if (baseTransitionIds[baseTransition.BaseTransitionId].Contains(outputTransition.BaseTransitionId))
+							{
+								updatedTransitions.Add((Transition)baseTransition.Clone());
+								continue;
+							}
+
 							(var positiveTransition, var negativeTransition) = baseTransition
 								.Split(formulaToConjunct, outputTransition.Id);
 							if (positiveTransition != null && negativeTransition != null)
 							{
 								updatedTransitions.Add(positiveTransition);
 								updatedTransitions.Add(negativeTransition);
+
+								if (!baseTransitionIds.ContainsKey(positiveTransition.BaseTransitionId))
+								{
+									baseTransitionIds[positiveTransition.BaseTransitionId] = new HashSet<string>(baseTransitionIds[outputTransition.BaseTransitionId]){positiveTransition.BaseTransitionId};
+								}
+								else
+								{
+									baseTransitionIds[positiveTransition.BaseTransitionId].Add(outputTransition.BaseTransitionId);
+									baseTransitionIds[positiveTransition.BaseTransitionId].AddRange(baseTransitionIds[outputTransition.BaseTransitionId]);
+								}
+								
+								/*if (!baseTransitionIds.ContainsKey(negativeTransition.BaseTransitionId))
+								{
+									baseTransitionIds[negativeTransition.BaseTransitionId] = new HashSet<string>(baseTransitionIds[outputTransition.BaseTransitionId]){negativeTransition.BaseTransitionId};
+								}
+								else
+								{
+									baseTransitionIds[negativeTransition.BaseTransitionId].Add(outputTransition.BaseTransitionId);
+									baseTransitionIds[negativeTransition.BaseTransitionId].AddRange(baseTransitionIds[outputTransition.BaseTransitionId]);
+								}*/
+
 							}
 							else
 							{
