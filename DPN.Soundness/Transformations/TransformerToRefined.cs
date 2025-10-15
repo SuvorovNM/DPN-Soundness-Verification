@@ -198,14 +198,20 @@ namespace DPN.Soundness.Transformations
 				if (writeVarsInSourceTransition.Count > 0)
 				{
 					var cyclesWithTransition = cycles
-						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id));
+						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id))
+						.ToArray();
+
+					var refinedInnerTransitions = cyclesWithTransition
+						.SelectMany(c => c.CycleArcs.Select(a => a.Transition))
+						.Where(t => refinementInfo[t.Id].TransitionsToConsiderInSplit.Any());
 
 					var transitionsToInvestigate = cyclesWithTransition
-						.SelectMany(c => c.CycleArcsWithAdjacent)
-						.Where(x => refinementInfo[x.Transition.Id].ReadVariables
-							.Intersect(writeVarsNames).Any())
-						.Select(x => transitionsDict[x.Transition.Id])
+						.SelectMany(c => c.OutputArcs.Select(a=>a.Transition))
+						.Union(refinedInnerTransitions)
 						.Distinct()
+						.Where(x => refinementInfo[x.Id].ReadVariables
+							.Intersect(writeVarsNames).Any())
+						.Select(x => transitionsDict[x.Id])
 						.ToArray();
 
 					foreach (var cycleTransition in transitionsToInvestigate)

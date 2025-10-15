@@ -105,6 +105,9 @@ public class ClassicalSoundnessRepairer
 				{
 					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
 					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredConstraintGraph, transitionsDict);
+
+					allNodesGreen = true;
+					
 					repairSteps++;
 					transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
@@ -282,10 +285,10 @@ public class ClassicalSoundnessRepairer
 			            childrenDict.TryGetValue(x.Id, out var children) && children.Any(y => cg.StateColorDictionary[y] == CtStateColor.Red))
 			.ToDictionary(x => x, y => childrenDict[y.Id].Where(x => cg.StateColorDictionary[x] == CtStateColor.Red).ToList());
 
-		var expressionsForTransitions = new Dictionary<Transition, List<BoolExpr>>();
+		var expressionsForTransitions = new Dictionary<string, List<BoolExpr>>();
 		foreach (var transition in sourceDpn.Transitions)
 		{
-			expressionsForTransitions[transition] = new List<BoolExpr>();
+			expressionsForTransitions[transition.Id] = new List<BoolExpr>();
 		}
 
 		foreach (var nodeGroup in criticalNodes)
@@ -329,7 +332,7 @@ public class ClassicalSoundnessRepairer
 							formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
 						}
 
-						expressionsForTransitions[transitionToUpdate].Add(formulaToConjunct);
+						expressionsForTransitions[transitionToUpdate.Id].Add(formulaToConjunct);
 					}
 				}
 			}
@@ -338,11 +341,11 @@ public class ClassicalSoundnessRepairer
 		var updatedTransitions = new HashSet<string>();
 		foreach (var transition in sourceDpn.Transitions)
 		{
-			if (expressionsForTransitions[transition].Count > 0)
+			if (expressionsForTransitions[transition.Id].Count > 0)
 			{
-				expressionsForTransitions[transition].Add(transition.Guard.ActualConstraintExpression);
+				expressionsForTransitions[transition.Id].Add(transition.Guard.ActualConstraintExpression);
 
-				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition]));
+				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition.Id]));
 
 				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition);
 
@@ -360,9 +363,14 @@ public class ClassicalSoundnessRepairer
 		Dictionary<int, LtsArc[]> parentsDict,
 		Dictionary<string, Transition> transitionsDict,
 		Context context,
-		Dictionary<Transition, List<BoolExpr>> expressionsForTransitions,
+		Dictionary<string, List<BoolExpr>> expressionsForTransitions,
 		List<LtsArc> visitedArcs)
 	{
+		if (!parentsDict.ContainsKey(currentNode.Id))
+		{
+			
+		}
+		
 		foreach (var arc in parentsDict[currentNode.Id].Except(visitedArcs))
 		{
 			if (arc.Transition.IsSilent)
@@ -391,7 +399,7 @@ public class ClassicalSoundnessRepairer
 					formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
 				}
 
-				expressionsForTransitions[transitionsDict[arc.Transition.Id]].Add(formulaToConjunct);
+				expressionsForTransitions[transitionsDict[arc.Transition.Id].Id].Add(formulaToConjunct);
 			}
 		}
 	}
