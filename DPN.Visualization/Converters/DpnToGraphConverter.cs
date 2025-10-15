@@ -21,9 +21,9 @@ namespace DPN.Visualization.Converters
 			foreach (var arc in dpn.Arcs)
 			{
 				if (arc.Weight == 1)
-					graph.AddEdge(arc.Source.Label, arc.Destination.Label);
+					graph.AddEdge(arc.Source.Id, arc.Destination.Id);
 				else
-					graph.AddEdge(arc.Source.Label, arc.Weight.ToString(), arc.Destination.Label);
+					graph.AddEdge(arc.Source.Id, arc.Weight.ToString(), arc.Destination.Id);
 			}
 		}
 
@@ -31,12 +31,14 @@ namespace DPN.Visualization.Converters
 		{
 			foreach (var transition in dpn.Transitions)
 			{
-				var nodeToAdd = new Node(transition.Label)
+				var nodeToAdd = new Node(transition.Id)
 				{
 					Attr =
 					{
 						Shape = Shape.Box
-					}
+					},
+					Label = new Label(transition.Label),
+					LabelText = transition.Label
 				};
 
 				graph.AddNode(nodeToAdd);
@@ -59,12 +61,14 @@ namespace DPN.Visualization.Converters
 		{
 			foreach (var place in dpn.Places)
 			{
-				var nodeToAdd = new Node(place.Label)
+				var nodeToAdd = new Node(place.Id)
 				{
 					Attr =
 					{
 						Shape = Shape.Circle
-					}
+					},
+					Label = new Label(place.Label),
+					LabelText = place.Label
 				};
 
 				if (place.Tokens > 0 || place.IsFinal)
