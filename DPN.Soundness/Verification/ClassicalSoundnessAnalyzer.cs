@@ -1,4 +1,5 @@
 ﻿using DPN.Models;
+using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.Reachability;
@@ -13,7 +14,7 @@ public static class ClassicalSoundnessAnalyzer
 	{
 		var boundedness = stateSpaceGraph.IsFullGraph;
 		var stateTypes = boundedness
-			? GetStatesDividedByTypesNew(stateSpaceGraph)
+			? GetStatesDividedByTypes(stateSpaceGraph)
 			: stateSpaceGraph.Nodes.ToDictionary(x => x.Id, y => ConstraintStateType.Default);
 
 		var deadTransitions = GetDeadTransitions(stateSpaceGraph);
@@ -186,7 +187,7 @@ public static class ClassicalSoundnessAnalyzer
 		return deadTransitions;
 	}
 
-	private static Dictionary<int, ConstraintStateType> GetStatesDividedByTypesNew
+	private static Dictionary<int, ConstraintStateType> GetStatesDividedByTypes
 		(StateSpaceGraph stateSpaceGraph)
 	{
 		var stateDictionary = stateSpaceGraph
@@ -194,9 +195,11 @@ public static class ClassicalSoundnessAnalyzer
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= ConstraintStateType.Initial;
+		
+		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
 		var finalStates = stateSpaceGraph.Nodes
-			.Where(x => x.Marking.All(y => y.Value == stateSpaceGraph.FinalDpnMarking[y.Key]))
+			.Where(x => Marking.FromDictionary(x.Marking).CompareTo(finalMarking) == MarkingComparisonResult.Equal)
 			.ToArray();
 
 		foreach (var finalState in finalStates)
@@ -205,8 +208,7 @@ public static class ClassicalSoundnessAnalyzer
 		}
 
 		var uncleanFinals = stateSpaceGraph.Nodes
-			.Where(x => x.Marking.All(y => y.Value >= stateSpaceGraph.FinalDpnMarking[y.Key]) &&
-			            x.Marking.Any(y => y.Value > stateSpaceGraph.FinalDpnMarking[y.Key]))
+			.Where(x => Marking.FromDictionary(x.Marking).CompareTo(finalMarking) == MarkingComparisonResult.GreaterThan)
 			.ToArray();
 
 		foreach (var uncleanFinal in uncleanFinals)

@@ -42,6 +42,11 @@ namespace DPN.Models.DPNElements
         {
             return placeIdToTokens;
         }
+        
+        public static Marking FromDictionary(Dictionary<string, int> marking)
+        {
+	        return new Marking(marking);
+        }
 
         public static Marking FromDpnPlaces(List<Place> places)
         {

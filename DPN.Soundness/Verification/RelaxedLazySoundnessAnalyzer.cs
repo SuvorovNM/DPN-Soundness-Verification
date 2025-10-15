@@ -1,4 +1,5 @@
 ﻿using DPN.Models;
+using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems.Coverability;
@@ -17,24 +18,23 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= ConstraintStateType.Initial;
+		
+		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
 		var finalStates = stateSpaceGraph.Nodes
 			.Where(x => x.Marking.All(y =>
-				stateSpaceGraph.FinalDpnMarking[y.Key] == 0
-					? y.Value >= 0
-					: y.Value == stateSpaceGraph.FinalDpnMarking[y.Key]))
+				stateSpaceGraph.FinalDpnMarking[y.Key] == 0 ||
+				stateSpaceGraph.FinalDpnMarking[y.Key] != 0 && y.Value == stateSpaceGraph.FinalDpnMarking[y.Key]))
 			.ToArray();
 
 		foreach (var finalState in finalStates)
 		{
 			stateDictionary[finalState.Id] |= ConstraintStateType.Final;
 		}
-
+		
 		var uncleanFinals = stateSpaceGraph.Nodes
-			.Where(x => x.Marking.All(y =>
-				stateSpaceGraph.FinalDpnMarking[y.Key] == 0
-					? y.Value >= 0
-					: y.Value >= stateSpaceGraph.FinalDpnMarking[y.Key]))
+			.Where(x => x.Marking.Any(y =>
+				stateSpaceGraph.FinalDpnMarking[y.Key] != 0 && y.Value > stateSpaceGraph.FinalDpnMarking[y.Key]))
 			.ToArray();
 
 		foreach (var uncleanFinal in uncleanFinals)
