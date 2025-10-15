@@ -142,7 +142,10 @@ public class ClassicalSoundnessRepairer
 
 		static void RemoveIsolatedPlaces(DataPetriNet sourceDpn)
 		{
-			sourceDpn.Places.RemoveAll(p => !sourceDpn.Arcs.Select(a => a.Source).Union(sourceDpn.Arcs.Select(a => a.Destination)).Contains(p));
+			sourceDpn.Places.RemoveAll(p => 
+				!sourceDpn.Arcs.Select(a => a.Source.Id)
+					.Union(sourceDpn.Arcs.Select(a => a.Destination.Id))
+					.Contains(p.Id));
 		}
 
 		static void MergeTransitions(DataPetriNet dpnToConsider)
@@ -151,8 +154,8 @@ public class ClassicalSoundnessRepairer
 				.GroupBy(x => x.BaseTransitionId)
 				.Where(x => x.Count() > 1);
 
-			var preset = new Dictionary<Transition, List<(Place place, int weight)>>();
-			var postset = new Dictionary<Transition, List<(Place place, int weight)>>();
+			var preset = new Dictionary<string, List<(Place place, int weight)>>();
+			var postset = new Dictionary<string, List<(Place place, int weight)>>();
 
 			TransformerToRefined.FillTransitionsArcs(dpnToConsider, preset, postset);
 
@@ -169,12 +172,12 @@ public class ClassicalSoundnessRepairer
 				dpnToConsider.Transitions.Add(transitionToAdd);
 
 				dpnToConsider.Arcs.RemoveAll(x => baseTransition.Contains(x.Source) || baseTransition.Contains(x.Destination));
-				foreach (var inputArc in preset[transitionToInspect])
+				foreach (var inputArc in preset[transitionToInspect.Id])
 				{
 					dpnToConsider.Arcs.Add(new Arc(inputArc.place, transitionToAdd, inputArc.weight));
 				}
 
-				foreach (var ouputArc in postset[transitionToInspect])
+				foreach (var ouputArc in postset[transitionToInspect.Id])
 				{
 					dpnToConsider.Arcs.Add(new Arc(transitionToAdd, ouputArc.place, ouputArc.weight));
 				}
