@@ -79,20 +79,24 @@ namespace DPN.Soundness.Transformations
 				// Формируем массив формул (не переходов) - определяем взаимно-неэквивалентные, их и используем далее
 				// или более пристально смотрим на запись - но как? Проверить, точно ли нам нужны тут записи, или можем обойтись чтением
 				var conjunctionsOfExpressions = new List<(BoolExpr expr, string name)>();
-				var expressions = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit.Select(t => t.Guard.ActualConstraintExpression).ToArray();
+				var transitionsToConsiderInSplit = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit
+					.Where(t => t.Id != transition.Id)
+					.ToArray();
+
+				var expressions = transitionsToConsiderInSplit.Select(t => t.Guard.ActualConstraintExpression).ToArray();
 				var readyToJoinExpressions = new List<BoolExpr>(expressions.Length);
 
-				var index = 0;
 				var overwrittenVars = new Dictionary<string, DomainType>();
-				var baseTransitionNames = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit.Select(t => t.Id).ToArray();
-				
+				var baseTransitionNames = transitionsToConsiderInSplit
+					.Select(t => t.Id).ToArray();
+
 				var addedTransitionNames = new List<string>(expressions.Length * 2);
 				for (var i = 0; i < expressions.Length; i++)
 				{
 					var expression = expressions[i];
 					var writtenVars = expression.GetTypedVarsDict(VariableType.Written);
 					var readVars = expression.GetTypedVarsDict(VariableType.Read);
-					
+
 					if (!writtenVars.Keys.Intersect(readVars.Keys).Any())
 					{
 						var expressionWithoutIntersections = expression;
@@ -103,7 +107,7 @@ namespace DPN.Soundness.Transformations
 
 							expressionWithoutIntersections = (BoolExpr)expressionWithoutIntersections.Substitute(writeVar, readVar);
 						}
-						
+
 						readyToJoinExpressions.Add(expressionWithoutIntersections);
 						addedTransitionNames.Add(baseTransitionNames[i]);
 						continue;
@@ -114,7 +118,7 @@ namespace DPN.Soundness.Transformations
 
 					var expressionWithoutWrittenIntersected = context.GetExistsExpression(expressionWithIntersections, variableIntersection, VariableType.Written);
 					var expressionWithoutReadIntersected = context.GetExistsExpression(expressionWithIntersections, variableIntersection, VariableType.Read);
-					
+
 					foreach (var variable in writtenVars)
 					{
 						var readVar = context.GenerateExpression(variable.Key, variable.Value, VariableType.Read);
@@ -123,12 +127,19 @@ namespace DPN.Soundness.Transformations
 						expressionWithoutWrittenIntersected = (BoolExpr)expressionWithoutWrittenIntersected.Substitute(writeVar, readVar);
 						expressionWithoutReadIntersected = (BoolExpr)expressionWithoutReadIntersected.Substitute(writeVar, readVar);
 					}
-					
-					readyToJoinExpressions.Add(expressionWithoutWrittenIntersected);
-					readyToJoinExpressions.Add(expressionWithoutReadIntersected);
-					
-					addedTransitionNames.Add(baseTransitionNames[i]);
-					addedTransitionNames.Add(baseTransitionNames[i]);
+
+					if (expressionWithoutReadIntersected is { IsTrue: false, IsFalse: false })
+					{
+						readyToJoinExpressions.Add(expressionWithoutReadIntersected);
+						addedTransitionNames.Add(baseTransitionNames[i]);
+					}
+
+					if (expressionWithoutWrittenIntersected is { IsTrue: false, IsFalse: false } &&
+					    !context.AreEqual(expressionWithoutWrittenIntersected, expressionWithoutReadIntersected))
+					{
+						readyToJoinExpressions.Add(expressionWithoutWrittenIntersected);
+						addedTransitionNames.Add(baseTransitionNames[i]);
+					}
 				}
 
 
@@ -190,7 +201,7 @@ namespace DPN.Soundness.Transformations
 
 					if (!transitionsPreset.TryGetValue(baseTransition, out var preset))
 					{
-						preset = transitionsPreset[updatedTransition.Id]; 
+						preset = transitionsPreset[updatedTransition.Id];
 					}
 
 					if (!transitionsPostset.TryGetValue(baseTransition, out var postset))
@@ -208,7 +219,6 @@ namespace DPN.Soundness.Transformations
 						refinedArcs.Add(new Arc(updatedTransition, arc.place, arc.weight));
 					}
 				}
-				
 			}
 
 			transformedDpn.Transitions = refinedTransitions.Values.SelectMany(t => t).ToList();
@@ -253,7 +263,7 @@ namespace DPN.Soundness.Transformations
 						.Where(t => refinementInfo[t.Id].TransitionsToConsiderInSplit.Any());
 
 					var transitionsToInvestigate = cyclesWithTransition
-						.SelectMany(c => c.OutputArcs.Select(a=>a.Transition))
+						.SelectMany(c => c.OutputArcs.Select(a => a.Transition))
 						.Union(refinedInnerTransitions)
 						.Distinct()
 						.Where(x => refinementInfo[x.Id].ReadVariables
