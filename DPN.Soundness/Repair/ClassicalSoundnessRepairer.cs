@@ -31,7 +31,7 @@ public class ClassicalSoundnessRepairer
 
 		var transformerToRefined = new TransformerToRefined();
 		var stopwatch = Stopwatch.StartNew();
-		
+
 		var dpnToConsider = (DataPetriNet)sourceDpn.Clone();
 		bool repairmentSuccessfullyFinished;
 		bool repairmentFailed;
@@ -50,10 +50,10 @@ public class ClassicalSoundnessRepairer
 			{
 				var refinedDpn = transformerToRefined
 					.Transform(
-						dpnToConsider, 
+						dpnToConsider,
 						new Dictionary<string, string>
 						{
-							{RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph}
+							{ RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph }
 						})
 					.RefinedDpn;
 				if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
@@ -74,10 +74,8 @@ public class ClassicalSoundnessRepairer
 			if (firstIteration)
 			{
 				// We can switch withTauTransitions to false if want only to make net bounded
-				var stopwatch1 = Stopwatch.StartNew();
 				var coloredCoverabilityTree = new CoverabilityTree(dpnToConsider, stopOnCoveringFinalPosition: true, withTauTransitions: true);
 				coloredCoverabilityTree.GenerateGraph();
-				stopwatch1.Stop();
 
 				allNodesGreen = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Green);
 				allNodesRed = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Red);
@@ -109,7 +107,7 @@ public class ClassicalSoundnessRepairer
 					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredConstraintGraph, transitionsDict);
 
 					allNodesGreen = true;
-					
+
 					repairSteps++;
 					transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
@@ -134,7 +132,7 @@ public class ClassicalSoundnessRepairer
 
 			if (mergeTransitionsBack)
 				MergeTransitions(dpnToConsider);
-			
+
 			// TODO: add a step of rolling back transitions?
 		}
 
@@ -147,7 +145,7 @@ public class ClassicalSoundnessRepairer
 
 		static void RemoveIsolatedPlaces(DataPetriNet sourceDpn)
 		{
-			sourceDpn.Places.RemoveAll(p => 
+			sourceDpn.Places.RemoveAll(p =>
 				!sourceDpn.Arcs.Select(a => a.Source.Id)
 					.Union(sourceDpn.Arcs.Select(a => a.Destination.Id))
 					.Contains(p.Id));
@@ -204,7 +202,7 @@ public class ClassicalSoundnessRepairer
 		return mergeTransitionsBack;
 	}
 
-	private static void RemoveDeadTransitions<TState,TTransition>(DataPetriNet sourceDpn, AbstractArc<TState, TTransition>[] arcs) 
+	private static void RemoveDeadTransitions<TState, TTransition>(DataPetriNet sourceDpn, AbstractArc<TState, TTransition>[] arcs)
 		where TState : AbstractState
 		where TTransition : AbstractTransition
 	{
@@ -370,9 +368,8 @@ public class ClassicalSoundnessRepairer
 	{
 		if (!parentsDict.ContainsKey(currentNode.Id))
 		{
-			
 		}
-		
+
 		foreach (var arc in parentsDict[currentNode.Id].Except(visitedArcs))
 		{
 			if (arc.Transition.IsSilent)
