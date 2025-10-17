@@ -64,7 +64,8 @@ public class ClassicalSoundnessRepairer
 					transitionsUpdatedAtPreviousStep.Clear();
 
 					dpnToConsider = refinedDpn;
-					transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+					dpnToConsider.Transitions
+						.ForEach(t=> transitionsDict[t.Id] = t);
 				}
 			}
 
@@ -131,7 +132,7 @@ public class ClassicalSoundnessRepairer
 			RemoveIsolatedPlaces(dpnToConsider);
 
 			if (mergeTransitionsBack)
-				MergeTransitions(dpnToConsider);
+				MergeTransitions(dpnToConsider, transitionsDict);
 
 			// TODO: add a step of rolling back transitions?
 		}
@@ -151,7 +152,8 @@ public class ClassicalSoundnessRepairer
 					.Contains(p.Id));
 		}
 
-		static void MergeTransitions(DataPetriNet dpnToConsider)
+		// Одно из возможных улучшений - построение дерева изменений перехода и мерж с учетом данных из дерева, а не только корня
+		static void MergeTransitions(DataPetriNet dpnToConsider, Dictionary<string, Transition> transitionsDict)
 		{
 			var baseTransitions = dpnToConsider.Transitions
 				.GroupBy(x => x.BaseTransitionId)
@@ -165,7 +167,9 @@ public class ClassicalSoundnessRepairer
 			foreach (var baseTransition in baseTransitions)
 			{
 				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression)).Simplify();
-				resultantConstraint = dpnToConsider.Context.SimplifyExpression(resultantConstraint);
+				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression) 
+					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression 
+					: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
 
 				var transitionToInspect = baseTransition.First();
 
