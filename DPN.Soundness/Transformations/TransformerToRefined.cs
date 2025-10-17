@@ -97,6 +97,11 @@ namespace DPN.Soundness.Transformations
 					var writtenVars = expression.GetTypedVarsDict(VariableType.Written);
 					var readVars = expression.GetTypedVarsDict(VariableType.Read);
 
+					if (readVars.Count == 0)
+					{
+						continue;
+					}
+
 					if (!writtenVars.Keys.Intersect(readVars.Keys).Any())
 					{
 						var expressionWithoutIntersections = expression;
@@ -141,7 +146,6 @@ namespace DPN.Soundness.Transformations
 						addedTransitionNames.Add(baseTransitionNames[i]);
 					}
 				}
-
 
 				for (int i = 0; i < Math.Pow(2, readyToJoinExpressions.Count); i++)
 				{
