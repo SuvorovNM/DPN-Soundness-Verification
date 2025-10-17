@@ -145,8 +145,6 @@ namespace DPN.Soundness.Transformations
 				// TODO: Имеет ли смысл на данном этапе мержить обратно переходы, которые не очень полезны?
 				foreach (var (expression, splitTransitionNames) in conjunctionsOfExpressions)
 				{
-					//var readFormula = context.GetReadExpression(expression, expression.GetTypedVarsDict(VariableType.Written));
-
 					var formulaToConjunct = expression;
 					foreach (var overwrittenVar in transition.Guard.WriteVars)
 					{
@@ -155,16 +153,6 @@ namespace DPN.Soundness.Transformations
 
 						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
 					}
-
-					/*var falseWriteVariables = formulaToConjunct.GetTypedVarsDict(VariableType.Written).Except(transition.Guard.WriteVars);
-
-					foreach (var overwrittenVar in falseWriteVariables)
-					{
-						var readVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
-						var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
-
-						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(writeVar, readVar);
-					}*/
 
 					var resultingFormula = context.MkAnd(transition.Guard.ActualConstraintExpression, formulaToConjunct);
 					resultingFormula = context.GetExistsExpression(resultingFormula, overwrittenVars);
@@ -184,39 +172,46 @@ namespace DPN.Soundness.Transformations
 						new Transition(
 							transition.Id + splitTransitionNames,
 							Guard.MakeRefined(transition.Guard, resultingFormula),
-							transition.Id,
+							transition.BaseTransitionId,
 							isSplit: true));
 				}
 			}
 
-			transformedDpn.Transitions = refinedTransitions.Values.SelectMany(t => t).ToList();
-
 			var refinedArcs = new List<Arc>();
-			foreach (var updatedTransition in transformedDpn.Transitions)
+			foreach (var refinedTransition in refinedTransitions)
 			{
-				var updatedConstraint = sourceDpn.Context.SimplifyExpression(updatedTransition.Guard.ActualConstraintExpression);
-				updatedTransition.Guard = Guard.MakeSimplified(updatedTransition.Guard, updatedConstraint);
+				var baseTransition = refinedTransition.Key;
+				var resultingTransitions = refinedTransition.Value;
 
-				if (!transitionsPreset.TryGetValue(updatedTransition.BaseTransitionId, out var preset))
+				foreach (var updatedTransition in resultingTransitions)
 				{
-					preset = transitionsPreset[updatedTransition.Id];
-				}
+					var updatedConstraint = sourceDpn.Context.SimplifyExpression(updatedTransition.Guard.ActualConstraintExpression);
+					updatedTransition.Guard = Guard.MakeSimplified(updatedTransition.Guard, updatedConstraint);
 
-				if (!transitionsPostset.TryGetValue(updatedTransition.BaseTransitionId, out var postset))
-				{
-					postset = transitionsPostset[updatedTransition.Id];
-				}
+					if (!transitionsPreset.TryGetValue(baseTransition, out var preset))
+					{
+						preset = transitionsPreset[updatedTransition.Id]; 
+					}
 
-				foreach (var arc in preset)
-				{
-					refinedArcs.Add(new Arc(arc.place, updatedTransition, arc.weight));
-				}
+					if (!transitionsPostset.TryGetValue(baseTransition, out var postset))
+					{
+						postset = transitionsPostset[updatedTransition.Id];
+					}
 
-				foreach (var arc in postset)
-				{
-					refinedArcs.Add(new Arc(updatedTransition, arc.place, arc.weight));
+					foreach (var arc in preset)
+					{
+						refinedArcs.Add(new Arc(arc.place, updatedTransition, arc.weight));
+					}
+
+					foreach (var arc in postset)
+					{
+						refinedArcs.Add(new Arc(updatedTransition, arc.place, arc.weight));
+					}
 				}
+				
 			}
+
+			transformedDpn.Transitions = refinedTransitions.Values.SelectMany(t => t).ToList();
 
 			transformedDpn.Arcs = refinedArcs;
 

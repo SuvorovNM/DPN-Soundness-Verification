@@ -74,8 +74,10 @@ public class ClassicalSoundnessRepairer
 			if (firstIteration)
 			{
 				// We can switch withTauTransitions to false if want only to make net bounded
+				var stopwatch1 = Stopwatch.StartNew();
 				var coloredCoverabilityTree = new CoverabilityTree(dpnToConsider, stopOnCoveringFinalPosition: true, withTauTransitions: true);
 				coloredCoverabilityTree.GenerateGraph();
+				stopwatch1.Stop();
 
 				allNodesGreen = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Green);
 				allNodesRed = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Red);
@@ -155,7 +157,7 @@ public class ClassicalSoundnessRepairer
 		{
 			var baseTransitions = dpnToConsider.Transitions
 				.GroupBy(x => x.BaseTransitionId)
-				.Where(x => x.Count() > 1);
+				.Where(x => x.Any());
 
 			var preset = new Dictionary<string, List<(Place place, int weight)>>();
 			var postset = new Dictionary<string, List<(Place place, int weight)>>();
