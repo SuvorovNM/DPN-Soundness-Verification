@@ -80,14 +80,65 @@ namespace DPN.Soundness.Transformations
 				// или более пристально смотрим на запись - но как? Проверить, точно ли нам нужны тут записи, или можем обойтись чтением
 				var conjunctionsOfExpressions = new List<(BoolExpr expr, string name)>();
 				var expressions = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit.Select(t => t.Guard.ActualConstraintExpression).ToArray();
-				var transitionNames = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit.Select(t => t.Id).ToArray();
-				for (int i = 0; i < Math.Pow(2, expressions.Length); i++)
+				var readyToJoinExpressions = new List<BoolExpr>(expressions.Length);
+
+				var index = 0;
+				var overwrittenVars = new Dictionary<string, DomainType>();
+				var baseTransitionNames = transitionsRefinementInfo[transition.Id].TransitionsToConsiderInSplit.Select(t => t.Id).ToArray();
+				
+				var addedTransitionNames = new List<string>(expressions.Length * 2);
+				for (var i = 0; i < expressions.Length; i++)
+				{
+					var expression = expressions[i];
+					var writtenVars = expression.GetTypedVarsDict(VariableType.Written);
+					var readVars = expression.GetTypedVarsDict(VariableType.Read);
+					
+					if (!writtenVars.Keys.Intersect(readVars.Keys).Any())
+					{
+						var expressionWithoutIntersections = expression;
+						foreach (var variable in writtenVars)
+						{
+							var readVar = context.GenerateExpression(variable.Key, variable.Value, VariableType.Read);
+							var writeVar = context.GenerateExpression(variable.Key, variable.Value, VariableType.Written);
+
+							expressionWithoutIntersections = (BoolExpr)expressionWithoutIntersections.Substitute(writeVar, readVar);
+						}
+						
+						readyToJoinExpressions.Add(expressionWithoutIntersections);
+						addedTransitionNames.Add(baseTransitionNames[i]);
+						continue;
+					}
+
+					var expressionWithIntersections = expression;
+					var variableIntersection = writtenVars.Intersect(readVars).ToDictionary();
+
+					var expressionWithoutWrittenIntersected = context.GetExistsExpression(expressionWithIntersections, variableIntersection, VariableType.Written);
+					var expressionWithoutReadIntersected = context.GetExistsExpression(expressionWithIntersections, variableIntersection, VariableType.Read);
+					
+					foreach (var variable in writtenVars)
+					{
+						var readVar = context.GenerateExpression(variable.Key, variable.Value, VariableType.Read);
+						var writeVar = context.GenerateExpression(variable.Key, variable.Value, VariableType.Written);
+
+						expressionWithoutWrittenIntersected = (BoolExpr)expressionWithoutWrittenIntersected.Substitute(writeVar, readVar);
+						expressionWithoutReadIntersected = (BoolExpr)expressionWithoutReadIntersected.Substitute(writeVar, readVar);
+					}
+					
+					readyToJoinExpressions.Add(expressionWithoutWrittenIntersected);
+					readyToJoinExpressions.Add(expressionWithoutReadIntersected);
+					
+					addedTransitionNames.Add(baseTransitionNames[i]);
+					addedTransitionNames.Add(baseTransitionNames[i]);
+				}
+
+
+				for (int i = 0; i < Math.Pow(2, readyToJoinExpressions.Count); i++)
 				{
 					var ba = new BitArray([i]);
-					var andExpression = context.MkAnd(expressions
+					var andExpression = context.MkAnd(readyToJoinExpressions
 						.Select((e, j) => ba[j] == false ? e : context.MkNot(e)));
 					var splitTransitionNames = string.Join("",
-						transitionNames.Select((t, j) => (ba[j] == false ? "+" : "-") + t));
+						addedTransitionNames.Select((t, j) => (ba[j] == false ? "+" : "-") + t));
 					conjunctionsOfExpressions.Add((andExpression, splitTransitionNames));
 				}
 
@@ -105,7 +156,7 @@ namespace DPN.Soundness.Transformations
 						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
 					}
 
-					var falseWriteVariables = formulaToConjunct.GetTypedVarsDict(VariableType.Written).Except(transition.Guard.WriteVars);
+					/*var falseWriteVariables = formulaToConjunct.GetTypedVarsDict(VariableType.Written).Except(transition.Guard.WriteVars);
 
 					foreach (var overwrittenVar in falseWriteVariables)
 					{
@@ -113,9 +164,10 @@ namespace DPN.Soundness.Transformations
 						var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
 
 						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(writeVar, readVar);
-					}
+					}*/
 
 					var resultingFormula = context.MkAnd(transition.Guard.ActualConstraintExpression, formulaToConjunct);
+					resultingFormula = context.GetExistsExpression(resultingFormula, overwrittenVars);
 
 					if (!context.CanBeSatisfied(resultingFormula))
 					{
@@ -224,6 +276,7 @@ namespace DPN.Soundness.Transformations
 
 						refinementInfo[sourceTransition.Id].ReadVariables.AddRange(readVarsInCycleTransition);
 						refinementInfo[sourceTransition.Id].TransitionsToConsiderInSplit.Add(cycleTransition);
+						refinementInfo[sourceTransition.Id].TransitionsToConsiderInSplit.AddRange(refinementInfo[cycleTransition.Id].TransitionsToConsiderInSplit);
 
 						/*(var positiveTransition, var negativeTransition) = baseTransition
 							.Split(formulaToConjunct, cycleTransition.Id);

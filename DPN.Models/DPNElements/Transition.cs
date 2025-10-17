@@ -57,7 +57,7 @@ namespace DPN.Models.DPNElements
 
         public Transition? MakeTau()
         {
-            var readExpression = Guard.Context.GetReadExpression(Guard.ActualConstraintExpression, Guard.WriteVars);
+            var readExpression = Guard.Context.GetExistsExpression(Guard.ActualConstraintExpression, Guard.WriteVars);
             var negatedExpression = Guard.Context.MkNot(readExpression);
 
             if (readExpression is { IsTrue: false, IsFalse: false } && Guard.Context.CanBeSatisfied(negatedExpression))

@@ -20,7 +20,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
                     var smtExpression = transition.Guard.ActualConstraintExpression;
 
                     var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                    var readExpression = DataPetriNet.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 
                     var constraintsIfTransitionFires = ExpressionService
 	                    .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);

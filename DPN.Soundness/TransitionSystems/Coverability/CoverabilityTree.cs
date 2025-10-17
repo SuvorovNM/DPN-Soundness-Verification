@@ -35,7 +35,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
             {
                 var smtExpression = transition.Guard.ActualConstraintExpression;
                 var overwrittenVarNames = transition.Guard.WriteVars;
-                var readExpression = DataPetriNet.Context.GetReadExpression(smtExpression, overwrittenVarNames);
+                var readExpression = DataPetriNet.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
                 transitionGuards.Add(transition, readExpression);
 
                 var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);

@@ -230,7 +230,7 @@ public class ClassicalSoundnessRepairer
 		{
 			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate;
 			var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
-			var readExpression = sourceDpn.Context.GetReadExpression(smtExpression, overwrittenVarNames);
+			var readExpression = sourceDpn.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 
 			var negatedGuardExpressions = sourceDpn.Context.MkNot(readExpression);
 			baseTauTransitionsGuards.Add(transitionsDict[transitionId], negatedGuardExpressions);

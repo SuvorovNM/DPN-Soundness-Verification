@@ -47,13 +47,17 @@ namespace DPN.Models.Extensions
             return result;
         }
 
-        public static BoolExpr GetReadExpression(this Context context, BoolExpr smtExpression, Dictionary<string, DomainType> overwrittenVarNames)
+        public static BoolExpr GetExistsExpression(
+	        this Context context, 
+	        BoolExpr smtExpression, 
+	        Dictionary<string, DomainType> overwrittenVarNames,
+	        VariableType existsVariableType = VariableType.Written)
         {
             var variablesToOverwrite = new Expr[overwrittenVarNames.Count];
             var currentArrayIndex = 0;
             foreach (var keyValuePair in overwrittenVarNames)
             {
-                variablesToOverwrite[currentArrayIndex++] = context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+                variablesToOverwrite[currentArrayIndex++] = context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, existsVariableType);
             }
 
             if (variablesToOverwrite.Length > 0)
