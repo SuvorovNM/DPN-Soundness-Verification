@@ -1,80 +1,204 @@
-﻿<Window x:Class="DPN.VerificationApp.StateSpace"
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="DPN.VerificationApp.StateSpace"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wpfgraphcontrol="http://mlsagl"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="Constraint Graph Visualization" Height="450" Width="800">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="120"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Graph visualization area -->
-        <wpfgraphcontrol:AutomaticGraphLayoutControl Grid.Row="0" x:Name="graphControl"
-                                                     HorizontalAlignment="Stretch"
-                                                     VerticalAlignment="Stretch"
-                                                     HorizontalScrollBarVisibility="Disabled"
-                                                     VerticalScrollBarVisibility="Disabled"/>
-        
-        <!-- "Graph too large" overlay -->
-        <Border x:Name="GraphTooLargeOverlay"
-                Grid.Row="0"
-                Background="#E6FFFFFF"
-                Visibility="Collapsed"
-                Panel.ZIndex="1000">
-            <Border Background="White" 
-                    BorderBrush="#FFCC0000" 
-                    BorderThickness="2"
-                    CornerRadius="8"
-                    Padding="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="⚠️ Graph Too Large" 
-                               FontSize="16" 
-                               FontWeight="Bold"
-                               Foreground="#FFCC0000"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,10"/>
-                    <TextBlock x:Name="GraphSizeText"
-                               Text="The graph contains too many nodes for visualization."
-                               FontSize="12"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"
-                               MaxWidth="300"/>
-                    <Button x:Name="ShowGraphAnywayButton"
-                            Content="Show Graph Anyway"
-                            Margin="0,15,0,0"
-                            Padding="10,5"
-                            Click="ShowGraphAnywayButton_Click"
-                            HorizontalAlignment="Center"/>
-                    <Button x:Name="SaveGraphAnywayButton"
-                            Content="Export Graph"
-                            Margin="0,15,0,0"
-                            Padding="10,5"
-                            Click="SaveStateSpace_Click"
-                            HorizontalAlignment="Center"/>
-                </StackPanel>
+        Title="Constraint Graph Visualization"
+        Height="600"
+        Width="900"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="False"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        ResizeMode="CanResizeWithGrip">
+
+    <!-- Use WindowChrome to get proper non-client frame behavior with rounded corners and native shadows -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32"
+                             CornerRadius="6"
+                             GlassFrameThickness="0"
+                             UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Shared palette (copied from MainWindow) -->
+        <Color x:Key="PrimaryColor">#2C5F9E</Color>
+        <Color x:Key="PrimaryDarkColor">#1E4A7A</Color>
+        <Color x:Key="WindowBackgroundColor">#F8F9FA</Color>
+        <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
+        <Color x:Key="BorderColor">#E1E5E9</Color>
+        <Color x:Key="TextPrimaryColor">#2D3748</Color>
+        <Color x:Key="TextSecondaryColor">#718096</Color>
+        <Color x:Key="CloseButtonHoverColor">#E81123</Color>
+        <Color x:Key="CloseButtonHoverTextColor">#FFFFFF</Color>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverBrush" Color="{StaticResource CloseButtonHoverColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverTextBrush" Color="{StaticResource CloseButtonHoverTextColor}"/>
+
+        <!-- Window button styles (from MainWindow) -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CloseWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid ClipToBounds="False">
+                            <!-- hover background that matches the top-right rounded corner -->
+                            <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="0,7,0,0" Margin="0,-2,-2,0"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Icon styles -->
+        <Style x:Key="MaximizeIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" Fill="Transparent" Width="10" Height="10"/>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MinimizeIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" Fill="Transparent" Width="8" Height="1" VerticalAlignment="Bottom"/>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Grid>
+                                <Line X1="1" Y1="1" X2="9" Y2="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                                <Line X1="9" Y1="1" X2="1" Y2="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                            </Grid>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Outer border for window chrome and resize handles -->
+    <Border CornerRadius="6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}" Padding="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="200"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title bar -->
+            <Border Grid.Row="0" Background="{StaticResource CardBackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" CornerRadius="6,6,0,0" MouseDown="TitleBar_MouseDown">
+                <Grid Height="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Constraint Graph" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True" Margin="0,0,-3,0">
+                        <Button x:Name="MinimizeButton" Style="{StaticResource WindowButtonStyle}" Click="MinimizeButton_Click" ToolTip="Minimize">
+                            <ContentControl Style="{StaticResource MinimizeIconStyle}"/>
+                        </Button>
+                        <Button x:Name="MaximizeButton" Style="{StaticResource WindowButtonStyle}" Click="MaximizeButton_Click" ToolTip="Maximize / Restore">
+                            <ContentControl Style="{StaticResource MaximizeIconStyle}"/>
+                        </Button>
+                        <Button x:Name="CloseButton" Style="{StaticResource CloseWindowButtonStyle}" Click="CloseButton_Click" ToolTip="Close">
+                            <ContentControl Style="{StaticResource CloseIconStyle}"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
-        </Border>
-        
-        <!-- Menu in first row, bottom right -->
-        <Menu Name="SaveMenu" Grid.Row="0" HorizontalAlignment="Right" Height="26" Margin="0,0,10,10" VerticalAlignment="Bottom">
-            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558" Click="SaveStateSpace_Click">
-                <MenuItem.Header>
-                    <TextBlock Text="Save" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="11,0,-21,0"/>
-                </MenuItem.Header>
-            </MenuItem>
-        </Menu>
-        
-        <!-- Second row content -->
-        <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="Black"/>
-        <ScrollViewer Grid.Row="1">
-            <TextBlock x:Name="logControl" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        </ScrollViewer>
-    </Grid>
+
+            <!-- Graph visualization area -->
+            <Grid Grid.Row="1">
+                <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+
+                <!-- Export button (bottom-right of graph area) -->
+                <Button x:Name="ExportButton" Content="Export Graph" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Height="26" Width="110" Click="SaveStateSpace_Click"/>
+
+                <!-- "Graph too large" overlay -->
+                <Border x:Name="GraphTooLargeOverlay" Background="#E6FFFFFF" Visibility="Collapsed" Panel.ZIndex="1000">
+                    <Border Background="White" BorderBrush="#FFCC0000" BorderThickness="2" CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="⚠️ Graph Too Large" FontSize="16" FontWeight="Bold" Foreground="#FFCC0000" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="GraphSizeText" Text="The graph contains too many nodes for visualization." FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300"/>
+                            <Button x:Name="ShowGraphAnywayButton" Content="Show Graph Anyway" Margin="0,15,0,0" Padding="10,5" Click="ShowGraphAnywayButton_Click" HorizontalAlignment="Center"/>
+                            <Button x:Name="SaveGraphAnywayButton" Content="Export Graph" Margin="0,15,0,0" Padding="10,5" Click="SaveStateSpace_Click" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Border>
+            </Grid>
+
+            <!-- GridSplitter between graph and log (placed at top of row 2) -->
+            <GridSplitter Grid.Row="2" Height="6" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="Transparent" ShowsPreview="True" ResizeDirection="Rows"/>
+
+            <!-- Log area -->
+            <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource CardBackgroundBrush}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10">
+                    <TextBlock x:Name="logControl" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Text="Loading graph information..."/>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
