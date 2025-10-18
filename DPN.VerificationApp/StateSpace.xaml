@@ -139,7 +139,9 @@
     </Window.Resources>
 
     <!-- Outer border for window chrome and resize handles -->
-    <Border CornerRadius="6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}" Padding="1">
+    <!-- Use zero padding here so the graph area can align flush with the window inner border. Padding for
+        title/log areas is applied individually where needed. -->
+    <Border CornerRadius="6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}" Padding="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -170,28 +172,38 @@
                 </Grid>
             </Border>
 
-            <!-- Graph visualization area -->
-            <Grid Grid.Row="1">
-                <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+            <!-- Graph visualization area: use the same card-like border as MainWindow so the
+                 graph content, corner radius and borders match the main window layout. -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    Margin="10"
+                    CornerRadius="6"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    Padding="0">
+                <Grid ClipToBounds="True">
+                    <!-- Graph control stretched to fill the card -->
+                    <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled" MinHeight="60" MinWidth="100" Margin="0" Padding="0" SnapsToDevicePixels="True" ClipToBounds="True" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
 
-                <!-- Export button (bottom-right of graph area) -->
-                <Button x:Name="ExportButton" Content="Export Graph" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Height="26" Width="110" Click="SaveStateSpace_Click"/>
+                    <!-- Export button (bottom-right inside the card) -->
+                    <Button x:Name="ExportButton" Content="Export Graph" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Height="26" Width="110" Click="SaveStateSpace_Click"/>
 
-                <!-- "Graph too large" overlay -->
-                <Border x:Name="GraphTooLargeOverlay" Background="#E6FFFFFF" Visibility="Collapsed" Panel.ZIndex="1000">
-                    <Border Background="White" BorderBrush="#FFCC0000" BorderThickness="2" CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Text="⚠️ Graph Too Large" FontSize="16" FontWeight="Bold" Foreground="#FFCC0000" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                            <TextBlock x:Name="GraphSizeText" Text="The graph contains too many nodes for visualization." FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300"/>
-                            <Button x:Name="ShowGraphAnywayButton" Content="Show Graph Anyway" Margin="0,15,0,0" Padding="10,5" Click="ShowGraphAnywayButton_Click" HorizontalAlignment="Center"/>
-                            <Button x:Name="SaveGraphAnywayButton" Content="Export Graph" Margin="0,15,0,0" Padding="10,5" Click="SaveStateSpace_Click" HorizontalAlignment="Center"/>
-                        </StackPanel>
+                    <!-- "Graph too large" overlay -->
+                    <Border x:Name="GraphTooLargeOverlay" Background="#E6FFFFFF" Visibility="Collapsed" Panel.ZIndex="1000">
+                        <Border Background="White" BorderBrush="#FFCC0000" BorderThickness="2" CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="⚠️ Graph Too Large" FontSize="16" FontWeight="Bold" Foreground="#FFCC0000" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                <TextBlock x:Name="GraphSizeText" Text="The graph contains too many nodes for visualization." FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300"/>
+                                <Button x:Name="ShowGraphAnywayButton" Content="Show Graph Anyway" Margin="0,15,0,0" Padding="10,5" Click="ShowGraphAnywayButton_Click" HorizontalAlignment="Center"/>
+                                <Button x:Name="SaveGraphAnywayButton" Content="Export Graph" Margin="0,15,0,0" Padding="10,5" Click="SaveStateSpace_Click" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
                     </Border>
-                </Border>
-            </Grid>
+                </Grid>
+            </Border>
 
-            <!-- GridSplitter between graph and log (placed at top of row 2) -->
-            <GridSplitter Grid.Row="2" Height="6" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="Transparent" ShowsPreview="True" ResizeDirection="Rows"/>
+            <!-- GridSplitter between graph and log: placed at bottom of graph row so resizing is stable -->
+            <GridSplitter Grid.Row="1" Height="6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="Transparent" ShowsPreview="True" ResizeDirection="Rows"/>
 
             <!-- Log area -->
             <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource CardBackgroundBrush}">
