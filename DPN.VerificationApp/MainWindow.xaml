@@ -3,16 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:wpfgraphcontrol="http://mlsagl"
+    xmlns:wpfgraphcontrol="http://mlsagl"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Data Petri Net Verifier" 
         Height="600" 
         Width="1000"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
+        AllowsTransparency="False"
+    Background="{DynamicResource WindowBackgroundBrush}"
         ResizeMode="CanResizeWithGrip">
+
+        <!-- Use WindowChrome to get proper non-client frame behavior with rounded corners and native shadows -->
+        <shell:WindowChrome.WindowChrome>
+            <shell:WindowChrome CaptionHeight="32"
+                                 CornerRadius="6"
+                                 GlassFrameThickness="0"
+                                 UseAeroCaptionButtons="False" />
+        </shell:WindowChrome.WindowChrome>
     
     <Window.Resources>
         <!-- Modern Color Palette -->
@@ -108,6 +117,30 @@
         </Style>
         
         <Style x:Key="CloseWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+            <!-- Make hover background follow the top-right rounded corner of the window.
+                 We provide a template with the top-right corner rounded and shift the button slightly
+                 to the right so the hover fill visually reaches the window border. -->
+            <!-- match the window radius (6) so the hover corner matches the window corner -->
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <!-- Background layer fills the button area so hover paints the whole control -->
+                        <Grid ClipToBounds="False">
+                            <!-- background that fills the button and has rounded top-right corner to match the window; negative right margin lets it reach the window edge -->
+                            <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="0,7,0,0" Margin="0,-2,-2,0"/>
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
@@ -204,18 +237,20 @@
     </Window.Resources>
 
     <!-- Outer border for window chrome and resize handles -->
-    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}">
+    <Border CornerRadius="6" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}" Padding="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <!-- Combined Header with Title Bar and Menu -->
-            <Border Grid.Row="0" 
-                    Background="{StaticResource CardBackgroundBrush}" 
-                    BorderBrush="{StaticResource BorderBrush}" 
-                    BorderThickness="0 0 0 1">
+        <!-- Combined Header with Title Bar and Menu -->
+        <!-- Give the header top corners the same radius so the outer border is visible -->
+        <Border Grid.Row="0" 
+            Background="{StaticResource CardBackgroundBrush}" 
+            BorderBrush="{StaticResource BorderBrush}" 
+            BorderThickness="0 0 0 1"
+            CornerRadius="6,6,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="32"/> <!-- Title bar -->
@@ -223,8 +258,8 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Title Bar - Draggable area with window controls -->
-                    <Border Grid.Row="0" Background="Transparent" MouseDown="TitleBar_MouseDown">
-                        <Grid>
+                    <Border Grid.Row="0" Background="Transparent" MouseDown="TitleBar_MouseDown" CornerRadius="6,6,0,0" ClipToBounds="False">
+                        <Grid ClipToBounds="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -243,7 +278,7 @@
                             </StackPanel>
                             
                             <!-- Window Controls -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True" VerticalAlignment="Top" Margin="0,0,-3,0">
                                 <Button x:Name="MinimizeButton" 
                                         Style="{StaticResource WindowButtonStyle}"
                                         Click="MinimizeButton_Click"
@@ -335,13 +370,13 @@
                 </Grid>
             </Border>
             
-            <!-- Main Content Area -->
-            <Border Grid.Row="1" 
-                    Background="{StaticResource CardBackgroundBrush}" 
-                    Margin="10"
-                    CornerRadius="6"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1">
+        <!-- Main Content Area -->
+        <Border Grid.Row="1" 
+            Background="{StaticResource CardBackgroundBrush}" 
+            Margin="10"
+            CornerRadius="6"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1">
                 <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl"/>
             </Border>
             
@@ -352,14 +387,14 @@
                   Visibility="Collapsed"
                   Panel.ZIndex="1000">
                 
-                <Border Background="{StaticResource CardBackgroundBrush}" 
-                        BorderBrush="{StaticResource PrimaryBrush}" 
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Width="300"
-                        Height="120"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
+        <Border Background="{StaticResource CardBackgroundBrush}" 
+            BorderBrush="{StaticResource PrimaryBrush}" 
+            BorderThickness="1"
+            CornerRadius="6"
+            Width="300"
+            Height="120"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
                     
                     <StackPanel Orientation="Vertical" 
                                 HorizontalAlignment="Center" 
