@@ -5,83 +5,221 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wpfgraphcontrol="http://mlsagl"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Menu HorizontalAlignment="Stretch" Height="26" VerticalAlignment="Top">
-            <MenuItem Height="26" Width="60" RenderTransformOrigin="0.495,0.558">
-                <MenuItem.Header>
-                    <TextBlock Text="File" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,0,-21,0" />
-                </MenuItem.Header>
-                <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click" />
-                <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click" />
-                <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click" />
-            </MenuItem>
-            <MenuItem Header="Transition Systems">
-                <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructReachabilityGraphItem_Click" />
+        Title="Data Petri Net Verifier" 
+        Height="600" 
+        Width="1000"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <!-- Modern Color Palette -->
+        <Color x:Key="PrimaryColor">#2C5F9E</Color>
+        <Color x:Key="PrimaryDarkColor">#1E4A7A</Color>
+        <Color x:Key="AccentColor">#4CAF50</Color>
+        <Color x:Key="AccentHoverColor">#45A049</Color>
+        <Color x:Key="WindowBackgroundColor">#F8F9FA</Color>
+        <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
+        <Color x:Key="BorderColor">#E1E5E9</Color>
+        <Color x:Key="TextPrimaryColor">#2D3748</Color>
+        <Color x:Key="TextSecondaryColor">#718096</Color>
 
-                <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree"
-                          Click="ConstructCoverabilityTree_Click" />
-
-                <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph"
-                          Click="ConstructCoverabilityGraph_Click" />
-
-                <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="ConstructConstraintGraphMenuItem_Click" />
-            </MenuItem>
-            <MenuItem Header="Soundness">
-                <MenuItem x:Name="VerifyItem" Header="Verify">
-                    <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)"
-                              Click="CheckSoundnessDirectItem_Click" />
-                    <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)"
-                              Click="CheckSoundnessImprovedItem_Click" />
-                    <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness"
-                              Click="CheckLazySoundnessDirectItem_Click" />
-                </MenuItem>
-                <MenuItem x:Name="RepairItem" Header="Repair">
-                <MenuItem x:Name="TransformModelToRepairedItem" Header="Classical soundness"
-                          Click="TransformModelToRepairedItem_Click" />
-                </MenuItem>
-            </MenuItem>
-            <MenuItem Header="Model">
-                <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
-                    <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model"
-                              Click="DefaultVOCMenuItem_Click" />
-                    <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click" />
-                </MenuItem>
-                <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click" />
-                <MenuItem x:Name="TransformModelItem" Header="Transform model">
-                    <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined"
-                              Click="TransformModelToRefinedItem_Click" />
-                    <MenuItem x:Name="TransformModelToTauItem" Header="To tau"
-                              Click="TransformModelToTauItem_Click" />
-                </MenuItem>
-
-            </MenuItem>
-        </Menu>
-        <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl" Margin="0,26,0,0" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
         
-        <!-- Loader Overlay -->
+        <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="#F0F4F8"/>
+        <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="MenuItem.Highlight.Foreground" Color="{StaticResource TextPrimaryColor}"/>
+    
+        <SolidColorBrush x:Key="Menu.Static.Background" Color="{StaticResource CardBackgroundColor}"/>
+        <SolidColorBrush x:Key="Menu.Static.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="Menu.Static.Foreground" Color="{StaticResource TextPrimaryColor}"/>
+    
+        <SolidColorBrush x:Key="MenuItem.Selected.Background" Color="#F0F4F8"/>
+        <SolidColorBrush x:Key="MenuItem.Selected.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="MenuItem.Selected.Foreground" Color="{StaticResource TextPrimaryColor}"/>
+    
+        <SolidColorBrush x:Key="MenuItem.Pressed.Background" Color="#E0E8F0"/>
+        <SolidColorBrush x:Key="MenuItem.Pressed.Border" Color="Transparent"/>
+        <SolidColorBrush x:Key="MenuItem.Pressed.Foreground" Color="{StaticResource TextPrimaryColor}"/>
+        
+        <!-- Modern Menu Styles -->
+        <Style x:Key="ModernMenuStyle" TargetType="Menu">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="0 0 0 1"/>
+            <Setter Property="Padding" Value="10 5"/>
+        </Style>
+        
+        <Style x:Key="ModernMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12 8"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+           
+        </Style>
+        
+        <!-- Progress Bar Style -->
+        <!-- Simple Progress Bar Style -->
+        <Style x:Key="SimpleProgressBar" TargetType="ProgressBar">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Background" Value="#E1E5E9"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="6"/>
+            <Setter Property="IsIndeterminate" Value="True"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource WindowBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Modern Header with Logo and Menu -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource CardBackgroundBrush}" 
+                BorderBrush="{StaticResource BorderBrush}" 
+                BorderThickness="0 0 0 1"
+                Padding="15 8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Logo/Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Rectangle Width="24" Height="24" Fill="{StaticResource PrimaryBrush}" RadiusX="4" RadiusY="4"/>
+                    <TextBlock Text="DPN" 
+                               FontSize="16" 
+                               FontWeight="Bold" 
+                               Foreground="{StaticResource PrimaryBrush}"
+                               Margin="8,0,0,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="Verifier" 
+                               FontSize="16" 
+                               FontWeight="SemiBold" 
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="2,0,0,0"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Main Menu -->
+                <Menu Grid.Column="1" 
+                      Style="{StaticResource ModernMenuStyle}"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center">
+                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="File">
+                        <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click">
+                            <MenuItem.Icon>
+                                <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z" 
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
+                                      Stretch="Uniform"
+                                      Width="12" Height="12"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click"/>
+                        <Separator/>
+                        <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click">
+                            <MenuItem.Icon>
+                                <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z M17,13 L17,15 L19,15 L19,13 Z M17,17 L17,19 L19,19 L19,17 Z" 
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
+                                      Stretch="Uniform"
+                                      Width="12" Height="12"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                    
+                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Transition Systems">
+                        <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructReachabilityGraphItem_Click"/>
+                        <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree" Click="ConstructCoverabilityTree_Click"/>
+                        <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph" Click="ConstructCoverabilityGraph_Click"/>
+                        <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="ConstructConstraintGraphMenuItem_Click"/>
+                    </MenuItem>
+                    
+                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Soundness">
+                        <MenuItem x:Name="VerifyItem" Header="Verify">
+                            <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)" Click="CheckSoundnessDirectItem_Click"/>
+                            <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)" Click="CheckSoundnessImprovedItem_Click"/>
+                            <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness" Click="CheckLazySoundnessDirectItem_Click"/>
+                        </MenuItem>
+                        <MenuItem x:Name="RepairItem" Header="Repair">
+                            <MenuItem x:Name="TransformModelToRepairedItem" Header="Classical soundness" Click="TransformModelToRepairedItem_Click"/>
+                        </MenuItem>
+                    </MenuItem>
+                    
+                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Model">
+                        <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
+                            <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
+                            <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
+                        </MenuItem>
+                        <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click"/>
+                        <MenuItem x:Name="TransformModelItem" Header="Transform model">
+                            <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined" Click="TransformModelToRefinedItem_Click"/>
+                            <MenuItem x:Name="TransformModelToTauItem" Header="To tau" Click="TransformModelToTauItem_Click"/>
+                        </MenuItem>
+                    </MenuItem>
+                </Menu>
+            </Grid>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <Border Grid.Row="1" 
+                Background="{StaticResource CardBackgroundBrush}" 
+                Margin="10"
+                CornerRadius="6"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1">
+            <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl"/>
+        </Border>
+        
+        <!-- Modern Loader Overlay -->
         <Grid x:Name="LoaderOverlay" 
+              Grid.Row="0" Grid.RowSpan="2"
               Background="#CC000000" 
               Visibility="Collapsed"
               Panel.ZIndex="1000">
-            <Border Background="White" 
-                    BorderBrush="#FF0078D7" 
-                    BorderThickness="2"
+            
+            <Border Background="{StaticResource CardBackgroundBrush}" 
+                    BorderBrush="{StaticResource PrimaryBrush}" 
+                    BorderThickness="1"
                     CornerRadius="8"
-                    Padding="20"
+                    Width="300"
+                    Height="120"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                    <ProgressBar x:Name="LoaderProgressBar" 
-                                 Height="20" 
-                                 Width="200" 
-                                 IsIndeterminate="True"
-                                 Margin="0,0,0,10"/>
+                
+                <StackPanel Orientation="Vertical" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"
+                            Margin="20">
+                    
+                    <!-- Simple Progress Bar -->
+                    <ProgressBar Style="{StaticResource SimpleProgressBar}" 
+                                 Width="200"
+                                 Margin="0,0,0,15"/>
+                    
+                    <!-- Text content -->
                     <TextBlock x:Name="LoaderText" 
                                Text="Processing..." 
                                HorizontalAlignment="Center"
                                FontSize="14"
-                               FontWeight="SemiBold"/>
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="This may take a few moments..." 
+                               HorizontalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

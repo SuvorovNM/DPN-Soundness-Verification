@@ -47,12 +47,10 @@ namespace DPN.VerificationApp
 			transformerToTau = new TransformerToTau();
 			relaxedLazySoundnessVerifier = new RelaxedLazySoundnessVerifier();
 			classicalSoundnessVerifier = new ClassicalSoundnessVerifier();
-			classicalSoundnessRepairer =  new ClassicalSoundnessRepairer();
+			classicalSoundnessRepairer = new ClassicalSoundnessRepairer();
 			pnmlParser = new PnmlParser();
 			context = new Context();
 			Global.SetParameter("parallel.enable", "true");
-			Global.SetParameter("threads", "4");
-			Global.SetParameter("arith.propagation_mode", "2");
 
 			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
@@ -225,8 +223,8 @@ namespace DPN.VerificationApp
 			var repairResult = await Task.Run(() => classicalSoundnessRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
 
-			MessageBox.Show(repairResult.IsSuccess 
-				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}." 
+			MessageBox.Show(repairResult.IsSuccess
+				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}."
 				: "Failed to repair the model. Try using different repair algorithm.");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
 			currentDisplayedNet = repairResult.Dpn;
