@@ -37,7 +37,7 @@ public class ClassicalSoundnessRepairer
 		bool repairmentFailed;
 		var firstIteration = true;
 		var allGreenOnPreviousStep = false;
-		ColoredConstraintGraph? coloredConstraintGraph = null;
+		ColoredCoverabilityGraph? coloredCoverabilityGraph;
 		var transitionsUpdatedAtPreviousStep = new HashSet<string>();
 		var transitionsToTrySimplify = new HashSet<string>();
 
@@ -75,44 +75,44 @@ public class ClassicalSoundnessRepairer
 			if (firstIteration)
 			{
 				// We can switch withTauTransitions to false if want only to make net bounded
-				var coloredCoverabilityTree = new CoverabilityTree(dpnToConsider, stopOnCoveringFinalPosition: true, withTauTransitions: true);
-				coloredCoverabilityTree.GenerateGraph();
+				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+				coloredCoverabilityGraph.GenerateGraph();
 
-				allNodesGreen = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Green);
-				allNodesRed = coloredCoverabilityTree.ConstraintStates.All(x => x.StateColor == CtStateColor.Red);
+				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
+				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
 
 				if (!allNodesGreen && !allNodesRed)
 				{
-					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityTree, transitionsDict);
+					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
 					repairSteps++;
 					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
 				}
 				else
 				{
-					RemoveDeadTransitions(dpnToConsider, coloredCoverabilityTree.ConstraintArcs.ToArray());
+					RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph.ConstraintArcs.ToArray());
 
 					return new RepairResult(dpnToConsider, allNodesGreen, 0, stopwatch.Elapsed);
 				}
 			}
 			else
 			{
-				coloredConstraintGraph = new ColoredConstraintGraph(dpnToConsider);
-				coloredConstraintGraph.GenerateGraph();
+				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+				coloredCoverabilityGraph.GenerateGraph();
 
-				allNodesGreen = coloredConstraintGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
-				allNodesRed = coloredConstraintGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
+				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
+				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
 
 				if (!allNodesGreen && !allNodesRed)
 				{
 					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
-					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredConstraintGraph, transitionsDict);
+					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
 
 					allNodesGreen = true;
 
 					repairSteps++;
 					transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
-					TryRollbackTransitionGuards(dpnToConsider, coloredConstraintGraph, transitionsToTrySimplify, transitionsDict);
+					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 				}
 			}
 
@@ -126,15 +126,12 @@ public class ClassicalSoundnessRepairer
 
 		if (repairmentSuccessfullyFinished)
 		{
-			if (coloredConstraintGraph != null)
-				RemoveDeadTransitions(dpnToConsider, coloredConstraintGraph.ConstraintArcs.ToArray());
+			RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph.ConstraintArcs.ToArray());
 
 			RemoveIsolatedPlaces(dpnToConsider);
 
 			if (mergeTransitionsBack)
 				MergeTransitions(dpnToConsider, transitionsDict);
-
-			// TODO: add a step of rolling back transitions?
 		}
 
 		var resultDpn = repairmentSuccessfullyFinished
@@ -221,11 +218,11 @@ public class ClassicalSoundnessRepairer
 	}
 
 	// Some transition restriction is redundant - we, thus, rollback what we can
-	private static void TryRollbackTransitionGuards(DataPetriNet sourceDpn, ConstraintGraph constraintGraph, HashSet<string> transitionsToTrySimplify, Dictionary<string, Transition> transitionsDict)
+	private static void TryRollbackTransitionGuards(DataPetriNet sourceDpn, ColoredCoverabilityGraph cg, HashSet<string> transitionsToTrySimplify, Dictionary<string, Transition> transitionsDict)
 	{
 		var expressionService = new ConstraintExpressionService(sourceDpn.Context);
 
-		var arcsToConsider = constraintGraph.ConstraintArcs
+		var arcsToConsider = cg.ConstraintArcs
 			.Where(x => transitionsToTrySimplify.Contains(x.Transition.Id))
 			.GroupBy(x => x.Transition.Id);
 
@@ -271,7 +268,7 @@ public class ClassicalSoundnessRepairer
 		}
 	}
 
-	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, ColoredConstraintGraph cg, Dictionary<string, Transition> transitionsDict)
+	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, ColoredCoverabilityGraph cg, Dictionary<string, Transition> transitionsDict)
 	{
 		var arcsDict = cg.ConstraintArcs
 			.GroupBy(x => (x.SourceState.Id, x.TargetState))
@@ -405,96 +402,5 @@ public class ClassicalSoundnessRepairer
 				expressionsForTransitions[transitionsDict[arc.Transition.Id].Id].Add(formulaToConjunct);
 			}
 		}
-	}
-
-	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, CoverabilityTree ct, Dictionary<string, Transition> transitionsDict)
-	{
-		var arcsDict = ct.ConstraintArcs
-			.ToDictionary(x => (x.SourceState.Id, x.TargetState.Id), y => y.Transition);
-
-		// Find green nodes which contain red nodes
-		var criticalNodes = ct.ConstraintStates
-			.Where(x => x.StateColor == CtStateColor.Red && x.ParentNode != null && x.ParentNode.StateColor == CtStateColor.Green)
-			.GroupBy(x => x.ParentNode)
-			.ToList();
-
-		var expressionsForTransitions = new Dictionary<Transition, List<BoolExpr>>();
-		foreach (var transition in sourceDpn.Transitions)
-		{
-			expressionsForTransitions[transition] = new List<BoolExpr>();
-		}
-
-		foreach (var nodeGroup in criticalNodes)
-		{
-			foreach (var childNode in nodeGroup)
-			{
-				var arcBetweenNodes = arcsDict[(nodeGroup.Key!.Id, childNode.Id)];
-
-				if (arcBetweenNodes.IsSilent)
-				{
-					// Take nearest ordinary (non-silent) transition
-					// The case when no such transition exists (tau from initial state) cannot exist
-					var parentNode = nodeGroup.Key;
-					Transition? predecessorTransition = null;
-					while (parentNode.ParentNode != null && predecessorTransition == null)
-					{
-						var arcToConsider = arcsDict[(parentNode.ParentNode.Id, parentNode.Id)];
-						if (!arcToConsider.IsSilent)
-						{
-							predecessorTransition = transitionsDict[arcToConsider.Id];
-						}
-
-						parentNode = parentNode.ParentNode;
-					}
-
-					var overwrittenVars = predecessorTransition!.Guard.WriteVars;
-					var formulaToConjunct = sourceDpn.Context.MkNot(childNode.Constraints);
-
-					foreach (var overwrittenVar in overwrittenVars)
-					{
-						var readVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
-						var writeVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
-
-						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
-					}
-
-					expressionsForTransitions[predecessorTransition].Add(formulaToConjunct);
-				}
-				else
-				{
-					var transitionToUpdate = transitionsDict[arcBetweenNodes.Id];
-					var formulaToConjunct = sourceDpn.Context.MkNot(childNode.Constraints);
-
-					var overwrittenVars = transitionToUpdate.Guard.WriteVars;
-
-					foreach (var overwrittenVar in overwrittenVars)
-					{
-						var readVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
-						var writeVar = sourceDpn.Context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
-
-						formulaToConjunct = (BoolExpr)formulaToConjunct.Substitute(readVar, writeVar);
-					}
-
-					expressionsForTransitions[transitionToUpdate].Add(formulaToConjunct);
-				}
-			}
-		}
-
-		var updatedTransitions = new HashSet<string>();
-		foreach (var transition in sourceDpn.Transitions)
-		{
-			if (expressionsForTransitions[transition].Count > 0)
-			{
-				expressionsForTransitions[transition].Add(transition.Guard.ActualConstraintExpression);
-
-				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition]));
-
-				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition);
-
-				updatedTransitions.Add(transition.Id);
-			}
-		}
-
-		return (sourceDpn, updatedTransitions);
 	}
 }
