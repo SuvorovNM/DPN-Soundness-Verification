@@ -42,6 +42,11 @@ namespace DPN.VerificationApp
             varsCount = tbVarsCount.Text;
             conditionsCount = tbConditionsCount.Text;
         }
+        
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+	        this.Close();
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {

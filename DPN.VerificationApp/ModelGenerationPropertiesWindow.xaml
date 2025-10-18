@@ -4,19 +4,299 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="Model Generation Properties" Height="250" Width="303">
-    <Grid>
-        <Label Content="Number of Places:" HorizontalAlignment="Left" Margin="11,8,0,0" VerticalAlignment="Top" Height="26" Width="106"/>
-        <Label Content="Number of Transitions:" HorizontalAlignment="Left" Margin="11,39,0,0" VerticalAlignment="Top" Height="26" Width="134"/>
-        <Button Content="Generate" HorizontalAlignment="Left" Margin="199,166,0,0" VerticalAlignment="Top" Height="26" Width="64" Click="Button_Click"/>
-        <TextBox Name="tbPlacesCount" HorizontalAlignment="Left" Margin="150,12,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="48" Height="18"/>
-        <TextBox Name="tbTransitionsCount" HorizontalAlignment="Left" Margin="150,43,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="48" Height="18"/>
-        <Label Content="Number of Extra Arcs:" HorizontalAlignment="Left" Margin="11,70,0,0" VerticalAlignment="Top" Height="26" Width="125"/>
-        <TextBox x:Name="tbExtraArcsCount" HorizontalAlignment="Left" Margin="150,74,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="48" Height="18"/>
-        <Label Content="Number of Variables:" HorizontalAlignment="Left" Margin="11,101,0,0" VerticalAlignment="Top" Height="26" Width="130"/>
-        <Label Content="Number of Conditions:" HorizontalAlignment="Left" Margin="11,132,0,0" VerticalAlignment="Top" Height="26" Width="130"/>
-        <TextBox x:Name="tbVarsCount" HorizontalAlignment="Left" Margin="150,105,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="48" Height="18"/>
-        <TextBox x:Name="tbConditionsCount" HorizontalAlignment="Left" Margin="150,136,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="48" Height="18"/>
-    </Grid>
+        Title="Model Generation Properties" 
+        Height="320" 
+        Width="300"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent">
+    
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32"
+                             CornerRadius="6"
+                             GlassFrameThickness="0"
+                             UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Use the same color palette as main window -->
+        <Color x:Key="PrimaryColor">#2C5F9E</Color>
+        <Color x:Key="PrimaryDarkColor">#1E4A7A</Color>
+        <Color x:Key="WindowBackgroundColor">#F8F9FA</Color>
+        <Color x:Key="CardBackgroundColor">#FFFFFF</Color>
+        <Color x:Key="BorderColor">#E1E5E9</Color>
+        <Color x:Key="TextPrimaryColor">#2D3748</Color>
+        <Color x:Key="TextSecondaryColor">#718096</Color>
+        <Color x:Key="CloseButtonHoverColor">#E81123</Color>
+        <Color x:Key="CloseButtonHoverTextColor">#FFFFFF</Color>
+
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverBrush" Color="{StaticResource CloseButtonHoverColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverTextBrush" Color="{StaticResource CloseButtonHoverTextColor}"/>
+        
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15 8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6 4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="ModernLabel" TargetType="Label">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <!-- Window button styles -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CloseWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Icon styles -->
+        <Style x:Key="CloseIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Grid>
+                                <Line X1="1" Y1="1" X2="9" Y2="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                                <Line X1="9" Y1="1" X2="1" Y2="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/>
+                            </Grid>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main window container with drop shadow -->
+    <Border CornerRadius="6" 
+            BorderBrush="{StaticResource BorderBrush}" 
+            BorderThickness="1" 
+            Background="{StaticResource WindowBackgroundBrush}"
+            Margin="0">
+        
+        <!-- Drop shadow effect -->
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="2" 
+                              Opacity="0.2" 
+                              BlurRadius="10" 
+                              Direction="270"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title bar -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource CardBackgroundBrush}" 
+                    BorderBrush="{StaticResource BorderBrush}" 
+                    BorderThickness="0,0,0,1" 
+                    CornerRadius="6,6,0,0"
+                    Height="32">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Model Generation Properties" 
+                               VerticalAlignment="Center" 
+                               Margin="12,0,0,0" 
+                               Foreground="{StaticResource TextPrimaryBrush}" 
+                               FontWeight="SemiBold"
+                               FontSize="13"/>
+                    
+                    <Button Grid.Column="1" 
+                            Style="{StaticResource CloseWindowButtonStyle}" 
+                            Click="CloseButton_Click"
+                            ToolTip="Close">
+                        <ContentControl Style="{StaticResource CloseIconStyle}"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content Area -->
+            <Border Grid.Row="1" 
+                    Background="{StaticResource WindowBackgroundBrush}" 
+                    Padding="20"
+                    CornerRadius="0,0,6,6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Places Count -->
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Content="Number of Places:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             Name="tbPlacesCount"
+                             Text="5"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,10"/>
+
+                    <!-- Transitions Count -->
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Content="Number of Transitions:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"
+                             Name="tbTransitionsCount"
+                             Text="10"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,10"/>
+
+                    <!-- Extra Arcs Count -->
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Content="Number of Extra Arcs:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="2" Grid.Column="1"
+                             x:Name="tbExtraArcsCount"
+                             Text="0"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,10"/>
+
+                    <!-- Variables Count -->
+                    <Label Grid.Row="3" Grid.Column="0"
+                           Content="Number of Variables:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="3" Grid.Column="1"
+                             x:Name="tbVarsCount"
+                             Text="0"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,10"/>
+
+                    <!-- Conditions Count -->
+                    <Label Grid.Row="4" Grid.Column="0"
+                           Content="Number of Conditions:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="4" Grid.Column="1"
+                             x:Name="tbConditionsCount"
+                             Text="0"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,20"/>
+
+                    <!-- Spacer -->
+                    <Grid Grid.Row="5" Grid.ColumnSpan="2"/>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="6" Grid.ColumnSpan="2"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="0,10,0,0">
+                        <Button Content="Generate"
+                                Style="{StaticResource ModernButton}"
+                                Click="Button_Click"
+                                MinWidth="90"
+                                Height="32"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
