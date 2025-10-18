@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Xml;
 using System.Xml.Linq;
 using DataPetriNetGeneration;
@@ -55,6 +56,43 @@ namespace DPN.VerificationApp
 			currentDisplayedNet = dpnProvider.GetVOVDataPetriNet();
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+		}
+		
+		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+		{
+			this.WindowState = WindowState.Minimized;
+		}
+
+		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (this.WindowState == WindowState.Maximized)
+			{
+				this.WindowState = WindowState.Normal;
+			}
+			else
+			{
+				this.WindowState = WindowState.Maximized;
+			}
+		}
+
+		private void CloseButton_Click(object sender, RoutedEventArgs e)
+		{
+			this.Close();
+		}
+
+		private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			if (e.ChangedButton == MouseButton.Left)
+			{
+				if (e.ClickCount == 2)
+				{
+					MaximizeButton_Click(sender, e);
+				}
+				else
+				{
+					this.DragMove();
+				}
+			}
 		}
 
 

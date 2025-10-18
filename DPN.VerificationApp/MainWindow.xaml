@@ -8,7 +8,11 @@
         Title="Data Petri Net Verifier" 
         Height="600" 
         Width="1000"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
     
     <Window.Resources>
         <!-- Modern Color Palette -->
@@ -21,6 +25,8 @@
         <Color x:Key="BorderColor">#E1E5E9</Color>
         <Color x:Key="TextPrimaryColor">#2D3748</Color>
         <Color x:Key="TextSecondaryColor">#718096</Color>
+        <Color x:Key="CloseButtonHoverColor">#E81123</Color>
+        <Color x:Key="CloseButtonHoverTextColor">#FFFFFF</Color>
 
         <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
         <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
@@ -31,6 +37,8 @@
         <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
         <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
         <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverBrush" Color="{StaticResource CloseButtonHoverColor}"/>
+        <SolidColorBrush x:Key="CloseButtonHoverTextBrush" Color="{StaticResource CloseButtonHoverTextColor}"/>
         
         <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="#F0F4F8"/>
         <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="Transparent"/>
@@ -63,11 +71,9 @@
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="Medium"/>
-           
         </Style>
         
         <!-- Progress Bar Style -->
-        <!-- Simple Progress Bar Style -->
         <Style x:Key="SimpleProgressBar" TargetType="ProgressBar">
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
             <Setter Property="Background" Value="#E1E5E9"/>
@@ -75,153 +81,311 @@
             <Setter Property="Height" Value="6"/>
             <Setter Property="IsIndeterminate" Value="True"/>
         </Style>
+        
+        <!-- Window Button Style -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="CloseWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                    <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Maximize/Restore Icon Style -->
+        <Style x:Key="MaximizeIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <!-- Maximize icon (single square) -->
+                        <Viewbox Width="10" Height="10">
+                            <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.2"
+                                      Fill="Transparent"
+                                      Width="10" 
+                                      Height="10"/>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+                    <Setter Property="ContentTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <!-- Restore icon (overlapping squares) -->
+                                <Viewbox Width="10" Height="10">
+                                    <Grid>
+                                        <!-- Background square -->
+                                        <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1.2"
+                                                  Fill="Transparent"
+                                                  Width="8" 
+                                                  Height="8"
+                                                  HorizontalAlignment="Right"
+                                                  VerticalAlignment="Bottom"/>
+                                        <!-- Foreground square -->
+                                        <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  StrokeThickness="1.2"
+                                                  Fill="Transparent"
+                                                  Width="8" 
+                                                  Height="8"
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Top"/>
+                                    </Grid>
+                                </Viewbox>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="MinimizeIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Rectangle Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       StrokeThickness="1.2"
+                                       Fill="Transparent"
+                                       Width="8" 
+                                       Height="1"
+                                       VerticalAlignment="Bottom"/>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Close Icon Style -->
+        <Style x:Key="CloseIconStyle" TargetType="ContentControl">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Viewbox Width="10" Height="10">
+                            <Grid>
+                                <!-- X icon using lines -->
+                                <Line X1="1" Y1="1" X2="9" Y2="9"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.2"/>
+                                <Line X1="9" Y1="1" X2="1" Y2="9"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.2"/>
+                            </Grid>
+                        </Viewbox>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
-    <Grid Background="{StaticResource WindowBackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Modern Header with Logo and Menu -->
-        <Border Grid.Row="0" 
-                Background="{StaticResource CardBackgroundBrush}" 
-                BorderBrush="{StaticResource BorderBrush}" 
-                BorderThickness="0 0 0 1"
-                Padding="15 8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Logo/Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Rectangle Width="24" Height="24" Fill="{StaticResource PrimaryBrush}" RadiusX="4" RadiusY="4"/>
-                    <TextBlock Text="DPN" 
-                               FontSize="16" 
-                               FontWeight="Bold" 
-                               Foreground="{StaticResource PrimaryBrush}"
-                               Margin="8,0,0,0"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text="Verifier" 
-                               FontSize="16" 
-                               FontWeight="SemiBold" 
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               Margin="2,0,0,0"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
-                
-                <!-- Main Menu -->
-                <Menu Grid.Column="1" 
-                      Style="{StaticResource ModernMenuStyle}"
-                      HorizontalAlignment="Left"
-                      VerticalAlignment="Center">
-                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="File">
-                        <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click">
-                            <MenuItem.Icon>
-                                <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z" 
-                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
-                                      Stretch="Uniform"
-                                      Width="12" Height="12"/>
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click"/>
-                        <Separator/>
-                        <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click">
-                            <MenuItem.Icon>
-                                <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z M17,13 L17,15 L19,15 L19,13 Z M17,17 L17,19 L19,19 L19,17 Z" 
-                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
-                                      Stretch="Uniform"
-                                      Width="12" Height="12"/>
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </MenuItem>
-                    
-                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Transition Systems">
-                        <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructReachabilityGraphItem_Click"/>
-                        <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree" Click="ConstructCoverabilityTree_Click"/>
-                        <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph" Click="ConstructCoverabilityGraph_Click"/>
-                        <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="ConstructConstraintGraphMenuItem_Click"/>
-                    </MenuItem>
-                    
-                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Soundness">
-                        <MenuItem x:Name="VerifyItem" Header="Verify">
-                            <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)" Click="CheckSoundnessDirectItem_Click"/>
-                            <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)" Click="CheckSoundnessImprovedItem_Click"/>
-                            <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness" Click="CheckLazySoundnessDirectItem_Click"/>
-                        </MenuItem>
-                        <MenuItem x:Name="RepairItem" Header="Repair">
-                            <MenuItem x:Name="TransformModelToRepairedItem" Header="Classical soundness" Click="TransformModelToRepairedItem_Click"/>
-                        </MenuItem>
-                    </MenuItem>
-                    
-                    <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Model">
-                        <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
-                            <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
-                            <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
-                        </MenuItem>
-                        <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click"/>
-                        <MenuItem x:Name="TransformModelItem" Header="Transform model">
-                            <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined" Click="TransformModelToRefinedItem_Click"/>
-                            <MenuItem x:Name="TransformModelToTauItem" Header="To tau" Click="TransformModelToTauItem_Click"/>
-                        </MenuItem>
-                    </MenuItem>
-                </Menu>
-            </Grid>
-        </Border>
-        
-        <!-- Main Content Area -->
-        <Border Grid.Row="1" 
-                Background="{StaticResource CardBackgroundBrush}" 
-                Margin="10"
-                CornerRadius="6"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="1">
-            <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl"/>
-        </Border>
-        
-        <!-- Modern Loader Overlay -->
-        <Grid x:Name="LoaderOverlay" 
-              Grid.Row="0" Grid.RowSpan="2"
-              Background="#CC000000" 
-              Visibility="Collapsed"
-              Panel.ZIndex="1000">
+    <!-- Outer border for window chrome and resize handles -->
+    <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Background="{StaticResource WindowBackgroundBrush}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             
-            <Border Background="{StaticResource CardBackgroundBrush}" 
-                    BorderBrush="{StaticResource PrimaryBrush}" 
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Width="300"
-                    Height="120"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                
-                <StackPanel Orientation="Vertical" 
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center"
-                            Margin="20">
+            <!-- Combined Header with Title Bar and Menu -->
+            <Border Grid.Row="0" 
+                    Background="{StaticResource CardBackgroundBrush}" 
+                    BorderBrush="{StaticResource BorderBrush}" 
+                    BorderThickness="0 0 0 1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="32"/> <!-- Title bar -->
+                        <RowDefinition Height="Auto"/> <!-- Menu -->
+                    </Grid.RowDefinitions>
                     
-                    <!-- Simple Progress Bar -->
-                    <ProgressBar Style="{StaticResource SimpleProgressBar}" 
-                                 Width="200"
-                                 Margin="0,0,0,15"/>
+                    <!-- Title Bar - Draggable area with window controls -->
+                    <Border Grid.Row="0" Background="Transparent" MouseDown="TitleBar_MouseDown">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Logo/Title -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0,0,0">
+                                <Rectangle Width="16" Height="16" Fill="{StaticResource PrimaryBrush}" RadiusX="3" RadiusY="3"/>
+                                <TextBlock Text="DPN Verifier" 
+                                           FontSize="12" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="6,0,0,0"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            
+                            <!-- Window Controls -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="MinimizeButton" 
+                                        Style="{StaticResource WindowButtonStyle}"
+                                        Click="MinimizeButton_Click"
+                                        ToolTip="Minimize">
+                                    <ContentControl Style="{StaticResource MinimizeIconStyle}"/>
+                                </Button>
+                                <Button x:Name="MaximizeButton" 
+                                        Style="{StaticResource WindowButtonStyle}"
+                                        Click="MaximizeButton_Click"
+                                        ToolTip="Maximize / Restore">
+                                    <ContentControl Style="{StaticResource MaximizeIconStyle}"/>
+                                </Button>
+                                <Button x:Name="CloseButton" 
+                                        Style="{StaticResource CloseWindowButtonStyle}"
+                                        Click="CloseButton_Click"
+                                        ToolTip="Close">
+                                    <ContentControl Style="{StaticResource CloseIconStyle}"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                     
-                    <!-- Text content -->
-                    <TextBlock x:Name="LoaderText" 
-                               Text="Processing..." 
-                               HorizontalAlignment="Center"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="This may take a few moments..." 
-                               HorizontalAlignment="Center"
-                               FontSize="11"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               Margin="0,5,0,0"/>
-                </StackPanel>
+                    <!-- Main Menu -->
+                    <Border Grid.Row="1" Padding="15,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Menu Grid.Column="1" 
+                                  Style="{StaticResource ModernMenuStyle}"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center">
+                                <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="File">
+                                    <MenuItem x:Name="OpenDpnItem" Header="Open DPN..." Click="OpenDpn_Click">
+                                        <MenuItem.Icon>
+                                            <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z" 
+                                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
+                                                  Stretch="Uniform"
+                                                  Width="12" Height="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click"/>
+                                    <Separator/>
+                                    <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click">
+                                        <MenuItem.Icon>
+                                            <Path Data="M3,3 L21,3 L21,21 L3,21 Z M5,5 L5,19 L19,19 L19,5 Z M7,7 L15,7 L15,11 L17,11 L17,7 L17,5 L7,5 Z M7,13 L7,15 L15,15 L15,13 Z M7,17 L7,19 L15,19 L15,17 Z M17,13 L17,15 L19,15 L19,13 Z M17,17 L17,19 L19,19 L19,17 Z" 
+                                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}"
+                                                  Stretch="Uniform"
+                                                  Width="12" Height="12"/>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </MenuItem>
+                                
+                                <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Transition Systems">
+                                    <MenuItem x:Name="ConstructLtsItem" Header="Construct Reachability Graph" Click="ConstructReachabilityGraphItem_Click"/>
+                                    <MenuItem x:Name="ConstructCtItem" Header="Construct Coverability Tree" Click="ConstructCoverabilityTree_Click"/>
+                                    <MenuItem x:Name="ConstructCgItem" Header="Construct Coverability Graph" Click="ConstructCoverabilityGraph_Click"/>
+                                    <MenuItem x:Name="CheckSoundnessMenuItem" Header="Construct Constraint Graph" Click="ConstructConstraintGraphMenuItem_Click"/>
+                                </MenuItem>
+                                
+                                <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Soundness">
+                                    <MenuItem x:Name="VerifyItem" Header="Verify">
+                                        <MenuItem x:Name="CheckSoundnessDirectItem" Header="Classical soundness (direct)" Click="CheckSoundnessDirectItem_Click"/>
+                                        <MenuItem x:Name="CheckSoundnessImprovedItem" Header="Classical soundness (improved)" Click="CheckSoundnessImprovedItem_Click"/>
+                                        <MenuItem x:Name="CheckSoundnessLazyItem" Header="RelaxedLazy Soundness" Click="CheckLazySoundnessDirectItem_Click"/>
+                                    </MenuItem>
+                                    <MenuItem x:Name="RepairItem" Header="Repair">
+                                        <MenuItem x:Name="TransformModelToRepairedItem" Header="Classical soundness" Click="TransformModelToRepairedItem_Click"/>
+                                    </MenuItem>
+                                </MenuItem>
+                                
+                                <MenuItem Style="{StaticResource ModernMenuItemStyle}" Header="Model">
+                                    <MenuItem x:Name="SelectDefaultModelMenuItem" Header="Select default model">
+                                        <MenuItem x:Name="DefaultVOCMenuItem" Header="Var-Oper-Const model" Click="DefaultVOCMenuItem_Click"/>
+                                        <MenuItem x:Name="DefaultVOVMenuItem" Header="Var-Oper-Var model" Click="DefaultVOVMenuItem_Click"/>
+                                    </MenuItem>
+                                    <MenuItem x:Name="GenerateModelItem" Header="Generate new model..." Click="GenerateModelItem_Click"/>
+                                    <MenuItem x:Name="TransformModelItem" Header="Transform model">
+                                        <MenuItem x:Name="TransformModelToRefinedItem" Header="To refined" Click="TransformModelToRefinedItem_Click"/>
+                                        <MenuItem x:Name="TransformModelToTauItem" Header="To tau" Click="TransformModelToTauItem_Click"/>
+                                    </MenuItem>
+                                </MenuItem>
+                            </Menu>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Border>
+            
+            <!-- Main Content Area -->
+            <Border Grid.Row="1" 
+                    Background="{StaticResource CardBackgroundBrush}" 
+                    Margin="10"
+                    CornerRadius="6"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1">
+                <wpfgraphcontrol:AutomaticGraphLayoutControl x:Name="graphControl"/>
+            </Border>
+            
+            <!-- Modern Loader Overlay -->
+            <Grid x:Name="LoaderOverlay" 
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Background="#CC000000" 
+                  Visibility="Collapsed"
+                  Panel.ZIndex="1000">
+                
+                <Border Background="{StaticResource CardBackgroundBrush}" 
+                        BorderBrush="{StaticResource PrimaryBrush}" 
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Width="300"
+                        Height="120"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    
+                    <StackPanel Orientation="Vertical" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Margin="20">
+                        
+                        <!-- Simple Progress Bar -->
+                        <ProgressBar Style="{StaticResource SimpleProgressBar}" 
+                                     Width="200"
+                                     Margin="0,0,0,15"/>
+                        
+                        <!-- Text content -->
+                        <TextBlock x:Name="LoaderText" 
+                                   Text="Processing..." 
+                                   HorizontalAlignment="Center"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="This may take a few moments..." 
+                                   HorizontalAlignment="Center"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
-    </Grid>
+    </Border>
 </Window>
