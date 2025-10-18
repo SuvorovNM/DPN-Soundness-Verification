@@ -28,8 +28,8 @@ namespace DPN.VerificationApp
 				verificationResult.StateSpaceGraph.Nodes.Length,
 				verificationResult.StateSpaceGraph.Arcs.Length);
 
-			if (FindName("SaveMenu") is Menu menu && (isOpenedFromFile || IsOverlayVisible))
-				menu.Visibility = Visibility.Collapsed;
+			if (FindName("ExportButton") is Button button && (isOpenedFromFile || IsOverlayVisible))
+				button.Visibility = Visibility.Collapsed;
 
 			ShowGraph(showOnlyLog: IsOverlayVisible);
 		}

@@ -228,12 +228,33 @@
                     
                     <!-- "Graph too large" overlay -->
                     <Border x:Name="GraphTooLargeOverlay" Background="#E6FFFFFF" Visibility="Collapsed" Panel.ZIndex="1000">
-                        <Border Background="White" BorderBrush="#FFCC0000" BorderThickness="2" CornerRadius="8" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border 
+                            Background="White" 
+                            BorderBrush="#FFCC0000" 
+                            BorderThickness="2" 
+                            CornerRadius="6" 
+                            Padding="20" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
                             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock Text="⚠️ Graph Too Large" FontSize="16" FontWeight="Bold" Foreground="#FFCC0000" HorizontalAlignment="Center" Margin="0,0,0,10"/>
                                 <TextBlock x:Name="GraphSizeText" Text="The graph contains too many nodes for visualization." FontSize="12" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300"/>
-                                <Button x:Name="ShowGraphAnywayButton" Content="Show Graph Anyway" Margin="0,15,0,0" Padding="10,5" Click="ShowGraphAnywayButton_Click" HorizontalAlignment="Center"/>
-                                <Button x:Name="SaveGraphAnywayButton" Content="Export Graph" Margin="0,15,0,0" Padding="10,5" Click="SaveStateSpace_Click" HorizontalAlignment="Center"/>
+                                <Button 
+                                    x:Name="ShowGraphAnywayButton" 
+                                    Content="Show Graph Anyway" 
+                                    Margin="0,15,0,0" 
+                                    Padding="10,5" 
+                                    Style="{StaticResource ModernButton}"
+                                    Click="ShowGraphAnywayButton_Click" 
+                                    HorizontalAlignment="Center"/>
+                                <Button 
+                                    x:Name="SaveGraphAnywayButton" 
+                                    Content="Export Graph" 
+                                    Margin="0,15,0,0" 
+                                    Padding="10,5" 
+                                    Style="{StaticResource ModernButton}"
+                                    Click="SaveStateSpace_Click" 
+                                    HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                     </Border>
@@ -252,7 +273,7 @@
 
             <!-- Log area: match card margins and top corner radius so left/right alignment matches graph card -->
             <!-- Make the top corners rounded to visually match the graph card above. -->
-            <Border Grid.Row="2" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource CardBackgroundBrush}" Margin="10" CornerRadius="6,6,0,0">
+            <Border Grid.Row="2" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource CardBackgroundBrush}" Margin="10" CornerRadius="6">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10">
                     <TextBlock x:Name="logControl" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" Text="Loading graph information..."/>
                 </ScrollViewer>
