@@ -6,13 +6,13 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="Model Generation Properties" 
-        Height="320" 
+    Title="Model Generation Properties" 
+    Height="330" 
         Width="300"
-        WindowStartupLocation="CenterOwner"
-        WindowStyle="None"
-        ResizeMode="NoResize"
-        Background="Transparent">
+    WindowStartupLocation="CenterOwner"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    Background="{DynamicResource WindowBackgroundBrush}">
     
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="32"
@@ -120,6 +120,24 @@
         </Style>
 
         <Style x:Key="CloseWindowButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid ClipToBounds="False">
+                            <!-- hover background that matches the top-right rounded corner -->
+                            <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="0,7,0,0" Margin="0,-2,-2,0"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource CloseButtonHoverTextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="{StaticResource CloseButtonHoverBrush}"/>
@@ -150,15 +168,8 @@
             BorderBrush="{StaticResource BorderBrush}" 
             BorderThickness="1" 
             Background="{StaticResource WindowBackgroundBrush}"
+            Padding="1"
             Margin="0">
-        
-        <!-- Drop shadow effect -->
-        <Border.Effect>
-            <DropShadowEffect ShadowDepth="2" 
-                              Opacity="0.2" 
-                              BlurRadius="10" 
-                              Direction="270"/>
-        </Border.Effect>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -189,17 +200,19 @@
                     <Button Grid.Column="1" 
                             Style="{StaticResource CloseWindowButtonStyle}" 
                             Click="CloseButton_Click"
-                            ToolTip="Close">
+                            ToolTip="Close"
+                            shell:WindowChrome.IsHitTestVisibleInChrome="True">
                         <ContentControl Style="{StaticResource CloseIconStyle}"/>
                     </Button>
                 </Grid>
             </Border>
 
-            <!-- Content Area -->
-            <Border Grid.Row="1" 
-                    Background="{StaticResource WindowBackgroundBrush}" 
-                    Padding="20"
-                    CornerRadius="0,0,6,6">
+        <!-- Content Area (card) -->
+        <Border Grid.Row="1" 
+            Background="{StaticResource CardBackgroundBrush}" 
+            Margin="10"
+            Padding="20"
+            CornerRadius="0,0,6,6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -279,7 +292,7 @@
                              Style="{StaticResource ModernTextBox}"
                              Width="70"
                              HorizontalAlignment="Left"
-                             Margin="0,0,0,20"/>
+                             Margin="0,0,0,10"/>
 
                     <!-- Spacer -->
                     <Grid Grid.Row="5" Grid.ColumnSpan="2"/>
