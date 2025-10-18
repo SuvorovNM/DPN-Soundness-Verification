@@ -178,8 +178,6 @@ namespace DPN.VerificationApp
 				}));
 			HideLoader();
 
-			MessageBox.Show($"Time spent: {(int)verificationResult.VerificationTime!.Value.TotalMilliseconds}ms");
-
 			VisualizeVerificationResult(verificationResult);
 		}
 
@@ -260,10 +258,10 @@ namespace DPN.VerificationApp
 			ShowLoader("Repairing DPN");
 			var repairResult = await Task.Run(() => classicalSoundnessRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
-
-			MessageBox.Show(repairResult.IsSuccess
+			var message = repairResult.IsSuccess
 				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}."
-				: "Failed to repair the model. Try using different repair algorithm.");
+				: "Failed to repair the model. Try using different repair algorithm.";
+			ModernMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
 			currentDisplayedNet = repairResult.Dpn;
 		}
