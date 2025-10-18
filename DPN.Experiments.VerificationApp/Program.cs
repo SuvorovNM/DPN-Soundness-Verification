@@ -107,8 +107,6 @@ namespace DataPetriNetVerificationApplication
 			ArgumentNullException.ThrowIfNull(outputDirectory);
 			
 			Global.SetParameter("parallel.enable", "true");
-			Global.SetParameter("threads", "4");
-			Global.SetParameter("arith.propagation_mode", "2");
 
 			var conditionsInfo = new ConditionsInfo
 			{
@@ -224,7 +222,7 @@ namespace DataPetriNetVerificationApplication
 			xDoc.Load(dpnFilePath);
 
 			var parser = new PnmlParser();
-			var dpn = parser.DeserializeDpn(xDoc);
+			var dpn = parser.Deserialize(xDoc);
 			//dpn.Context = context;
 			return dpn;
 		}

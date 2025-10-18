@@ -112,7 +112,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 			var fs = new FileStream(dpnPath, FileMode.Create);
 			try
 			{
-				var xmlDocument = parser.SerializeDpn(dpn);
+				var xmlDocument = parser.Serialize(dpn);
 				await xmlDocument.SaveAsync(fs, SaveOptions.None, token);
 			}
 			finally

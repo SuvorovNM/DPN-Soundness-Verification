@@ -107,7 +107,7 @@ namespace DPN.VerificationApp
 				XmlDocument xDoc = new XmlDocument();
 				xDoc.Load(ofd.FileName);
 
-				currentDisplayedNet = pnmlParser.DeserializeDpn(xDoc);
+				currentDisplayedNet = pnmlParser.Deserialize(xDoc);
 
 				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			}
@@ -276,7 +276,7 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = pnmlParser.SerializeDpn(currentDisplayedNet);
+				var xDocument = pnmlParser.Serialize(currentDisplayedNet);
 				xDocument.Save(ofd.FileName);
 			}
 		}

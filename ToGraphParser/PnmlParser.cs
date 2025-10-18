@@ -11,7 +11,7 @@ namespace DPN.Parsers
 {
     public class PnmlParser
     {
-        public XDocument SerializeDpn(DataPetriNet dpn)
+        public XDocument Serialize(DataPetriNet dpn)
         {
             ArgumentNullException.ThrowIfNull(dpn);
 
@@ -98,7 +98,7 @@ namespace DPN.Parsers
             return document;
         }
 
-        public DataPetriNet DeserializeDpn(XmlDocument document)
+        public DataPetriNet Deserialize(XmlDocument document)
         {
             if (document == null)
             {

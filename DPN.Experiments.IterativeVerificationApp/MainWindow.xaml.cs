@@ -277,7 +277,7 @@ namespace DataPetriNetIterativeVerificationApplication
                     var xDocument = new XmlDocument();
                     xDocument.Load(fs);
 
-                    var dataPetriNet = pnmlParser.DeserializeDpn(xDocument);
+                    var dataPetriNet = pnmlParser.Deserialize(xDocument);
 
                     var dpnWindow = new DpnWindow(dataPetriNet);
                     dpnWindow.Owner = this;
