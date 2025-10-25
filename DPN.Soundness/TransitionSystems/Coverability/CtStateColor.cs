@@ -1,4 +1,4 @@
-﻿namespace DPN.Models.Enums
+﻿namespace DPN.Soundness.TransitionSystems.Coverability
 {
     public enum CtStateColor
     {

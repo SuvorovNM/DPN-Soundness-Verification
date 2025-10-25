@@ -1,4 +1,5 @@
 ﻿using DPN.Models.Enums;
+using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 
 namespace DPN.Visualization.Models;
@@ -8,9 +9,9 @@ public class StateToVisualize
     public int Id { get; private init; }
     public Dictionary<string, int> Tokens { get; private init; }
     public string ConstraintFormula { get; private init; }
-    public ConstraintStateType StateType { get; private init; }
+    public StateType StateType { get; private init; }
     
-    public static StateToVisualize FromNode(StateSpaceNode node, ConstraintStateType stateType)
+    public static StateToVisualize FromNode(StateSpaceNode node, StateType stateType)
     {
 	    return new StateToVisualize
 	    {

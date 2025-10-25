@@ -1,10 +1,11 @@
 ﻿using DPN.Models.Enums;
+using DPN.Soundness.TransitionSystems;
 
 namespace DPN.Soundness;
 
 public record SoundnessProperties(
     SoundnessType SoundnessType,
-    Dictionary<int, ConstraintStateType> StateTypes,
+    Dictionary<int, StateType> StateTypes,
     bool Boundedness,
     string[] DeadTransitions,
     bool Deadlocks,

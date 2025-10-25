@@ -20,7 +20,7 @@ public static class ToGraphToVisualizeConverter
 		{
 			States = stateSpaceAbstraction.Nodes
 				.Select(x => StateToVisualize.FromNode(x,
-					soundnessProperties.StateTypes.GetValueOrDefault(x.Id, ConstraintStateType.Default)))
+					soundnessProperties.StateTypes.GetValueOrDefault(x.Id, StateType.Default)))
 				.ToArray(),
 
 			Arcs = stateSpaceAbstraction.Arcs.Select(ArcToVisualize.FromArc).ToArray(),

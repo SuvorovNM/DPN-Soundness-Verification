@@ -13,6 +13,7 @@ using DPN.Experiments.Common.CsvClassMaps;
 using DPN.Soundness;
 using DPN.Soundness.Repair;
 using DPN.Soundness.Transformations;
+using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.Verification;
 using Microsoft.Z3;
 
@@ -207,7 +208,7 @@ namespace DataPetriNetVerificationApplication
 			SoundnessProperties? soundnessProps,
 			Dictionary<string,string> repairParameters)
 		{
-			if (soundnessProps.StateTypes.Any(state => state.Value == ConstraintStateType.Final))
+			if (soundnessProps.StateTypes.Any(state => state.Value == StateType.Final))
 			{
 				var dpnRepairer = new ClassicalSoundnessRepairer();
 				return dpnRepairer.Repair(dpnToVerify, repairParameters);

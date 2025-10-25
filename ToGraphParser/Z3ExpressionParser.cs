@@ -4,7 +4,7 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers;
 
-public class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> variablesToTypes)
+internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> variablesToTypes)
 {
 	private readonly Dictionary<string, BoolExpr> _boolVariables = new();
     private readonly Dictionary<string, RealExpr> _realVariables = new();

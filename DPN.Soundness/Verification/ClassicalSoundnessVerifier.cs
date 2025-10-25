@@ -40,9 +40,9 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			dpn,
 			new Dictionary<string, string>
 			{
-				{RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph}
+				{ RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph }
 			});
-		
+
 		SoundnessProperties soundnessProperties;
 		if (stateSpace.IsFullGraph)
 		{
@@ -68,7 +68,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		if (!soundnessProperties.Soundness)
 		{
 			stopWatch.Stop();
-			return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties,  stopWatch.Elapsed);
+			return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties, stopWatch.Elapsed);
 		}
 
 		var cg = new ConstraintGraph(dpn);

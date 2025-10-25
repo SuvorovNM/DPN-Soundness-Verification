@@ -2,7 +2,7 @@
 
 namespace DPN.Parsers;
 
-public class Z3ExpressionSerializer
+internal class Z3ExpressionSerializer
 {
     public string Serialize(BoolExpr expression)
     {

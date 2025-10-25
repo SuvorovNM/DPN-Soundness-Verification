@@ -21,7 +21,7 @@ public static class ClassicalRepairSettingsConstants
 }
 
 [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
-public class ClassicalSoundnessRepairer
+public class ClassicalSoundnessRepairer : ISoundnessRepairer
 {
 	// Repair is done until stabilization.
 	// Algorithm terminates either if no paths remain leading to failure points or if all paths start to leading to failure points

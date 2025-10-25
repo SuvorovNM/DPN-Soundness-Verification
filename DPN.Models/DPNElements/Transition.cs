@@ -1,15 +1,14 @@
 ﻿using DPN.Models.Extensions;
 using DPN.Models.Abstractions;
-using Microsoft.Z3;
 
 namespace DPN.Models.DPNElements
 {
     public class Transition : Node, ICloneable
     {
         public Guard Guard { get; set; }
-        public bool IsSplit { get; set; }
-        public bool IsTau { get; set; }
-        public string BaseTransitionId { get; set; }
+        public bool IsSplit { get; init; }
+        public bool IsTau { get; init; }
+        public string BaseTransitionId { get; init; }
 
         public Transition(string id, Guard guard, string? baseTransitionId = null, bool isSplit = false)
         {
@@ -19,40 +18,6 @@ namespace DPN.Models.DPNElements
             IsSplit = isSplit;
             IsTau = id.StartsWith("τ");
             BaseTransitionId = baseTransitionId ?? id;
-        }
-
-        public (Transition? positive, Transition? negative) Split(BoolExpr formulaToConjunct, string secondTransitionId) // Context context,
-        {
-            var positiveConstraint = Guard.Context.MkAnd(
-                                Guard.ActualConstraintExpression,
-                                formulaToConjunct);
-
-            var negativeConstraint = Guard.Context.MkAnd(
-                Guard.ActualConstraintExpression,
-                Guard.Context.MkNot(formulaToConjunct));
-
-            var isPositiveSatisfiable = Guard.Context.CanBeSatisfied(positiveConstraint);
-            var isNegativeSatisfiable = Guard.Context.CanBeSatisfied(negativeConstraint);
-
-            if (!isPositiveSatisfiable || !isNegativeSatisfiable)
-            {
-                return (null, null);
-            }
-            else
-            {
-                var positiveTransition = new Transition(
-                    Id + "+[" + secondTransitionId+"]",
-                    Guard.MakeRefined(Guard, positiveConstraint), 
-                    BaseTransitionId,
-                    isSplit: true);
-
-                var negativeTransition = new Transition(
-                    Id + "-[" + secondTransitionId+"]",
-                    Guard.MakeRefined(Guard, negativeConstraint), BaseTransitionId, 
-                    isSplit: true);
-
-                return (positiveTransition, negativeTransition);
-            }
         }
 
         public Transition? MakeTau()

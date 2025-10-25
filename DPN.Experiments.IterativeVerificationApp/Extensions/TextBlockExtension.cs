@@ -7,6 +7,7 @@ using System.Windows.Media;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Soundness;
+using DPN.Soundness.TransitionSystems;
 using DPN.Visualization.Models;
 using EnumsNET;
 
@@ -170,8 +171,8 @@ namespace DataPetriNetIterativeVerificationApplication.Extensions
 
         private static string FormStatesInfoLines(StateToVisualize[] states)
         {
-            var consideredStateTypes = Enum.GetValues<ConstraintStateType>()
-                .Except(new[] { ConstraintStateType.Default, ConstraintStateType.StrictlyCovered })
+            var consideredStateTypes = Enum.GetValues<StateType>()
+                .Except(new[] { StateType.Default, StateType.StrictlyCovered })
                 .ToArray();
 
             var stateTypes = consideredStateTypes.ToDictionary(stateType => stateType, _ => 0);

@@ -1,5 +1,6 @@
 ﻿using DPN.Models.Enums;
 using DPN.Soundness;
+using DPN.Soundness.TransitionSystems;
 using DPN.Visualization.Models;
 using Microsoft.Msagl.Drawing;
 
@@ -48,32 +49,32 @@ internal static class TransitionSystemNodeFormer
 	        }
         };
 
-        if (state.StateType.HasFlag(ConstraintStateType.Initial))
+        if (state.StateType.HasFlag(StateType.Initial))
         {
             node.Attr.LineWidth = 2;
         }
 
-        if (state.StateType.HasFlag(ConstraintStateType.Deadlock))
+        if (state.StateType.HasFlag(StateType.Deadlock))
         {
             node.Attr.FillColor = Color.Pink;
         }
 
-        if (state.StateType.HasFlag(ConstraintStateType.Final))
+        if (state.StateType.HasFlag(StateType.Final))
         {
             node.Attr.FillColor = Color.LightGreen;
         }
 
-        if (state.StateType.HasFlag(ConstraintStateType.UncleanFinal))
+        if (state.StateType.HasFlag(StateType.UncleanFinal))
         {
             node.Attr.FillColor = Color.LightBlue;
         }
 
-        if (state.StateType.HasFlag(ConstraintStateType.NoWayToFinalMarking))
+        if (state.StateType.HasFlag(StateType.NoWayToFinalMarking))
         {
             node.Attr.Color = Color.Red;
         }
 
-        if (state.StateType.HasFlag(ConstraintStateType.StrictlyCovered))
+        if (state.StateType.HasFlag(StateType.StrictlyCovered))
         {
             node.Attr.FillColor = Color.Red;
         }
@@ -91,27 +92,27 @@ internal static class TransitionSystemNodeFormer
 	        }
         };
 
-        if (state.StateType.HasFlag(ConstraintStateType.Initial))
+        if (state.StateType.HasFlag(StateType.Initial))
         {
             node.Attr.LineWidth = 2;
         }
-        if (state.StateType.HasFlag(ConstraintStateType.Deadlock))
+        if (state.StateType.HasFlag(StateType.Deadlock))
         {
             node.Attr.FillColor = Color.Pink;
         }
-        if (state.StateType.HasFlag(ConstraintStateType.Final))
+        if (state.StateType.HasFlag(StateType.Final))
         {
             node.Attr.FillColor = Color.LightGreen;
         }
-        if (state.StateType.HasFlag(ConstraintStateType.NoWayToFinalMarking))
+        if (state.StateType.HasFlag(StateType.NoWayToFinalMarking))
         {
             node.Attr.Color = Color.Red;
         }
-        if (state.StateType.HasFlag(ConstraintStateType.StrictlyCovered))
+        if (state.StateType.HasFlag(StateType.StrictlyCovered))
         {
             node.Attr.FillColor = Color.LightGray;
         }
-        if (state.StateType.HasFlag(ConstraintStateType.UncleanFinal))
+        if (state.StateType.HasFlag(StateType.UncleanFinal))
         {
             node.Attr.FillColor = Color.LightBlue;
         }

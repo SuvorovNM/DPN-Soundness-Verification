@@ -5,6 +5,7 @@ using DPN.Models.Enums;
 using DPN.Parsers;
 using DPN.Soundness;
 using DPN.Soundness.Repair;
+using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.Verification;
 
@@ -23,9 +24,6 @@ namespace DPN.VerificationConsoleApp
 
 		static int Main(string[] args)
 		{
-			Console.WriteLine($"args: {string.Join( "-/-", args)}");
-			//args = "--Operation verify --DpnFile 'C:\\Users\\Suvor\\RiderProjects\\DPN-Soundness-Verification\\DPN.VerificationApp\\Samples_For_Import\\For Repair\\Livelock.pnmlx' --OutputDirectory 'C:\\Users\\Suvor\\RiderProjects\\DPN-Soundness-Verification\\DPN.VerificationApp\\Samples_For_Import\\For Repair'".Split();
-			
 			if (args.Length == 0)
 			{
 				PrintUsage();
@@ -196,21 +194,21 @@ namespace DPN.VerificationConsoleApp
 				{
 					switch (stateType.Key)
 					{
-						case ConstraintStateType.Default or ConstraintStateType.Initial:
+						case StateType.Default or StateType.Initial:
 							continue;
-						case ConstraintStateType.Final:
+						case StateType.Final:
 							Console.WriteLine($"Finals:");
 							break;
-						case ConstraintStateType.Deadlock:
+						case StateType.Deadlock:
 							Console.WriteLine($"Deadlocks:");
 							break;
-						case ConstraintStateType.NoWayToFinalMarking:
+						case StateType.NoWayToFinalMarking:
 							Console.WriteLine($"No way to finals:");
 							break;
-						case ConstraintStateType.UncleanFinal:
+						case StateType.UncleanFinal:
 							Console.WriteLine($"Unclean finals:");
 							break;
-						case ConstraintStateType.StrictlyCovered when soundnessType == SoundnessType.Classical:
+						case StateType.StrictlyCovered when soundnessType == SoundnessType.Classical:
 							Console.WriteLine($"Strictly covered:");
 							break;
 					}

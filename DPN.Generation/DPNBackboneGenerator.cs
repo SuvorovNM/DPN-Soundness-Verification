@@ -6,16 +6,13 @@ using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    public class DPNBackboneGenerator(Context context)
+    internal class DPNBackboneGenerator(Context context)
     {
-        public Context Context { get; private set; } = context;
-
-        private readonly int minTransitionPerPlace = 1;
+	    private Context Context { get; set; } = context;
+        
         private readonly Random random = new Random();
-
-        // To async?
+        
         public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int extraArcsCount)
-        // Is there any maximum for additionalArcsCount?
         {
             var dpn = GenerateSoundBackbone(placesCount, transitionsCount);
 
@@ -55,8 +52,7 @@ namespace DataPetriNetGeneration
                 dpn.Arcs.Add(new Arc(source, target));
             }
         }
-
-        // TODO: Allow to work if |P| > |T|
+        
         public DataPetriNet GenerateSoundBackbone(int placesCount, int transitionsCount)
         {
             if (placesCount < 2)
@@ -67,8 +63,7 @@ namespace DataPetriNetGeneration
             {
                 throw new ArgumentException("Number of transitions cannot be less than 1");
             }
-
-            // if transitionsCount + 1 >= placesCount
+            
             if (transitionsCount + 1 >= placesCount)
                 return GenerateWithPrevailingTransitions(placesCount, transitionsCount);
             else

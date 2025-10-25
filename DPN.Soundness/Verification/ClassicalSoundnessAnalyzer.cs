@@ -2,6 +2,7 @@
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
+using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
@@ -15,7 +16,7 @@ public static class ClassicalSoundnessAnalyzer
 		var boundedness = stateSpaceGraph.IsFullGraph;
 		var stateTypes = boundedness
 			? GetStatesDividedByTypes(stateSpaceGraph)
-			: stateSpaceGraph.Nodes.ToDictionary(x => x.Id, y => ConstraintStateType.Default);
+			: stateSpaceGraph.Nodes.ToDictionary(x => x.Id, y => StateType.Default);
 
 		var deadTransitions = GetDeadTransitions(stateSpaceGraph);
 
@@ -25,10 +26,10 @@ public static class ClassicalSoundnessAnalyzer
 
 		foreach (var state in stateSpaceGraph.Nodes)
 		{
-			hasDeadlocks |= stateTypes[state.Id].HasFlag(ConstraintStateType.Deadlock);
+			hasDeadlocks |= stateTypes[state.Id].HasFlag(StateType.Deadlock);
 			isFinalMarkingAlwaysReachable &=
-				!stateTypes[state.Id].HasFlag(ConstraintStateType.NoWayToFinalMarking);
-			isFinalMarkingClean &= !stateTypes[state.Id].HasFlag(ConstraintStateType.UncleanFinal);
+				!stateTypes[state.Id].HasFlag(StateType.NoWayToFinalMarking);
+			isFinalMarkingClean &= !stateTypes[state.Id].HasFlag(StateType.UncleanFinal);
 		}
 
 		var isSound = boundedness
@@ -60,7 +61,7 @@ public static class ClassicalSoundnessAnalyzer
 		var boundedness = cg.IsFullGraph;
 		var stateTypes = boundedness
 			? GetStatesDividedByTypesNew(cg, dpn.FinalMarking.AsDictionary())
-			: cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
+			: cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => StateType.Default);
 
 		var deadTransitions = GetDeadTransitions(dpn, cg);
 
@@ -70,10 +71,10 @@ public static class ClassicalSoundnessAnalyzer
 
 		foreach (var constraintState in cg.ConstraintStates)
 		{
-			hasDeadlocks |= stateTypes[constraintState].HasFlag(ConstraintStateType.Deadlock);
+			hasDeadlocks |= stateTypes[constraintState].HasFlag(StateType.Deadlock);
 			isFinalMarkingAlwaysReachable &=
-				!stateTypes[constraintState].HasFlag(ConstraintStateType.NoWayToFinalMarking);
-			isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(ConstraintStateType.UncleanFinal);
+				!stateTypes[constraintState].HasFlag(StateType.NoWayToFinalMarking);
+			isFinalMarkingClean &= !stateTypes[constraintState].HasFlag(StateType.UncleanFinal);
 		}
 
 		var isSound = boundedness
@@ -91,11 +92,11 @@ public static class ClassicalSoundnessAnalyzer
 			isSound);
 	}
 
-	internal static Dictionary<AbstractState, ConstraintStateType> GetStatesDividedByTypesNew
+	internal static Dictionary<AbstractState, StateType> GetStatesDividedByTypesNew
 		(LabeledTransitionSystem graph, Dictionary<string, int> finalMarking)
 	{
 		var stateDictionary =
-			graph.ConstraintStates.ToDictionary(x => (AbstractState)x, y => ConstraintStateType.Default);
+			graph.ConstraintStates.ToDictionary(x => (AbstractState)x, y => StateType.Default);
 
 		DefineInitialState(stateDictionary);
 
@@ -113,17 +114,17 @@ public static class ClassicalSoundnessAnalyzer
 
 		return stateDictionary;
 
-		void DefineDeadlocks(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		void DefineDeadlocks(Dictionary<AbstractState, StateType> stateDictionary)
 		{
 			graph.ConstraintStates
-				.Where(x => !stateDictionary[x].HasFlag(ConstraintStateType.Final) && !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+				.Where(x => !stateDictionary[x].HasFlag(StateType.Final) && !stateDictionary[x].HasFlag(StateType.UncleanFinal))
 				.Where(x => graph.ConstraintArcs.All(y => y.SourceState != x))
 				.ToList()
-				.ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
+				.ForEach(x => stateDictionary[x] |= StateType.Deadlock);
 		}
 
 		// Доработать
-		void DefineStatesWithNoWayToFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+		void DefineStatesWithNoWayToFinals(Dictionary<AbstractState, StateType> stateDictionary,
 			IEnumerable<LtsState> finalStates)
 
 		{
@@ -147,10 +148,10 @@ public static class ClassicalSoundnessAnalyzer
 			graph.ConstraintStates
 				.Except(statesLeadingToFinals)
 				.ToList()
-				.ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+				.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
 		}
 
-		static void DefineUncleanFinals(Dictionary<string, int> finalMarking, Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		static void DefineUncleanFinals(Dictionary<string, int> finalMarking, Dictionary<AbstractState, StateType> stateDictionary)
 		{
 			// TODO: refactor
 			var uncleanFinals = stateDictionary.Keys
@@ -160,21 +161,21 @@ public static class ClassicalSoundnessAnalyzer
 
 			foreach (var uncleanFinal in uncleanFinals)
 			{
-				stateDictionary[uncleanFinal] |= ConstraintStateType.UncleanFinal;
+				stateDictionary[uncleanFinal] |= StateType.UncleanFinal;
 			}
 		}
 
-		void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+		void DefineFinals(Dictionary<AbstractState, StateType> stateDictionary,
 			LtsState[] finalStates)
 		{
 			finalStates
 				.ToList()
-				.ForEach(x => stateDictionary[x] |= ConstraintStateType.Final);
+				.ForEach(x => stateDictionary[x] |= StateType.Final);
 		}
 
-		void DefineInitialState(Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		void DefineInitialState(Dictionary<AbstractState, StateType> stateDictionary)
 		{
-			stateDictionary[graph.InitialState] |= ConstraintStateType.Initial;
+			stateDictionary[graph.InitialState] |= StateType.Initial;
 		}
 	}
 
@@ -187,14 +188,14 @@ public static class ClassicalSoundnessAnalyzer
 		return deadTransitions;
 	}
 
-	private static Dictionary<int, ConstraintStateType> GetStatesDividedByTypes
+	private static Dictionary<int, StateType> GetStatesDividedByTypes
 		(StateSpaceGraph stateSpaceGraph)
 	{
 		var stateDictionary = stateSpaceGraph
-			.Nodes.ToDictionary(x => x.Id, x => ConstraintStateType.Default);
+			.Nodes.ToDictionary(x => x.Id, x => StateType.Default);
 
 		var initialNodeKey = stateDictionary.Keys.Min();
-		stateDictionary[initialNodeKey] |= ConstraintStateType.Initial;
+		stateDictionary[initialNodeKey] |= StateType.Initial;
 		
 		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
@@ -204,7 +205,7 @@ public static class ClassicalSoundnessAnalyzer
 
 		foreach (var finalState in finalStates)
 		{
-			stateDictionary[finalState.Id] |= ConstraintStateType.Final;
+			stateDictionary[finalState.Id] |= StateType.Final;
 		}
 
 		var uncleanFinals = stateSpaceGraph.Nodes
@@ -213,7 +214,7 @@ public static class ClassicalSoundnessAnalyzer
 
 		foreach (var uncleanFinal in uncleanFinals)
 		{
-			stateDictionary[uncleanFinal.Id] |= ConstraintStateType.UncleanFinal;
+			stateDictionary[uncleanFinal.Id] |= StateType.UncleanFinal;
 		}
 
 		if (stateSpaceGraph.Arcs.Length == 0)
@@ -227,10 +228,10 @@ public static class ClassicalSoundnessAnalyzer
 			.ToDictionary(a => a.Key, a => a.ToArray());
 
 		stateSpaceGraph.Nodes
-			.Where(x => !stateDictionary[x.Id].HasFlag(ConstraintStateType.Final) && !stateDictionary[x.Id].HasFlag(ConstraintStateType.UncleanFinal))
+			.Where(x => !stateDictionary[x.Id].HasFlag(StateType.Final) && !stateDictionary[x.Id].HasFlag(StateType.UncleanFinal))
 			.Where(x => !successors.ContainsKey(x.Id))
 			.ToList()
-			.ForEach(x => stateDictionary[x.Id] |= ConstraintStateType.Deadlock);
+			.ForEach(x => stateDictionary[x.Id] |= StateType.Deadlock);
 
 		var predecessors = stateSpaceGraph
 			.Arcs
@@ -252,7 +253,7 @@ public static class ClassicalSoundnessAnalyzer
 		stateDictionary.Keys
 			.Except(statesLeadingToFinals)
 			.ToList()
-			.ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+			.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
 
 		return stateDictionary;
 	}

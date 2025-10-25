@@ -2,6 +2,7 @@
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
+using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpace;
@@ -14,10 +15,10 @@ public static class RelaxedLazySoundnessAnalyzer
 	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
 	{
 		var stateDictionary = stateSpaceGraph
-			.Nodes.ToDictionary(x => x.Id, x => ConstraintStateType.Default);
+			.Nodes.ToDictionary(x => x.Id, x => StateType.Default);
 
 		var initialNodeKey = stateDictionary.Keys.Min();
-		stateDictionary[initialNodeKey] |= ConstraintStateType.Initial;
+		stateDictionary[initialNodeKey] |= StateType.Initial;
 		
 		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
@@ -29,7 +30,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		foreach (var finalState in finalStates)
 		{
-			stateDictionary[finalState.Id] |= ConstraintStateType.Final;
+			stateDictionary[finalState.Id] |= StateType.Final;
 		}
 		
 		var uncleanFinals = stateSpaceGraph.Nodes
@@ -39,7 +40,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		foreach (var uncleanFinal in uncleanFinals)
 		{
-			stateDictionary[uncleanFinal.Id] |= ConstraintStateType.UncleanFinal;
+			stateDictionary[uncleanFinal.Id] |= StateType.UncleanFinal;
 		}
 
 		if (stateSpaceGraph.IsFullGraph)
@@ -50,10 +51,10 @@ public static class RelaxedLazySoundnessAnalyzer
 				.ToDictionary(a => a.Key, a => a.ToArray());
 
 			stateSpaceGraph.Nodes
-				.Where(x => !stateDictionary[x.Id].HasFlag(ConstraintStateType.Final) && !stateDictionary[x.Id].HasFlag(ConstraintStateType.UncleanFinal))
+				.Where(x => !stateDictionary[x.Id].HasFlag(StateType.Final) && !stateDictionary[x.Id].HasFlag(StateType.UncleanFinal))
 				.Where(x => !successors.ContainsKey(x.Id))
 				.ToList()
-				.ForEach(x => stateDictionary[x.Id] |= ConstraintStateType.Deadlock);
+				.ForEach(x => stateDictionary[x.Id] |= StateType.Deadlock);
 
 			var predecessors = stateSpaceGraph
 				.Arcs
@@ -78,13 +79,13 @@ public static class RelaxedLazySoundnessAnalyzer
 			.ToDictionary(
 				arcsGroup => arcsGroup.Key,
 				arcsGroup =>
-					arcsGroup.All(a => stateDictionary[a.TargetNodeId].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
+					arcsGroup.All(a => stateDictionary[a.TargetNodeId].HasFlag(StateType.NoWayToFinalMarking)))
 			.Where(a => a.Value)
 			.Select(a => a.Key)
 			.Union(GetDeadTransitions(stateSpaceGraph))
 			.ToArray();
 
-		var hasDeadlocks = stateDictionary.Any(kvp=>kvp.Value.HasFlag(ConstraintStateType.Deadlock));
+		var hasDeadlocks = stateDictionary.Any(kvp=>kvp.Value.HasFlag(StateType.Deadlock));
 
 		var isSound = unfeasibleTransitions.Length == 0;
 
@@ -109,7 +110,7 @@ public static class RelaxedLazySoundnessAnalyzer
 	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityGraph cg)
 	{
 		var stateDictionary =
-			cg.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);
+			cg.ConstraintStates.ToDictionary(x => x as AbstractState, _ => StateType.Default);
 
 		DefineInitialState(cg, stateDictionary);
 		var finalMarking = dpn.Places.Where(x => x.IsFinal).Select(p=>p.Id).ToArray();
@@ -132,7 +133,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			.ToDictionary(
 				arcsGroup => arcsGroup.Key,
 				arcsGroup =>
-					arcsGroup.All(a => stateDictionary[a.TargetState].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
+					arcsGroup.All(a => stateDictionary[a.TargetState].HasFlag(StateType.NoWayToFinalMarking)))
 			.Where(a => a.Value)
 			.Select(a => a.Key)
 			.Union(GetDeadTransitions(dpn, cg))
@@ -140,7 +141,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		var hasDeadlocks = cg.ConstraintStates.Aggregate(false,
 			(current, constraintState) =>
-				current | stateDictionary[constraintState].HasFlag(ConstraintStateType.Deadlock));
+				current | stateDictionary[constraintState].HasFlag(StateType.Deadlock));
 
 		var isSound = unfeasibleTransitions.Length == 0;
 		
@@ -156,7 +157,7 @@ public static class RelaxedLazySoundnessAnalyzer
 	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, CoverabilityTree ct)
 	{
 		var stateDictionary =
-			ct.ConstraintStates.ToDictionary(x => x as AbstractState, _ => ConstraintStateType.Default);
+			ct.ConstraintStates.ToDictionary(x => x as AbstractState, _ => StateType.Default);
 
 		DefineInitialState(ct, stateDictionary);
 		var finalMarking = dpn.Places.Where(x => x.IsFinal).Select(p=>p.Id).ToArray();
@@ -178,7 +179,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			.ToDictionary(
 				arcsGroup => arcsGroup.Key,
 				arcsGroup =>
-					arcsGroup.All(a => stateDictionary[a.TargetState].HasFlag(ConstraintStateType.NoWayToFinalMarking)))
+					arcsGroup.All(a => stateDictionary[a.TargetState].HasFlag(StateType.NoWayToFinalMarking)))
 			.Where(a => a.Value)
 			.Select(a => a.Key)
 			.Union(GetDeadTransitions(dpn, ct))
@@ -186,7 +187,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		var hasDeadlocks = ct.ConstraintStates.Aggregate(false,
 			(current, constraintState) =>
-				current | stateDictionary[constraintState].HasFlag(ConstraintStateType.Deadlock));
+				current | stateDictionary[constraintState].HasFlag(StateType.Deadlock));
 
 		var isSound = unfeasibleTransitions.Length == 0;
 
@@ -217,31 +218,31 @@ public static class RelaxedLazySoundnessAnalyzer
 
 
 	private static void DefineDeadlocks(CoverabilityGraph cg,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		Dictionary<AbstractState, StateType> stateDictionary)
 	{
 		cg.ConstraintStates
-			.Where(x => !stateDictionary[x].HasFlag(ConstraintStateType.Final) &&
-			            !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+			.Where(x => !stateDictionary[x].HasFlag(StateType.Final) &&
+			            !stateDictionary[x].HasFlag(StateType.UncleanFinal))
 			.Where(x => cg.ConstraintArcs.All(y => y.SourceState != x))
 			.ToList()
-			.ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
+			.ForEach(x => stateDictionary[x] |= StateType.Deadlock);
 	}
 
 	private static void DefineDeadlocks(CoverabilityTree ct,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		Dictionary<AbstractState, StateType> stateDictionary)
 	{
 		ct.ConstraintStates
-			.Where(x => !stateDictionary[x].HasFlag(ConstraintStateType.Final) &&
-			            !stateDictionary[x].HasFlag(ConstraintStateType.UncleanFinal))
+			.Where(x => !stateDictionary[x].HasFlag(StateType.Final) &&
+			            !stateDictionary[x].HasFlag(StateType.UncleanFinal))
 			.Where(x => x.StateType == CtStateType.NonCovered && ct.ConstraintArcs.All(y => y.SourceState != x))
 			.ToList()
-			.ForEach(x => stateDictionary[x] |= ConstraintStateType.Deadlock);
+			.ForEach(x => stateDictionary[x] |= StateType.Deadlock);
 	}
 
 	// Доработать
 	private static void DefineStatesWithNoWayToFinals(
 		CoverabilityGraph cg,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+		Dictionary<AbstractState, StateType> stateDictionary,
 		LtsState[] finalStates)
 
 	{
@@ -265,12 +266,12 @@ public static class RelaxedLazySoundnessAnalyzer
 		cg.ConstraintStates
 			.Except(statesLeadingToFinals)
 			.ToList()
-			.ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+			.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
 	}
 
 	private static void DefineStatesWithNoWayToFinals(
 		CoverabilityTree ct,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+		Dictionary<AbstractState, StateType> stateDictionary,
 		CtState[] finalStates)
 
 	{
@@ -300,12 +301,12 @@ public static class RelaxedLazySoundnessAnalyzer
 		ct.ConstraintStates
 			.Except(statesLeadingToFinals)
 			.ToList()
-			.ForEach(x => stateDictionary[x] |= ConstraintStateType.NoWayToFinalMarking);
+			.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
 	}
 
 	private static void DefineUncleanFinals(
 		string[] terminalNodesIds,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		Dictionary<AbstractState, StateType> stateDictionary)
 	{
 		var uncleanFinalNodes = stateDictionary
 			.Where(x => x.Key.Marking.Keys.Intersect(terminalNodesIds).Any(y => x.Key.Marking[y] > 1))
@@ -315,32 +316,32 @@ public static class RelaxedLazySoundnessAnalyzer
 		{
 			if (cgNode.Marking.Keys.Intersect(terminalNodesIds).Any(y => cgNode.Marking[y] > 1))
 			{
-				stateDictionary[cgNode] |= ConstraintStateType.UncleanFinal;
+				stateDictionary[cgNode] |= StateType.UncleanFinal;
 			}
 		}
 	}
 
-	private static void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+	private static void DefineFinals(Dictionary<AbstractState, StateType> stateDictionary,
 		LtsState[] finalStates)
 	{
-		Array.ForEach(finalStates, x => stateDictionary[x] |= ConstraintStateType.Final);
+		Array.ForEach(finalStates, x => stateDictionary[x] |= StateType.Final);
 	}
 
 	private static void DefineInitialState(CoverabilityGraph cg,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		Dictionary<AbstractState, StateType> stateDictionary)
 	{
-		stateDictionary[cg.InitialState] |= ConstraintStateType.Initial;
+		stateDictionary[cg.InitialState] |= StateType.Initial;
 	}
 
 	private static void DefineInitialState(CoverabilityTree ct,
-		Dictionary<AbstractState, ConstraintStateType> stateDictionary)
+		Dictionary<AbstractState, StateType> stateDictionary)
 	{
-		stateDictionary[ct.InitialState] |= ConstraintStateType.Initial;
+		stateDictionary[ct.InitialState] |= StateType.Initial;
 	}
 
-	private static void DefineFinals(Dictionary<AbstractState, ConstraintStateType> stateDictionary,
+	private static void DefineFinals(Dictionary<AbstractState, StateType> stateDictionary,
 		CtState[] finalStates)
 	{
-		Array.ForEach(finalStates, x => stateDictionary[x] |= ConstraintStateType.Final);
+		Array.ForEach(finalStates, x => stateDictionary[x] |= StateType.Final);
 	}
 }

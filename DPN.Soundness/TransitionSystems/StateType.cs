@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 
-namespace DPN.Models.Enums
+namespace DPN.Soundness.TransitionSystems
 {
     [Flags]
-    public enum ConstraintStateType
+    public enum StateType
     {
         [Description("Sound intermediate state")]
         Default = 0,
