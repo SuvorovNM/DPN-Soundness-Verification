@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Xml;
 using DPN.Models;
 using DPN.Models.Enums;
@@ -174,7 +175,7 @@ namespace DPN.VerificationConsoleApp
 
 			timer.Stop();
 
-			Console.WriteLine($"Verification completed in {timer.Elapsed.TotalSeconds:F2} seconds");
+			Console.WriteLine($"Verification time: {timer.Elapsed.TotalSeconds.ToString("0.00", CultureInfo.InvariantCulture)} seconds");
 			Console.WriteLine($"Soundness: {verificationResult.SoundnessProperties.Soundness}");
 			Console.WriteLine($"Boundedness: {verificationResult.SoundnessProperties.Boundedness}");
 			Console.WriteLine($"Dead transitions: {(verificationResult.SoundnessProperties.DeadTransitions.Length == 0 ? "Absent" :string.Join(", ", verificationResult.SoundnessProperties.DeadTransitions))}");
@@ -213,10 +214,10 @@ namespace DPN.VerificationConsoleApp
 							break;
 					}
 
-					foreach (var final in stateType)
+					foreach (var state in stateType)
 					{
-						var node = nodes[final.Key];
-						Console.WriteLine($"{final.Key}: [{string.Join(" ",node.Marking.Where(kvp=>kvp.Value > 0).Select(kvp=>$"{(kvp.Value > 1 ? kvp.Value : "")}{kvp.Key}"))}] {node.StateConstraint}");
+						var node = nodes[state.Key];
+						Console.WriteLine($"{state.Key}: [{string.Join(" ",node.Marking.Where(kvp=>kvp.Value > 0).Select(kvp=>$"{(kvp.Value > 1 ? kvp.Value : "")}{kvp.Key}"))}] {node.StateConstraint}");
 					}
 				}
 			}
@@ -239,7 +240,7 @@ namespace DPN.VerificationConsoleApp
 			var dpnRepairer = new ClassicalSoundnessRepairer();
 			var repairResult = dpnRepairer.Repair(dpn, repairParameters);
 
-			Console.WriteLine($"Repair result: {(repairResult.IsSuccess ? "Success" : "Failure")}. Repair steps: {repairResult.RepairSteps}. Repair time: {repairResult.RepairTime}");
+			Console.WriteLine($"Repair result: {(repairResult.IsSuccess ? "Success" : "Failure")} \nRepair steps: {repairResult.RepairSteps} \nRepair time: {repairResult.RepairTime.TotalSeconds.ToString("0.00", CultureInfo.InvariantCulture)} seconds");
 
 			if (repairResult.IsSuccess)
 			{

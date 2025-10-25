@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyName>DPN.VerificationApp</AssemblyName>
+    <AssemblyName>DPNVerifier.Desktop</AssemblyName>
     <RootNamespace>DPN.VerificationApp</RootNamespace>
   </PropertyGroup>
 

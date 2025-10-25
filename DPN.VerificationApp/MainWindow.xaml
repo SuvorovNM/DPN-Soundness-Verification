@@ -323,7 +323,7 @@
                                                   Width="12" Height="12"/>
                                         </MenuItem.Icon>
                                     </MenuItem>
-                                    <MenuItem x:Name="OpenCgItem" Header="Open Constraint Graph..." Click="OpenStateSpace_Click"/>
+                                    <MenuItem x:Name="OpenCgItem" Header="Open State Space Structure..." Click="OpenStateSpace_Click"/>
                                     <Separator/>
                                     <MenuItem x:Name="SaveDpnItem" Header="Save DPN..." Click="SaveDpn_Click">
                                         <MenuItem.Icon>
