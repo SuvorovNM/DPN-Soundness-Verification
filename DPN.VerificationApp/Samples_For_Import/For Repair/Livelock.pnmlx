@@ -9,9 +9,7 @@
             <name>
                <text>i</text>
             </name>
-            <initialMarking>
-               <text>1</text>
-            </initialMarking>
+            <initialMarking tokens="1"/>
          </place>
 		 
 		 <place id="p0">
@@ -24,9 +22,7 @@
             <name>
                <text>o</text>
             </name>
-			<finalMarking>
-               <text>1</text>
-            </finalMarking>
+			<finalMarking tokens="1"/>
          </place>
          
          <transition id="t0" guard="a_w &gt; 0">

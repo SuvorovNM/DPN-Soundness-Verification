@@ -169,9 +169,10 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 					: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
 
 				var transitionToInspect = baseTransition.First();
-
+				var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
+				var label = transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
 				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint);
-				var transitionToAdd = new Transition(baseTransition.Key, guard);
+				var transitionToAdd = new Transition(baseTransition.Key, guard, label: label);
 				dpnToConsider.Transitions.RemoveAll(x => baseTransition.Contains(x));
 				dpnToConsider.Transitions.Add(transitionToAdd);
 

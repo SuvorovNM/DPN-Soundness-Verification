@@ -211,10 +211,10 @@ namespace DPN.Parsers
                     case "graphics":
                         break; // Graphics are not supported by current state of affairs
                     case "initialMarking":
-                        place.Tokens = int.Parse(placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? "0");
+                        place.Tokens = int.Parse(placeNode.ChildNodes[i]!.Attributes?["tokens"]?.Value ?? placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? "0");
                         break;
                     case "finalMarking":
-                        place.IsFinal = int.Parse(placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? "0") > 0;
+                        place.IsFinal = int.Parse(placeNode.ChildNodes[i]!.Attributes?["tokens"]?.Value ?? placeNode.ChildNodes[i]?.FirstChild?.InnerText ?? "0") > 0;
                         break;
                     default:
                         break;

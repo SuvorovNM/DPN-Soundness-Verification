@@ -46,10 +46,6 @@ namespace DPN.Soundness.Transformations
 			sourceLts.GenerateGraph();
 			var maximumCycles = CyclesFinder.GetCycles(sourceLts);
 
-			// TODO: пытаемся найти порядок, в котором применять изменения. Иначе уточнений может быть очень много
-			// Храним маппинг t -> list(read_vars), list(transitions_to_split_on)
-
-			// Не потеряем ли тут порядок? Будет +/- норм, если учитывать будем сразу все переходы, т.е. если один переход ToConsider содержит 2 других, то и их нужно учесть в переходе, который делится данным
 			var transitionsRefinementInfo = transformedDpn
 				.Transitions
 				.ToDictionary(
@@ -188,7 +184,8 @@ namespace DPN.Soundness.Transformations
 							transition.Id + splitTransitionNames,
 							Guard.MakeRefined(transition.Guard, resultingFormula),
 							transition.BaseTransitionId,
-							isSplit: true));
+							isSplit: true,
+							label: transition.Label + splitTransitionNames));
 				}
 			}
 
@@ -262,13 +259,8 @@ namespace DPN.Soundness.Transformations
 						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.Id))
 						.ToArray();
 
-					var refinedInnerTransitions = cyclesWithTransition
-						.SelectMany(c => c.CycleArcs.Select(a => a.Transition))
-						.Where(t => refinementInfo[t.Id].TransitionsToConsiderInSplit.Any());
-
 					var transitionsToInvestigate = cyclesWithTransition
-						.SelectMany(c => c.OutputArcs.Select(a => a.Transition))
-						.Union(refinedInnerTransitions)
+						.SelectMany(c => c.CycleArcsWithAdjacent.Select(a => a.Transition))
 						.Distinct()
 						.Where(x => refinementInfo[x.Id].ReadVariables
 							.Intersect(writeVarsNames).Any())
@@ -279,25 +271,10 @@ namespace DPN.Soundness.Transformations
 					{
 						var readVarsInCycleTransition = refinementInfo[cycleTransition.Id].ReadVariables
 							.Except(sourceTransition.Guard.WriteVars.Select(v => v.Key));
-						//	cycleTransition.Guard.ReadVars
-						//	.Select(v=>v.Key)
-						//	.Except(sourceTransition.Guard.WriteVars.Select(v=>v.Key));
 
 						refinementInfo[sourceTransition.Id].ReadVariables.AddRange(readVarsInCycleTransition);
 						refinementInfo[sourceTransition.Id].TransitionsToConsiderInSplit.Add(cycleTransition);
 						refinementInfo[sourceTransition.Id].TransitionsToConsiderInSplit.AddRange(refinementInfo[cycleTransition.Id].TransitionsToConsiderInSplit);
-
-						/*(var positiveTransition, var negativeTransition) = baseTransition
-							.Split(formulaToConjunct, cycleTransition.Id);
-						if (positiveTransition != null && negativeTransition != null)
-						{
-							updatedTransitions.Add(positiveTransition);
-							updatedTransitions.Add(negativeTransition);
-						}
-						else
-						{
-							updatedTransitions.Add((Transition)baseTransition.Clone());
-						}*/
 					}
 				}
 			}

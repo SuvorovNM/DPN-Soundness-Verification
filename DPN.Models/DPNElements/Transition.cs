@@ -10,10 +10,10 @@ namespace DPN.Models.DPNElements
         public bool IsTau { get; init; }
         public string BaseTransitionId { get; init; }
 
-        public Transition(string id, Guard guard, string? baseTransitionId = null, bool isSplit = false)
+        public Transition(string id, Guard guard, string? baseTransitionId = null, bool isSplit = false, string? label = null)
         {
             Guard = guard;
-            Label = id;
+            Label = label ?? id;
             Id = id;
             IsSplit = isSplit;
             IsTau = id.StartsWith("τ");

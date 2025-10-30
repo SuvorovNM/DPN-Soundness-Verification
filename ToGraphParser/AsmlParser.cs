@@ -8,7 +8,7 @@ namespace DPN.Parsers
 {
 	public class AsmlParser
 	{
-		private const string rootElementName = "cgml";
+		private const string rootElementName = "asml";
 		private const string stateSpaceElementName = "state_space";
 		private const string statesElementName = "states";
 		private const string arcsElementName = "arcs";
