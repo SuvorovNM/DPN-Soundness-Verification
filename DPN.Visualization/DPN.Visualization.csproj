@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutomaticGraphLayout.Drawing" Version="1.1.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
+      <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asml>
+  <state_space graph_type="AbstractReachabilityGraph" is_full="true">
+    <states>
+      <state id="895">
+        <tokens>
+          <i>1</i>
+          <p0>0</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>(a_r == 0.0) &amp;&amp; (b_r == 0.0)</constraint>
+      </state>
+      <state id="896">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>(b_r == 0.0) &amp;&amp; !((a_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="897">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>!((a_r &lt;= 0.0)) &amp;&amp; !((b_r &lt;= a_r)) &amp;&amp; !((3.0 &lt;= b_r))</constraint>
+      </state>
+      <state id="898">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>(b_r == 0.0) &amp;&amp; !((a_r &lt;= 0.0)) &amp;&amp; (3.0 &lt;= a_r)</constraint>
+      </state>
+      <state id="899">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>!((a_r &lt;= 0.0)) &amp;&amp; !((b_r &lt;= a_r)) &amp;&amp; (3.0 &lt;= b_r)</constraint>
+      </state>
+      <state id="900">
+        <tokens>
+          <i>0</i>
+          <p0>0</p0>
+          <o>1</o>
+        </tokens>
+        <constraint>(b_r == 0.0) &amp;&amp; !((a_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="901">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>!((a_r &lt;= 0.0)) &amp;&amp; !((b_r &lt;= a_r)) &amp;&amp; (3.0 &lt;= b_r) &amp;&amp; (3.0 &lt;= a_r)</constraint>
+      </state>
+      <state id="902">
+        <tokens>
+          <i>0</i>
+          <p0>0</p0>
+          <o>1</o>
+        </tokens>
+        <constraint>(b_r == 0.0) &amp;&amp; !((a_r &lt;= 0.0)) &amp;&amp; (3.0 &lt;= a_r)</constraint>
+      </state>
+      <state id="903">
+        <tokens>
+          <i>0</i>
+          <p0>1</p0>
+          <o>0</o>
+        </tokens>
+        <constraint>!((a_r &lt;= 0.0)) &amp;&amp; !((b_r &lt;= a_r)) &amp;&amp; (3.0 &lt;= b_r) &amp;&amp; !((3.0 &lt;= a_r))</constraint>
+      </state>
+      <state id="904">
+        <tokens>
+          <i>0</i>
+          <p0>0</p0>
+          <o>1</o>
+        </tokens>
+        <constraint>!((a_r &lt;= 0.0)) &amp;&amp; !((b_r &lt;= a_r)) &amp;&amp; !((3.0 &lt;= b_r))</constraint>
+      </state>
+    </states>
+    <arcs>
+      <arc label="t0" is_silent="false" source_id="895" target_id="896" base_transition_id="t0" />
+      <arc label="t1+t2" is_silent="false" source_id="896" target_id="897" base_transition_id="t1" />
+      <arc label="t1+t2" is_silent="true" source_id="896" target_id="898" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="896" target_id="899" base_transition_id="t1" />
+      <arc label="t2" is_silent="false" source_id="896" target_id="900" base_transition_id="t2" />
+      <arc label="t1+t2" is_silent="false" source_id="899" target_id="897" base_transition_id="t1" />
+      <arc label="t1+t2" is_silent="true" source_id="899" target_id="901" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="899" target_id="899" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="901" target_id="901" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="898" target_id="901" base_transition_id="t1" />
+      <arc label="t2" is_silent="false" source_id="898" target_id="902" base_transition_id="t2" />
+      <arc label="t1+t2" is_silent="false" source_id="897" target_id="897" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="897" target_id="903" base_transition_id="t1" />
+      <arc label="t2" is_silent="false" source_id="897" target_id="904" base_transition_id="t2" />
+      <arc label="t1+t2" is_silent="false" source_id="903" target_id="897" base_transition_id="t1" />
+      <arc label="t1-t2" is_silent="false" source_id="903" target_id="903" base_transition_id="t1" />
+    </arcs>
+    <final_marking>
+      <place tokens="0">i</place>
+      <place tokens="0">p0</place>
+      <place tokens="1">o</place>
+    </final_marking>
+    <transitions>
+      <transition id="t0" base_transition_id="t0" is_tau="false" is_split="false" guard="!((a_w &lt;= 0.0))">
+        <name>
+          <text>t0</text>
+        </name>
+      </transition>
+      <transition id="t1+t2" base_transition_id="t1" is_tau="false" is_split="false" guard="!((b_w &lt;= a_r)) &amp;&amp; !((3.0 &lt;= b_w))">
+        <name>
+          <text>t1+t2</text>
+        </name>
+      </transition>
+      <transition id="t1-t2" base_transition_id="t1" is_tau="false" is_split="false" guard="!((b_w &lt;= a_r)) &amp;&amp; (3.0 &lt;= b_w)">
+        <name>
+          <text>t1-t2</text>
+        </name>
+      </transition>
+      <transition id="t2" base_transition_id="t2" is_tau="false" is_split="false" guard="!((3.0 &lt;= b_r))">
+        <name>
+          <text>t2</text>
+        </name>
+      </transition>
+      <transition id="τ(t1+t2)" base_transition_id="t1+t2" is_tau="true" is_split="true" guard="(3.0 &lt;= a_r)">
+        <name>
+          <text>τ(t1+t2)</text>
+        </name>
+      </transition>
+    </transitions>
+    <variables>
+      <variable type="Real">
+        <name>a</name>
+      </variable>
+      <variable type="Real">
+        <name>b</name>
+      </variable>
+    </variables>
+  </state_space>
+</asml>

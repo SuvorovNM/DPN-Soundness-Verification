@@ -1,0 +1,23 @@
+﻿using System.ComponentModel;
+
+namespace DPN.Soundness.TransitionSystems
+{
+    [Flags]
+    public enum StateType
+    {
+        [Description("Sound intermediate state")]
+        Default = 0,
+        [Description("Initial state")]
+        Initial = 1,
+        [Description("Final state")]
+        Final = 2,
+        [Description("Unfeasible (no way to final) state")]
+        NoWayToFinalMarking = 4,
+        [Description("Unclean final state")]
+        UncleanFinal = 8,
+        [Description("Deadlock")]
+        Deadlock = 16,
+        [Description("Strictly covered state")]
+        StrictlyCovered = 32
+    }
+}
