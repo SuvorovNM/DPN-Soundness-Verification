@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+      <name>
+         <text>Package handling</text>
+      </name>
+      <page id="n0">
+         <place id="p0">
+            <name>
+               <text>p0</text>
+            </name>
+            <initialMarking tokens="1"/>
+         </place>
+         <place id="p1">
+            <name>
+               <text>p1</text>
+            </name>
+         </place>
+         <place id="p2">
+            <name>
+               <text>p2</text>
+            </name>
+         </place>
+         <place id="p3">
+            <name>
+               <text>p3</text>
+            </name>
+         </place>
+         <place id="p4">
+            <name>
+               <text>p4</text>
+            </name>
+         </place>
+         <place id="p5">
+            <name>
+               <text>p5</text>
+            </name>
+         </place>
+         <place id="p6">
+            <name>
+               <text>p6</text>
+            </name>
+         </place>
+         <place id="p7">
+            <name>
+               <text>p7</text>
+            </name>
+         </place>
+         <place id="p8">
+            <name>
+               <text>p8</text>
+            </name>
+         </place>
+         <place id="p9">
+            <name>
+               <text>p9</text>
+            </name>
+         </place>
+         <place id="p10">
+            <name>
+               <text>p10</text>
+            </name>
+         </place>
+         <place id="p11">
+            <name>
+               <text>p11</text>
+            </name>
+         </place>
+         <place id="p12">
+            <name>
+               <text>p12</text>
+            </name>
+         </place>
+         <place id="p13">
+            <name>
+               <text>p13</text>
+            </name>
+         </place>
+         <place id="p14">
+            <name>
+               <text>p14</text>
+            </name>
+         </place>
+         <place id="end">
+            <name>
+               <text>end</text>
+            </name>
+            <finalMarking tokens="1"/>
+         </place>
+         <transition guard="pT_w &gt; 0 &amp;&amp; pT_w &lt;= 3"  id="tau1" invisible="true">
+            <name>
+               <text>tau1</text>
+            </name>
+         </transition>
+         <transition guard="pT_r == 1 &amp;&amp; pL_w == 0.5"  id="t1">
+            <name>
+               <text>getlength1</text>
+            </name>
+         </transition>
+         <transition guard="pT_r == 2 &amp;&amp; pL_w == 1"  id="t2">
+            <name>
+               <text>getlength2</text>
+            </name>
+         </transition>
+         <transition guard="pT_r == 3 &amp;&amp; pL_w == 2"  id="t3">
+            <name>
+               <text>getlength3</text>
+            </name>
+         </transition>
+         <transition guard="pT_r == 0 &amp;&amp; pL_w == 0 || pT_r != 1 &amp;&amp; pT_r != 2 &amp;&amp; pT_r != 3 &amp;&amp; pL_w == 0"  id="t4">
+            <name>
+               <text>getlengthnoRow</text>
+            </name>
+         </transition>
+         <transition guard="pL_r == 0"  id="tau2" invisible="true">
+            <name>
+               <text>tau2</text>
+            </name>
+         </transition>
+         <transition guard="pL_r != 0"  id="tau3" invisible="true">
+            <name>
+               <text>tau3</text>
+            </name>
+         </transition>
+         <transition guard="pW_w &gt; 0"  id="t5" invisible="true">
+            <name>
+               <text>measure weight</text>
+            </name>
+         </transition>
+         <transition guard="pW_r &lt;= 10"  id="tau4" invisible="true">
+            <name>
+               <text>tau4</text>
+            </name>
+         </transition>
+         <transition guard="pW_r &gt; 10"  id="tau5" invisible="true">
+            <name>
+               <text>tau5</text>
+            </name>
+         </transition>
+         <transition guard="pL_r &gt; 0 &amp;&amp; pL_r &lt;= 1 &amp;&amp; pW_r &gt; 0 &amp;&amp; pW_r &lt;= 5 &amp;&amp; sM_w == 1"  id="t6">
+            <name>
+               <text>determinemode1</text>
+            </name>
+         </transition>
+         <transition guard="pL_r &gt; 1 &amp;&amp; pL_r &lt;= 2 &amp;&amp; pW_r &gt; 0 &amp;&amp; pW_r &lt;= 5 &amp;&amp; sM_w == 2"  id="t7">
+            <name>
+               <text>determinemode2</text>
+            </name>
+         </transition>
+         <transition guard="pW_r &gt; 5 &amp;&amp; pW_r &lt;= 10 &amp;&amp; sM_w == 2"  id="t8">
+            <name>
+               <text>determinemode3</text>
+            </name>
+         </transition>
+         <transition guard="pL_r == 0 &amp;&amp; sM_w == 0 || pW_r == 0 &amp;&amp; sM_w == 0 || pL_r &lt;= 0 &amp;&amp; sM_w == 0 || pW_r &lt;= 0 &amp;&amp; sM_w == 0 || pW_r &gt; 10 &amp;&amp; sM_w == 0 || pW_r &gt; 0 &amp;&amp; pW_r &lt;= 5 &amp;&amp; pL_r &gt; 2 &amp;&amp; sM_w == 0"  id="t9">
+            <name>
+               <text>determinemodenoRow</text>
+            </name>
+         </transition>
+         <transition guard="sM_r == 0"  id="tau6" invisible="true">
+            <name>
+               <text>tau6</text>
+            </name>
+         </transition>
+         <transition guard="sM_r != 0"  id="tau7" invisible="true">
+            <name>
+               <text>tau7</text>
+            </name>
+         </transition>
+         <transition guard="sM_r == 1 &amp;&amp; pW_r &gt; 6 &amp;&amp; c_w == 3"  id="t10">
+            <name>
+               <text>chooseconsent1</text>
+            </name>
+         </transition>
+         <transition guard="sM_r == 2 &amp;&amp; pW_r &gt; 8 &amp;&amp; c_w == 1"  id="t11">
+            <name>
+               <text>chooseconsent2</text>
+            </name>
+         </transition>
+         <transition guard="sM_r == 0 || pW_r == 0 || sM_r != 1 &amp;&amp; sM_r != 2 || pW_r &lt;= 0 &amp;&amp; c_w == 0 || sM_r == 1 &amp;&amp; pW_r &lt;= 6 &amp;&amp; c_w == 2 || sM_r == 2 &amp;&amp; pW_r &lt;= 8 &amp;&amp; c_w == 2"  id="t12">
+            <name>
+               <text>chooseconsentnoRow</text>
+            </name>
+         </transition>
+         <transition guard="c_r == 1"  id="tau8" invisible="true">
+            <name>
+               <text>tau8</text>
+            </name>
+         </transition>
+         <transition guard="c_r == 2"  id="tau9" invisible="true">
+            <name>
+               <text>tau9</text>
+            </name>
+         </transition>
+         <transition guard="c_r == 3"  id="tau10" invisible="true">
+            <name>
+               <text>tau10</text>
+            </name>
+         </transition>
+         <transition id="t13">
+            <name>
+               <text>sign declaration</text>
+            </name>
+         </transition>
+         <transition id="tau13"  invisible="true">
+            <name>
+               <text>tau13</text>
+            </name>
+         </transition>
+         <transition id="tau11"  invisible="true">
+            <name>
+               <text>tau11</text>
+            </name>
+         </transition>
+         <transition id="t14">
+            <name>
+               <text>fetch</text>
+            </name>
+         </transition>
+         <transition id="tau12"  invisible="true">
+            <name>
+               <text>tau12</text>
+            </name>
+         </transition>
+         <transition id="tau14" invisible="true">
+            <name>
+               <text>tau14</text>
+            </name>
+         </transition>
+         <arc id="a52" source="p12" target="tau14">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a53" source="tau14" target="end">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a52" source="p14" target="tau12">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a53" source="tau12" target="p12">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a50" source="p13" target="t14">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a51" source="t14" target="p14">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a48" source="p10" target="tau11">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a49" source="tau11" target="p12">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a46" source="p11" target="tau13">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a47" source="tau13" target="p12">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a44" source="p9" target="t13">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a45" source="t13" target="p10">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a42" source="p8" target="tau10">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a43" source="tau10" target="p13">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a40" source="p8" target="tau9">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a41" source="tau9" target="p11">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a38" source="p8" target="tau8">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a39" source="tau8" target="p9">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a32" source="p7" target="t10">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a33" source="t10" target="p8">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a34" source="p7" target="t11">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a35" source="t11" target="p8">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a36" source="p7" target="t12">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a37" source="t12" target="p8">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a30" source="p6" target="tau7">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a31" source="tau7" target="p7">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a28" source="p6" target="tau6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a29" source="tau6" target="end">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a20" source="p5" target="t6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a21" source="t6" target="p6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a22" source="p5" target="t7">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a23" source="t7" target="p6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a24" source="p5" target="t8">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a25" source="t8" target="p6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a26" source="p5" target="t9">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a27" source="t9" target="p6">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a18" source="p4" target="tau5">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a19" source="tau5" target="end">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a16" source="p4" target="tau4">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a17" source="tau4" target="p5">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a14" source="p3" target="t5">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a15" source="t5" target="p4">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a12" source="p2" target="tau3">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a13" source="tau3" target="p3">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a10" source="p2" target="tau2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a11" source="tau2" target="end">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a2" source="p1" target="t1">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a3" source="t1" target="p2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a4" source="p1" target="t2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a5" source="t2" target="p2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a6" source="p1" target="t3">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a7" source="t3" target="p2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a8" source="p1" target="t4">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a9" source="t4" target="p2">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a0" source="p0" target="tau1">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+         <arc id="a1" source="tau1" target="p1">
+            <arctype> <text>normal</text> </arctype>
+         </arc>
+      </page>
+      <variables>
+      <variable type="Real">
+            <name>pL</name>
+         </variable>
+         <variable type="Real">
+            <name>pW</name>
+         </variable>
+         <variable type="Integer">
+            <name>pT</name>
+         </variable>
+         <variable type="Integer">
+            <name>sM</name>
+         </variable>
+         <variable type="Integer">
+            <name>c</name>
+         </variable>
+      </variables>
+   </net>
+</pnml>

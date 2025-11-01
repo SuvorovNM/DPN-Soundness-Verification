@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asml>
+  <state_space graph_type="AbstractCoverabilityTree" is_full="true">
+    <states>
+      <state id="4357">
+        <tokens>
+          <start>1</start>
+          <p1>0</p1>
+          <p2>0</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>(o_r == 0.0) &amp;&amp; (t_r == 0.0)</constraint>
+      </state>
+      <state id="4358">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; (o_r == 0.0)</constraint>
+      </state>
+      <state id="4359">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4360">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>(o_r == 0.0)</constraint>
+      </state>
+      <state id="4361">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4362">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>(o_r == 0.0)</constraint>
+      </state>
+      <state id="4363">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4364">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4365">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4366">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4367">
+        <tokens>
+          <start>0</start>
+          <p1>0</p1>
+          <p2>0</p2>
+          <end>1</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0)) &amp;&amp; (t_r &lt;= 0.0)</constraint>
+      </state>
+      <state id="4368">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4369">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4370">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((t_r &lt;= 0.0)) &amp;&amp; !((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4371">
+        <tokens>
+          <start>0</start>
+          <p1>1</p1>
+          <p2>1</p2>
+          <end>0</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4372">
+        <tokens>
+          <start>0</start>
+          <p1>0</p1>
+          <p2>0</p2>
+          <end>1</end>
+        </tokens>
+        <constraint>!((o_r &lt;= 0.0)) &amp;&amp; (t_r &lt;= 0.0)</constraint>
+      </state>
+    </states>
+    <arcs>
+      <arc label="init" is_silent="false" source_id="4357" target_id="4358" base_transition_id="init" />
+      <arc label="bid" is_silent="false" source_id="4358" target_id="4359" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4358" target_id="4360" base_transition_id="dec" />
+      <arc label="bid" is_silent="false" source_id="4360" target_id="4361" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4360" target_id="4362" base_transition_id="dec" />
+      <arc label="bid" is_silent="false" source_id="4361" target_id="4363" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4361" target_id="4364" base_transition_id="dec" />
+      <arc label="bid" is_silent="false" source_id="4364" target_id="4365" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4364" target_id="4366" base_transition_id="dec" />
+      <arc label="expire" is_silent="false" source_id="4364" target_id="4367" base_transition_id="exp" />
+      <arc label="bid" is_silent="false" source_id="4359" target_id="4368" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4359" target_id="4369" base_transition_id="dec" />
+      <arc label="bid" is_silent="false" source_id="4369" target_id="4370" base_transition_id="bid" />
+      <arc label="dec" is_silent="false" source_id="4369" target_id="4371" base_transition_id="dec" />
+      <arc label="expire" is_silent="false" source_id="4369" target_id="4372" base_transition_id="exp" />
+    </arcs>
+    <final_marking>
+      <place tokens="0">start</place>
+      <place tokens="0">p1</place>
+      <place tokens="0">p2</place>
+      <place tokens="1">end</place>
+    </final_marking>
+    <transitions>
+      <transition id="init" base_transition_id="init" is_tau="false" is_split="false" guard="(t_w &gt; 0.0) &amp;&amp; (o_w == 0.0)">
+        <name>
+          <text>init</text>
+        </name>
+      </transition>
+      <transition id="bid" base_transition_id="bid" is_tau="false" is_split="false" guard="(t_r &gt; 0.0) &amp;&amp; (o_w &gt; o_r)">
+        <name>
+          <text>bid</text>
+        </name>
+      </transition>
+      <transition id="dec" base_transition_id="dec" is_tau="false" is_split="false" guard="(t_r &gt; 0.0) &amp;&amp; (t_w &lt; t_r)">
+        <name>
+          <text>dec</text>
+        </name>
+      </transition>
+      <transition id="exp" base_transition_id="exp" is_tau="false" is_split="false" guard="(t_r &lt;= 0.0) &amp;&amp; (o_r &gt; 0.0)">
+        <name>
+          <text>expire</text>
+        </name>
+      </transition>
+    </transitions>
+    <variables>
+      <variable type="Real">
+        <name>o</name>
+      </variable>
+      <variable type="Real">
+        <name>t</name>
+      </variable>
+    </variables>
+  </state_space>
+</asml>

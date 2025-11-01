@@ -1,0 +1,696 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asml>
+  <state_space graph_type="AbstractReachabilityGraph" is_full="true">
+    <states>
+      <state id="1">
+        <tokens>
+          <i>1</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false) &amp;&amp; (reqd_r == 0.0) &amp;&amp; (granted_r == 0.0)</constraint>
+      </state>
+      <state id="2">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false) &amp;&amp; (granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="3">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>1</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0))</constraint>
+      </state>
+      <state id="4">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>1</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == true)</constraint>
+      </state>
+      <state id="5">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="6">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>1</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == false) &amp;&amp; (0.0 != reqd_r)</constraint>
+      </state>
+      <state id="7">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>1</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="8">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>1</p5>
+          <p6>1</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; !((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="9">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="10">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>1</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0)</constraint>
+      </state>
+      <state id="11">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>1</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == true)</constraint>
+      </state>
+      <state id="12">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="13">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>1</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == false) &amp;&amp; (0.0 != reqd_r)</constraint>
+      </state>
+      <state id="14">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>1</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="15">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>1</p5>
+          <p6>1</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(granted_r == 0.0) &amp;&amp; (ok_r == false)</constraint>
+      </state>
+      <state id="16">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+      <state id="17">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>1</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r) &amp;&amp; (granted_r != reqd_r)</constraint>
+      </state>
+      <state id="18">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>1</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+      <state id="19">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>1</p5>
+          <p6>1</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r) &amp;&amp; !((granted_r &lt;= 10000.0))</constraint>
+      </state>
+      <state id="20">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>1</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+      <state id="21">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>1</p6>
+          <p7>1</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r) &amp;&amp; !((granted_r &lt;= 10000.0))</constraint>
+      </state>
+      <state id="22">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>1</o>
+        </tokens>
+        <constraint>(ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r) &amp;&amp; !((granted_r &lt;= 10000.0))</constraint>
+      </state>
+      <state id="23">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true)</constraint>
+      </state>
+      <state id="24">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>1</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>true</constraint>
+      </state>
+      <state id="25">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>1</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == true)</constraint>
+      </state>
+      <state id="26">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false)</constraint>
+      </state>
+      <state id="27">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>1</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false) &amp;&amp; (granted_r != reqd_r)</constraint>
+      </state>
+      <state id="28">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>1</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false)</constraint>
+      </state>
+      <state id="29">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>1</p5>
+          <p6>1</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false) &amp;&amp; !((granted_r &lt;= 10000.0))</constraint>
+      </state>
+      <state id="30">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>1</p5>
+          <p6>1</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false)</constraint>
+      </state>
+      <state id="31">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>(ok_r == false)</constraint>
+      </state>
+      <state id="32">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>!((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+      <state id="33">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>0</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>1</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>!((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r) &amp;&amp; (granted_r != reqd_r)</constraint>
+      </state>
+      <state id="34">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>1</p5>
+          <p6>0</p6>
+          <p7>0</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>!((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+      <state id="35">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <p4>1</p4>
+          <p5>0</p5>
+          <p6>0</p6>
+          <p7>1</p7>
+          <p8>0</p8>
+          <p9>0</p9>
+          <o>0</o>
+        </tokens>
+        <constraint>!((reqd_r &lt;= 0.0)) &amp;&amp; (ok_r == true) &amp;&amp; (granted_r &lt;= reqd_r)</constraint>
+      </state>
+    </states>
+    <arcs>
+      <arc label="Credit request" is_silent="false" source_id="1" target_id="2" base_transition_id="Credit request" />
+      <arc label="Verify" is_silent="false" source_id="2" target_id="3" base_transition_id="Verify" />
+      <arc label="Prepare" is_silent="false" source_id="3" target_id="4" base_transition_id="Prepare" />
+      <arc label="Skip" is_silent="false" source_id="3" target_id="5" base_transition_id="Skip" />
+      <arc label="Refuse proposal" is_silent="false" source_id="5" target_id="6" base_transition_id="Refuse proposal" />
+      <arc label="AND split" is_silent="false" source_id="5" target_id="7" base_transition_id="AND split" />
+      <arc label="Inform rejection" is_silent="false" source_id="7" target_id="8" base_transition_id="Inform rejection" />
+      <arc label="Update request" is_silent="false" source_id="6" target_id="9" base_transition_id="Update request" />
+      <arc label="Verify" is_silent="false" source_id="9" target_id="10" base_transition_id="Verify" />
+      <arc label="Prepare" is_silent="false" source_id="10" target_id="11" base_transition_id="Prepare" />
+      <arc label="Skip" is_silent="false" source_id="10" target_id="12" base_transition_id="Skip" />
+      <arc label="Refuse proposal" is_silent="false" source_id="12" target_id="13" base_transition_id="Refuse proposal" />
+      <arc label="AND split" is_silent="false" source_id="12" target_id="14" base_transition_id="AND split" />
+      <arc label="Inform rejection" is_silent="false" source_id="14" target_id="15" base_transition_id="Inform rejection" />
+      <arc label="Update request" is_silent="false" source_id="13" target_id="9" base_transition_id="Update request" />
+      <arc label="Make proposal" is_silent="false" source_id="11" target_id="16" base_transition_id="Make proposal" />
+      <arc label="Refuse proposal" is_silent="false" source_id="16" target_id="17" base_transition_id="Refuse proposal" />
+      <arc label="AND split" is_silent="false" source_id="16" target_id="18" base_transition_id="AND split" />
+      <arc label="Inform acceptance VIP" is_silent="false" source_id="18" target_id="19" base_transition_id="Inform acceptance VIP" />
+      <arc label="Open credit loan" is_silent="false" source_id="18" target_id="20" base_transition_id="Open credit loan" />
+      <arc label="Inform acceptance VIP" is_silent="false" source_id="20" target_id="21" base_transition_id="Inform acceptance VIP" />
+      <arc label="AND join" is_silent="false" source_id="21" target_id="22" base_transition_id="AND join" />
+      <arc label="Open credit loan" is_silent="false" source_id="19" target_id="21" base_transition_id="Open credit loan" />
+      <arc label="Update request" is_silent="false" source_id="17" target_id="23" base_transition_id="Update request" />
+      <arc label="Verify" is_silent="false" source_id="23" target_id="24" base_transition_id="Verify" />
+      <arc label="Prepare" is_silent="false" source_id="24" target_id="25" base_transition_id="Prepare" />
+      <arc label="Skip" is_silent="false" source_id="24" target_id="26" base_transition_id="Skip" />
+      <arc label="Refuse proposal" is_silent="false" source_id="26" target_id="27" base_transition_id="Refuse proposal" />
+      <arc label="AND split" is_silent="false" source_id="26" target_id="28" base_transition_id="AND split" />
+      <arc label="Inform acceptance VIP" is_silent="false" source_id="28" target_id="29" base_transition_id="Inform acceptance VIP" />
+      <arc label="Inform rejection" is_silent="false" source_id="28" target_id="30" base_transition_id="Inform rejection" />
+      <arc label="Update request" is_silent="false" source_id="27" target_id="31" base_transition_id="Update request" />
+      <arc label="Verify" is_silent="false" source_id="31" target_id="24" base_transition_id="Verify" />
+      <arc label="Make proposal" is_silent="false" source_id="25" target_id="16" base_transition_id="Make proposal" />
+      <arc label="Make proposal" is_silent="false" source_id="4" target_id="32" base_transition_id="Make proposal" />
+      <arc label="Refuse proposal" is_silent="false" source_id="32" target_id="33" base_transition_id="Refuse proposal" />
+      <arc label="AND split" is_silent="false" source_id="32" target_id="34" base_transition_id="AND split" />
+      <arc label="Inform acceptance VIP" is_silent="false" source_id="34" target_id="19" base_transition_id="Inform acceptance VIP" />
+      <arc label="Open credit loan" is_silent="false" source_id="34" target_id="35" base_transition_id="Open credit loan" />
+      <arc label="Inform acceptance VIP" is_silent="false" source_id="35" target_id="21" base_transition_id="Inform acceptance VIP" />
+      <arc label="Update request" is_silent="false" source_id="33" target_id="23" base_transition_id="Update request" />
+    </arcs>
+    <final_marking>
+      <place tokens="0">i</place>
+      <place tokens="0">p1</place>
+      <place tokens="0">p2</place>
+      <place tokens="0">p3</place>
+      <place tokens="0">p4</place>
+      <place tokens="0">p5</place>
+      <place tokens="0">p6</place>
+      <place tokens="0">p7</place>
+      <place tokens="0">p8</place>
+      <place tokens="0">p9</place>
+      <place tokens="1">o</place>
+    </final_marking>
+    <transitions>
+      <transition id="Credit request" base_transition_id="Credit request" is_tau="false" is_split="false" guard="(reqd_w &gt; 0.0)">
+        <name>
+          <text>Credit request</text>
+        </name>
+      </transition>
+      <transition id="Verify" base_transition_id="Verify" is_tau="false" is_split="false" guard="(ok_w == true) || (ok_w == false)">
+        <name>
+          <text>Verify</text>
+        </name>
+      </transition>
+      <transition id="Prepare" base_transition_id="Prepare" is_tau="false" is_split="false" guard="(ok_r == true)">
+        <name>
+          <text>Prepare</text>
+        </name>
+      </transition>
+      <transition id="Skip" base_transition_id="Skip" is_tau="false" is_split="false" guard="(ok_r == false)">
+        <name>
+          <text>Skip</text>
+        </name>
+      </transition>
+      <transition id="Make proposal" base_transition_id="Make proposal" is_tau="false" is_split="false" guard="(granted_w &lt;= reqd_r)">
+        <name>
+          <text>Make proposal</text>
+        </name>
+      </transition>
+      <transition id="Refuse proposal" base_transition_id="Refuse proposal" is_tau="false" is_split="false" guard="(granted_r != reqd_r)">
+        <name>
+          <text>Refuse proposal</text>
+        </name>
+      </transition>
+      <transition id="Update request" base_transition_id="Update request" is_tau="false" is_split="false" guard="(reqd_w &lt; reqd_r)">
+        <name>
+          <text>Update request</text>
+        </name>
+      </transition>
+      <transition id="AND split" base_transition_id="AND split" is_tau="false" is_split="false">
+        <name>
+          <text>AND split</text>
+        </name>
+      </transition>
+      <transition id="Inform acceptance VIP" base_transition_id="Inform acceptance VIP" is_tau="false" is_split="false" guard="(granted_r &gt; 10000.0)">
+        <name>
+          <text>Inform acceptance VIP</text>
+        </name>
+      </transition>
+      <transition id="Inform rejection" base_transition_id="Inform rejection" is_tau="false" is_split="false" guard="(ok_r == false)">
+        <name>
+          <text>Inform rejection</text>
+        </name>
+      </transition>
+      <transition id="Open credit loan" base_transition_id="Open credit loan" is_tau="false" is_split="false" guard="(ok_r == true)">
+        <name>
+          <text>Open credit loan</text>
+        </name>
+      </transition>
+      <transition id="AND join" base_transition_id="AND join" is_tau="false" is_split="false">
+        <name>
+          <text>AND join</text>
+        </name>
+      </transition>
+    </transitions>
+    <variables>
+      <variable type="Real">
+        <name>reqd</name>
+      </variable>
+      <variable type="Real">
+        <name>granted</name>
+      </variable>
+      <variable type="Boolean">
+        <name>ok</name>
+      </variable>
+    </variables>
+  </state_space>
+</asml>

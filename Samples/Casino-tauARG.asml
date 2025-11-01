@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<asml>
+  <state_space graph_type="AbstractReachabilityGraph" is_full="true">
+    <states>
+      <state id="36">
+        <tokens>
+          <i>1</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>(hasPass_r == false) &amp;&amp; (age_r == 0.0)</constraint>
+      </state>
+      <state id="37">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>(!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)) || (!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false))</constraint>
+      </state>
+      <state id="38">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>1</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)</constraint>
+      </state>
+      <state id="39">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>(!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)) || (!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)) &amp;&amp; (hasPass_r == true)</constraint>
+      </state>
+      <state id="40">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>1</o>
+        </tokens>
+        <constraint>(!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)) || (!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false))</constraint>
+      </state>
+      <state id="41">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)</constraint>
+      </state>
+      <state id="42">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>(!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)) || (!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)) &amp;&amp; (hasPass_r == false)</constraint>
+      </state>
+      <state id="43">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>1</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)</constraint>
+      </state>
+      <state id="44">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>1</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)</constraint>
+      </state>
+      <state id="45">
+        <tokens>
+          <i>0</i>
+          <p1>1</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true) &amp;&amp; !((age_r &lt;= 18.0))</constraint>
+      </state>
+      <state id="46">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>1</p2>
+          <p3>0</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false) &amp;&amp; (age_r &lt;= 18.0)</constraint>
+      </state>
+      <state id="47">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>0</p3>
+          <o>1</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true) &amp;&amp; !((age_r &lt;= 18.0))</constraint>
+      </state>
+      <state id="48">
+        <tokens>
+          <i>0</i>
+          <p1>0</p1>
+          <p2>0</p2>
+          <p3>1</p3>
+          <o>0</o>
+        </tokens>
+        <constraint>!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true) &amp;&amp; !((age_r &lt;= 18.0))</constraint>
+      </state>
+    </states>
+    <arcs>
+      <arc label="Enter Casino" is_silent="false" source_id="36" target_id="37" base_transition_id="t0" />
+      <arc label="Register" is_silent="false" source_id="37" target_id="38" base_transition_id="t1" />
+      <arc label="Register" is_silent="true" source_id="37" target_id="39" base_transition_id="t1" />
+      <arc label="Quit" is_silent="false" source_id="37" target_id="40" base_transition_id="t2" />
+      <arc label="Enter Gambling Room" is_silent="false" source_id="37" target_id="41" base_transition_id="t3" />
+      <arc label="Enter Gambling Room" is_silent="true" source_id="37" target_id="42" base_transition_id="t3" />
+      <arc label="Register" is_silent="false" source_id="42" target_id="38" base_transition_id="t1" />
+      <arc label="Quit" is_silent="false" source_id="42" target_id="43" base_transition_id="t2" />
+      <arc label="Gamble" is_silent="false" source_id="41" target_id="39" base_transition_id="t5" />
+      <arc label="Quit" is_silent="false" source_id="39" target_id="44" base_transition_id="t2" />
+      <arc label="Enter Gambling Room" is_silent="false" source_id="39" target_id="41" base_transition_id="t3" />
+      <arc label="Receive Pass" is_silent="false" source_id="38" target_id="45" base_transition_id="t4" />
+      <arc label="Receive Pass" is_silent="true" source_id="38" target_id="46" base_transition_id="t4" />
+      <arc label="Quit" is_silent="false" source_id="45" target_id="47" base_transition_id="t2" />
+      <arc label="Enter Gambling Room" is_silent="false" source_id="45" target_id="48" base_transition_id="t3" />
+      <arc label="Gamble" is_silent="false" source_id="48" target_id="45" base_transition_id="t5" />
+    </arcs>
+    <final_marking>
+      <place tokens="0">i</place>
+      <place tokens="0">p1</place>
+      <place tokens="0">p2</place>
+      <place tokens="0">p3</place>
+      <place tokens="1">o</place>
+    </final_marking>
+    <transitions>
+      <transition id="t0" base_transition_id="t0" is_tau="false" is_split="false" guard="((age_w &gt; 0.0) &amp;&amp; (hasPass_w == true)) || ((age_w &gt; 0.0) &amp;&amp; (hasPass_w == false))">
+        <name>
+          <text>Enter Casino</text>
+        </name>
+      </transition>
+      <transition id="t1" base_transition_id="t1" is_tau="false" is_split="false" guard="(hasPass_r == false)">
+        <name>
+          <text>Register</text>
+        </name>
+      </transition>
+      <transition id="t2" base_transition_id="t2" is_tau="false" is_split="false">
+        <name>
+          <text>Quit</text>
+        </name>
+      </transition>
+      <transition id="t3" base_transition_id="t3" is_tau="false" is_split="false" guard="(hasPass_r == true)">
+        <name>
+          <text>Enter Gambling Room</text>
+        </name>
+      </transition>
+      <transition id="t4" base_transition_id="t4" is_tau="false" is_split="false" guard="(hasPass_w == true) &amp;&amp; (age_r &gt; 18.0)">
+        <name>
+          <text>Receive Pass</text>
+        </name>
+      </transition>
+      <transition id="t5" base_transition_id="t5" is_tau="false" is_split="false">
+        <name>
+          <text>Gamble</text>
+        </name>
+      </transition>
+      <transition id="τ(Register)" base_transition_id="t1" is_tau="true" is_split="true" guard="(hasPass_r != false)">
+        <name>
+          <text>τ(Register)</text>
+        </name>
+      </transition>
+      <transition id="τ(Enter Gambling Room)" base_transition_id="t3" is_tau="true" is_split="true" guard="(hasPass_r != true)">
+        <name>
+          <text>τ(Enter Gambling Room)</text>
+        </name>
+      </transition>
+      <transition id="τ(Receive Pass)" base_transition_id="t4" is_tau="true" is_split="true" guard="(age_r &lt;= 18.0)">
+        <name>
+          <text>τ(Receive Pass)</text>
+        </name>
+      </transition>
+    </transitions>
+    <variables>
+      <variable type="Real">
+        <name>age</name>
+      </variable>
+      <variable type="Boolean">
+        <name>hasPass</name>
+      </variable>
+    </variables>
+  </state_space>
+</asml>
