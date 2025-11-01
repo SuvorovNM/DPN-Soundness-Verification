@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Pipes;
 using System.Runtime.Serialization;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
@@ -219,11 +220,10 @@ namespace DataPetriNetVerificationApplication
 
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDoc = new XmlDocument();
-			xDoc.Load(dpnFilePath);
+			var xDocument = XDocument.Load(dpnFilePath);
 
-			var parser = new PnmlParser();
-			var dpn = parser.Deserialize(xDoc);
+			var parser = new PnmlxParser();
+			var dpn = parser.Deserialize(xDocument);
 			//dpn.Context = context;
 			return dpn;
 		}

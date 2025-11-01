@@ -238,8 +238,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			.ToList()
 			.ForEach(x => stateDictionary[x] |= StateType.Deadlock);
 	}
-
-	// Доработать
+	
 	private static void DefineStatesWithNoWayToFinals(
 		CoverabilityGraph cg,
 		Dictionary<AbstractState, StateType> stateDictionary,

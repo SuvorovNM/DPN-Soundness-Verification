@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
       <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
-      <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
     </ItemGroup>
 
 </Project>

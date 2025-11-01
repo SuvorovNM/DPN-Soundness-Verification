@@ -22,9 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\DPN.Generation\DPN.Generation.csproj" />
     <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
+    <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
     <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
     <ProjectReference Include="..\DPN.Visualization\DPN.Visualization.csproj" />
-    <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
   </ItemGroup>
 
 </Project>

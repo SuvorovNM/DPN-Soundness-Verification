@@ -123,7 +123,6 @@ public static class ClassicalSoundnessAnalyzer
 				.ForEach(x => stateDictionary[x] |= StateType.Deadlock);
 		}
 
-		// Доработать
 		void DefineStatesWithNoWayToFinals(Dictionary<AbstractState, StateType> stateDictionary,
 			IEnumerable<LtsState> finalStates)
 
@@ -134,7 +133,7 @@ public static class ClassicalSoundnessAnalyzer
 				.GroupBy(x => x.TargetState)
 				.ToDictionary(x => x.Key, y => y.Select(x => x.SourceState).ToList());
 
-			do //check for covered
+			do
 			{
 				var nextStates = intermediateStates
 					.Where(x => stateIncidenceDict.ContainsKey(x))
@@ -153,7 +152,6 @@ public static class ClassicalSoundnessAnalyzer
 
 		static void DefineUncleanFinals(Dictionary<string, int> finalMarking, Dictionary<AbstractState, StateType> stateDictionary)
 		{
-			// TODO: refactor
 			var uncleanFinals = stateDictionary.Keys
 				.Where(x => x.Marking.AsDictionary().All(y => y.Value >= finalMarking[y.Key]) &&
 				            x.Marking.AsDictionary().Any(y => y.Value > finalMarking[y.Key]))
@@ -196,7 +194,7 @@ public static class ClassicalSoundnessAnalyzer
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= StateType.Initial;
-		
+
 		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
 		var finalStates = stateSpaceGraph.Nodes
@@ -249,7 +247,7 @@ public static class ClassicalSoundnessAnalyzer
 				.ToHashSet();
 			statesLeadingToFinals.AddRange(intermediateStates);
 		} while (intermediateStates.Count > 0);
-		
+
 		stateDictionary.Keys
 			.Except(statesLeadingToFinals)
 			.ToList()

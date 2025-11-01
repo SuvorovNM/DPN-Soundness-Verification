@@ -33,7 +33,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 		const string OutputDirectoryParameterName = "OutputDirectory";
 
 		private readonly DPNGenerator dpnGenerator = new(new Context());
-		private readonly PnmlParser parser = new();
+		private readonly PnmlxParser parser = new();
 
 		public async Task RunRandomVerificationLoop(
 			VerificationInputForRandom verificationInput,

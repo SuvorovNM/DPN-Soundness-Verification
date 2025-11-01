@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +16,7 @@ using DPN.Soundness;
 using DPN.Soundness.Repair;
 using DPN.Soundness.Transformations;
 using DPN.Soundness.TransitionSystems;
+using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.Verification;
 using DPN.VerificationApp.Services;
 using DPN.Visualization.Converters;
@@ -29,7 +32,7 @@ namespace DPN.VerificationApp
 	{
 		private DataPetriNet currentDisplayedNet;
 		private readonly IDpnToGraphConverter dpnConverter;
-		private readonly PnmlParser pnmlParser;
+		private readonly PnmlxParser pnmlxParser;
 		private readonly SampleDPNProvider dpnProvider;
 		private readonly TransformerToRefined transformerToRefined;
 		private readonly TransformerToTau transformerToTau;
@@ -49,7 +52,7 @@ namespace DPN.VerificationApp
 			relaxedLazySoundnessVerifier = new RelaxedLazySoundnessVerifier();
 			classicalSoundnessVerifier = new ClassicalSoundnessVerifier();
 			classicalSoundnessRepairer = new ClassicalSoundnessRepairer();
-			pnmlParser = new PnmlParser();
+			pnmlxParser = new PnmlxParser();
 			context = new Context();
 			Global.SetParameter("parallel.enable", "true");
 
@@ -104,10 +107,9 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				XmlDocument xDoc = new XmlDocument();
-				xDoc.Load(ofd.FileName);
+				var xDocument = XDocument.Load(ofd.FileName);
 
-				currentDisplayedNet = pnmlParser.Deserialize(xDoc);
+				currentDisplayedNet = pnmlxParser.Deserialize(xDocument);
 
 				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			}
@@ -242,13 +244,25 @@ namespace DPN.VerificationApp
 				var asmlParser = new AsmlParser();
 				var xDocument = XDocument.Load(fs);
 
-				var stateSpace = asmlParser.Deserialize(xDocument);
+				StateSpaceGraph stateSpace;
+				try
+				{
+					stateSpace = asmlParser.Deserialize(xDocument);
+				}
+				catch (SerializationException ex)
+				{
+					MessageBox.Show(ex.Message);
+					return;
+				}
+
 				var soundnessProperties = stateSpace.StateSpaceType == TransitionSystemType.AbstractReachabilityGraph
 					? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
 					: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true);
-				constraintGraphWindow.Owner = this;
+				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true)
+				{
+					Owner = this
+				};
 				constraintGraphWindow.Show();
 			}
 		}
@@ -274,7 +288,7 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = pnmlParser.Serialize(currentDisplayedNet);
+				var xDocument = pnmlxParser.Serialize(currentDisplayedNet);
 				xDocument.Save(ofd.FileName);
 			}
 		}

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+  <!-- Root elements for different file types -->
+  <xs:element name="asml" type="StateSpaceDocument"/>
+
+  <!-- Main document type -->
+  <xs:complexType name="StateSpaceDocument">
+    <xs:sequence>
+      <xs:element name="state_space" type="StateSpaceType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- State Space definition -->
+  <xs:complexType name="StateSpaceType">
+    <xs:sequence>
+      <xs:element name="states" type="StatesType"/>
+      <xs:element name="arcs" type="ArcsType"/>
+      <xs:element name="final_marking" type="FinalMarkingType"/>
+      <xs:element name="transitions" type="TransitionsType"/>
+      <xs:element name="variables" type="VariablesType"/>
+    </xs:sequence>
+    <xs:attribute name="graph_type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="AbstractReachabilityGraph"/>
+          <xs:enumeration value="AbstractCoverabilityGraph"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="is_full" type="xs:boolean" use="required"/>
+  </xs:complexType>
+
+  <!-- States collection -->
+  <xs:complexType name="StatesType">
+    <xs:sequence>
+      <xs:element name="state" type="StateType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual state -->
+  <xs:complexType name="StateType">
+    <xs:sequence>
+      <xs:element name="tokens" type="TokensType"/>
+      <xs:element name="constraint" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:integer" use="required"/>
+  </xs:complexType>
+
+  <!-- Tokens - dynamic elements representing places -->
+  <xs:complexType name="TokensType">
+    <xs:sequence>
+      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Arcs collection -->
+  <xs:complexType name="ArcsType">
+    <xs:sequence>
+      <xs:element name="arc" type="ArcType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual arc -->
+  <xs:complexType name="ArcType">
+    <xs:attribute name="label" type="xs:string" use="required"/>
+    <xs:attribute name="is_silent" type="xs:boolean" use="required"/>
+    <xs:attribute name="source_id" type="xs:integer" use="required"/>
+    <xs:attribute name="target_id" type="xs:integer" use="required"/>
+    <xs:attribute name="base_transition_id" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- Final marking -->
+  <xs:complexType name="FinalMarkingType">
+    <xs:sequence>
+      <xs:element name="place" type="PlaceType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Place in final marking -->
+  <xs:complexType name="PlaceType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="tokens" type="xs:integer" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- Transitions collection -->
+  <xs:complexType name="TransitionsType">
+    <xs:sequence>
+      <xs:element name="transition" type="TransitionType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual transition -->
+  <xs:complexType name="TransitionType">
+    <xs:sequence>
+      <xs:element name="name">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="text" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:string" use="required"/>
+    <xs:attribute name="base_transition_id" type="xs:string" use="required"/>
+    <xs:attribute name="is_tau" type="xs:boolean" use="required"/>
+    <xs:attribute name="is_split" type="xs:boolean" use="required"/>
+    <xs:attribute name="guard" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <!-- Variables collection -->
+  <xs:complexType name="VariablesType">
+    <xs:sequence>
+      <xs:element name="variable" type="VariableType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual variable -->
+  <xs:complexType name="VariableType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Real"/>
+          <xs:enumeration value="Boolean"/>
+          <xs:enumeration value="Integer"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+</xs:schema>

@@ -11,7 +11,7 @@ namespace DPN.Models.Extensions
                 ? "_w"
                 : "_r";
 
-            // Not sure what would be faster - go through string(2) or through the leafs(1)
+            // Not sure what would be faster - go through string(2) or through the leaves(1)
             Stack<Expr> expressionsToConsider = new Stack<Expr>();
             expressionsToConsider.Push(expression);
 

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutomaticGraphLayout" Version="1.1.12" />
+    <PackageReference Include="AutomaticGraphLayout.Drawing" Version="1.1.12" />
+    <PackageReference Include="Microsoft.Z3" Version="4.12.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
+    <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="XsdSchemas\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="XsdSchemas\pnmlx.xsd" />
+    <EmbeddedResource Include="XsdSchemas\pnmlx.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="XsdSchemas\asml.xsd" />
+    <EmbeddedResource Include="XsdSchemas\asml.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

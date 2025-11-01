@@ -17,7 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
     <ProjectReference Include="..\DPN.Experiments.Common\DPN.Experiments.Common.csproj" />
-    <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
+    <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPN.Generation", "DPN.Gener
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPN.Experiments.IterativeVerificationApp", "DPN.Experiments.IterativeVerificationApp\DPN.Experiments.IterativeVerificationApp.csproj", "{F1A65E68-B269-4CD6-B1E5-A7513F6847DE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPN.Parsers", "ToGraphParser\DPN.Parsers.csproj", "{3405D568-157D-47B7-B592-F3D59AE1EB6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPN.Parsers", "DPN.Parsers\DPN.Parsers.csproj", "{3405D568-157D-47B7-B592-F3D59AE1EB6A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DPN.Experiments.VerificationApp", "DPN.Experiments.VerificationApp\DPN.Experiments.VerificationApp.csproj", "{5C7B2000-3119-4A16-811D-433FAED64C0A}"
 EndProject

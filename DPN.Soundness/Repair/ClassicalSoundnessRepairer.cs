@@ -149,7 +149,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 					.Contains(p.Id));
 		}
 
-		// Одно из возможных улучшений - построение дерева изменений перехода и мерж с учетом данных из дерева, а не только корня
+		// One of the possible improvements is to build a tree of transition splits and merge changes taking into account the data from the tree, and not just the root
 		static void MergeTransitions(DataPetriNet dpnToConsider, Dictionary<string, Transition> transitionsDict)
 		{
 			var baseTransitions = dpnToConsider.Transitions
@@ -306,8 +306,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 						// For each inverted (simple) path from parent, find ordinary t, add constraint to this t
 						// Take nearest ordinary (non-silent) transition
 						// The case when no such transition exists (tau from initial state) cannot exist
-
-						//TODO: here error on dict (to repair dig transfer)
 						UpdateUpperTransitionsRecursively(
 							nodeGroup.Key,
 							childNode.Constraints!,
@@ -319,8 +317,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 					}
 					else
 					{
-						// It is ok
-
 						var transitionToUpdate = transitionsDict[arcBetweenNodes.Id];
 						var formulaToConjunct = sourceDpn.Context.MkNot(childNode.Constraints);
 

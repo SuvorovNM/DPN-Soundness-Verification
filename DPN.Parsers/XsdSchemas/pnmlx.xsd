@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <!-- Root element -->
+    <xs:element name="pnml">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="net" type="netType" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Net type -->
+    <xs:complexType name="netType">
+        <xs:sequence>
+            <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="page" type="pageType" maxOccurs="unbounded"/>
+            <xs:element name="variables" type="variablesType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="type" type="xs:anyURI" use="required"/>
+    </xs:complexType>
+
+    <!-- Page type -->
+    <xs:complexType name="pageType">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="place" type="placeType"/>
+                <xs:element name="transition" type="transitionType"/>
+                <xs:element name="arc" type="arcType"/>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+    <!-- Place type with updated marking syntax -->
+    <xs:complexType name="placeType">
+        <xs:sequence>
+            <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="initialMarking" type="markingType" minOccurs="0"/>
+            <xs:element name="finalMarking" type="markingType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+    <!-- Marking type with tokens attribute -->
+    <xs:complexType name="markingType">
+        <xs:attribute name="tokens" type="xs:nonNegativeInteger" use="required"/>
+    </xs:complexType>
+
+    <!-- Transition type -->
+    <xs:complexType name="transitionType">
+        <xs:sequence>
+            <xs:element name="name" type="nameType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="guard" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <!-- Arc type -->
+    <xs:complexType name="arcType">
+        <xs:sequence>
+            <xs:element name="name" type="nameType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="source" type="xs:IDREF" use="required"/>
+        <xs:attribute name="target" type="xs:IDREF" use="required"/>
+    </xs:complexType>
+
+    <!-- Variables type -->
+    <xs:complexType name="variablesType">
+        <xs:sequence>
+            <xs:element name="variable" type="variableType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Variable type with enum restriction -->
+    <xs:complexType name="variableType">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="type" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="Real"/>
+                    <xs:enumeration value="Integer"/>
+                    <xs:enumeration value="Boolean"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Name type (used for labels) -->
+    <xs:complexType name="nameType">
+        <xs:sequence>
+            <xs:element name="text" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

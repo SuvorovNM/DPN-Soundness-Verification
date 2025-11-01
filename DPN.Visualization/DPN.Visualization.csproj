@@ -12,7 +12,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
-      <ProjectReference Include="..\ToGraphParser\DPN.Parsers.csproj" />
+      <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using System.Xml;
+using System.Xml.Linq;
 using DPN.Models;
 using DPN.Models.Enums;
 using DPN.Parsers;
@@ -252,11 +253,10 @@ namespace DPN.VerificationConsoleApp
 
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDoc = new XmlDocument();
-			xDoc.Load(dpnFilePath);
+			var xDocument = XDocument.Load(dpnFilePath);
 
-			var parser = new PnmlParser();
-			return parser.Deserialize(xDoc);
+			var parser = new PnmlxParser();
+			return parser.Deserialize(xDocument);
 		}
 
 		private static Dictionary<string, string> ParseKeyValueParameters(Dictionary<string, string> parameters, string parameterName)
@@ -287,9 +287,9 @@ namespace DPN.VerificationConsoleApp
 		{
 			Directory.CreateDirectory(outputDirectory);
 			
-			var stateSpacePath = Path.Combine(outputDirectory, $"{dataPetriNet.Name}-repaired.xml");
+			var stateSpacePath = Path.Combine(outputDirectory, $"{dataPetriNet.Name}-repaired.pnmlx");
 
-			var pnmlParser = new PnmlParser();
+			var pnmlParser = new PnmlxParser();
 			pnmlParser.Serialize(dataPetriNet).Save(stateSpacePath);
 			Console.WriteLine($"Repaired DPN saved to {stateSpacePath}");
 		}

@@ -273,9 +273,8 @@ namespace DataPetriNetIterativeVerificationApplication
             {
                 using (var fs = new FileStream(paths[item.Number] + ".pnmlx", FileMode.Open))
                 {
-                    var pnmlParser = new PnmlParser();
-                    var xDocument = new XmlDocument();
-                    xDocument.Load(fs);
+                    var pnmlParser = new PnmlxParser();
+                    var xDocument = XDocument.Load(fs);
 
                     var dataPetriNet = pnmlParser.Deserialize(xDocument);
 
