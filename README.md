@@ -120,42 +120,42 @@ Allows to generate a random DPN according to the predefined parameters (`Generat
 ### Sample Applications
 
 A DPN with a livelock that occurs when $t_1$ sets $a \ge 3$ and $t_3$ fires at least once:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/livelockDPN.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/livelockDPN.png?raw=true)</kbd>
 
 Result of its soundness verification:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/livelockDPN-Verification.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/livelockDPN-Verification.png?raw=true)</kbd>
 
 Result of its soundness repair:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/livelockDPN-RepairResult.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/livelockDPN-RepairResult.png?raw=true)</kbd>
 
 -----
 
 A DPN with a deadlock if $Register$ fires when $age <= 18$:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/CasinoDPN.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CasinoDPN.png?raw=true)</kbd>
 
 Result of its soundness verification:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/CasinoDPN-Verification.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CasinoDPN-Verification.png?raw=true)</kbd>
 
 Result of its soundness repair:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/CasinoDPN-RepairResult.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/CasinoDPN-RepairResult.png?raw=true)</kbd>
 
 -----
 
 A sound DPN from an event log:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/SepsisDPN.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/SepsisDPN.png?raw=true)</kbd>
 
 Result of its soundness verification:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/SepsisDPN-Verification.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/SepsisDPN-Verification.png?raw=true)</kbd>
 
 Since the graph is too large for visualization, the tool proposes a user to export it. Information regarding soundness is still presented.
 
 -----
 
 A relaxed-lazy sound DPN representing gambling:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/GamblingDPN.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/GamblingDPN.png?raw=true)</kbd>
 
 Result of its relaxed-lazy soundness verification:
-<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/feature/interoperability/img/GamblingDPN-Verification.png?raw=true)</kbd>
+<kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/GamblingDPN-Verification.png?raw=true)</kbd>
 
 The model has a deadlock, but relaxed lazy soundness allows models to have deadlocks. The tool still highlights them, if they are detected, to illustrate potential errors.
 
