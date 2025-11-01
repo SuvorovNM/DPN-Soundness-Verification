@@ -111,12 +111,6 @@ If a model is classically unsound, it can be automatically repaired (`Repair` $\
 
 Allows to generate a random DPN according to the predefined parameters (`Generate new model...`) and transform a currently displayed DPN to the tau DPN and tau-refined DPN.
 
-### Usage [Repair]
-
-1. Import a DPN choosing File -> Open DPN...
-2. Choose Model -> Transform Model -> Transform Model to Repaired.
-3. When the repair is done and result is SUCCESS, the resultant DPN is returned. If result is FAILURE, the message box that notifies about the failure appears.
-
 ### Sample Applications
 
 A DPN with a livelock that occurs when $t_1$ sets $a \ge 3$ and $t_3$ fires at least once:
