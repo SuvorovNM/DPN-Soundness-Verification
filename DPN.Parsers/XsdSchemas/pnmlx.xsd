@@ -15,6 +15,7 @@
     <xs:complexType name="netType">
         <xs:sequence>
             <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="source" type="nameType" minOccurs="0"/>
             <xs:element name="page" type="pageType" maxOccurs="unbounded"/>
             <xs:element name="variables" type="variablesType" minOccurs="0"/>
         </xs:sequence>
@@ -25,21 +26,12 @@
     <!-- Page type -->
     <xs:complexType name="pageType">
         <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element name="place" type="placeType"/>
-                <xs:element name="transition" type="transitionType"/>
-                <xs:element name="arc" type="arcType"/>
-            </xs:choice>
-        </xs:sequence>
-        <xs:attribute name="id" type="xs:ID" use="required"/>
-    </xs:complexType>
-
-    <!-- Place type with updated marking syntax -->
-    <xs:complexType name="placeType">
-        <xs:sequence>
             <xs:element name="name" type="nameType" minOccurs="0"/>
-            <xs:element name="initialMarking" type="markingType" minOccurs="0"/>
-            <xs:element name="finalMarking" type="markingType" minOccurs="0"/>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="place" type="dpnPlaceType"/>
+                <xs:element name="transition" type="dpnTransitionType"/>
+                <xs:element name="arc" type="dpnArcType"/>
+            </xs:choice>
         </xs:sequence>
         <xs:attribute name="id" type="xs:ID" use="required"/>
     </xs:complexType>
@@ -49,23 +41,56 @@
         <xs:attribute name="tokens" type="xs:nonNegativeInteger" use="required"/>
     </xs:complexType>
 
-    <!-- Transition type -->
-    <xs:complexType name="transitionType">
+    <!-- Place type with updated marking syntax -->
+    <xs:complexType name="dpnPlaceType">
         <xs:sequence>
             <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="toolspecific" type="ToolSpecificType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="graphics" type="GraphicsType" minOccurs="0"/>
+            <xs:element name="initialMarking" type="markingType" minOccurs="0"/>
+            <xs:element name="finalMarking" type="markingType" minOccurs="0"/>            
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>   
+
+    <!-- Transition type -->
+    <xs:complexType name="dpnTransitionType">
+        <xs:sequence>
+            <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="toolspecific" type="ToolSpecificType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="graphics" type="GraphicsType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="id" type="xs:ID" use="required"/>
         <xs:attribute name="guard" type="xs:string" use="optional"/>
+        <xs:attribute name="invisible" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <!-- Arc type -->
-    <xs:complexType name="arcType">
+    <xs:complexType name="dpnArcType">
         <xs:sequence>
             <xs:element name="name" type="nameType" minOccurs="0"/>
+            <xs:element name="toolspecific" type="ToolSpecificType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="graphics" type="GraphicsType" minOccurs="0"/>
+            <xs:element name="arctype" type="nameType" minOccurs="0"/>            
         </xs:sequence>
-        <xs:attribute name="id" type="xs:ID" use="required"/>
+        <xs:attribute name="id" type="xs:string" use="required"/>
         <xs:attribute name="source" type="xs:IDREF" use="required"/>
         <xs:attribute name="target" type="xs:IDREF" use="required"/>
+    </xs:complexType>
+
+    <!-- Graphics type (for visual representation - currently empty) -->
+    <xs:complexType name="GraphicsType">
+        <xs:sequence>
+            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Allow any content for tool-specific extensions -->
+    <xs:complexType name="ToolSpecificType">
+        <xs:sequence>
+            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:anyAttribute processContents="lax"/>
     </xs:complexType>
 
     <!-- Variables type -->

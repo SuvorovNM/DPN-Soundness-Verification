@@ -25,6 +25,7 @@
         <xs:restriction base="xs:string">
           <xs:enumeration value="AbstractReachabilityGraph"/>
           <xs:enumeration value="AbstractCoverabilityGraph"/>
+          <xs:enumeration value="AbstractCoverabilityTree"/>
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>

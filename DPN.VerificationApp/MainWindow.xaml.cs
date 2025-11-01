@@ -109,8 +109,16 @@ namespace DPN.VerificationApp
 			{
 				var xDocument = XDocument.Load(ofd.FileName);
 
-				currentDisplayedNet = pnmlxParser.Deserialize(xDocument);
-
+				try
+				{
+					currentDisplayedNet = pnmlxParser.Deserialize(xDocument);
+				}
+				catch (SerializationException exception)
+				{
+					MessageBox.Show(exception.Message);
+					return;
+				}
+				
 				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			}
 		}
@@ -249,9 +257,9 @@ namespace DPN.VerificationApp
 				{
 					stateSpace = asmlParser.Deserialize(xDocument);
 				}
-				catch (SerializationException ex)
+				catch (SerializationException exception)
 				{
-					MessageBox.Show(ex.Message);
+					MessageBox.Show(exception.Message);
 					return;
 				}
 

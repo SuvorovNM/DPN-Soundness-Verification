@@ -13,13 +13,6 @@ public class XsdValidator
 		schemaSet.Compile();
 	}
 
-	public XsdValidator(XmlSchema schema)
-	{
-		schemaSet = new XmlSchemaSet();
-		schemaSet.Add(schema);
-		schemaSet.Compile();
-	}
-
 	public ValidationResult Validate(XDocument document)
 	{
 		var errors = new List<ValidationError>();

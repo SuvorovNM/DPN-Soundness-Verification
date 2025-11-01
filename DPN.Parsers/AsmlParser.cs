@@ -9,7 +9,7 @@ namespace DPN.Parsers
 {
 	public class AsmlParser
 	{
-		private const string xsdSchema = "asml.xsd";
+		private const string xsdSchema = "XsdSchemas\\asml.xsd";
 
 		private const string rootElementName = "asml";
 		private const string stateSpaceElementName = "state_space";
@@ -256,7 +256,7 @@ namespace DPN.Parsers
 				transitionsElement,
 				variablesElement);
 			cgElement.SetAttributeValue(graphTypeAttributeName, stateSpace.StateSpaceType.ToString());
-			cgElement.SetAttributeValue(isFullAttributeName, stateSpace.IsFullGraph.ToString());
+			cgElement.SetAttributeValue(isFullAttributeName, stateSpace.IsFullGraph.ToString().ToLowerInvariant());
 
 			var srcTree = new XElement(rootElementName, cgElement);
 
