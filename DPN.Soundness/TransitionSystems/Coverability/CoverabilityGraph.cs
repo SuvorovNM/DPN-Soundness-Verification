@@ -10,6 +10,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability;
 
 internal class CoverabilityGraph : LabeledTransitionSystem
 {
+	private bool ContinueBranchIfUnboundedPlaceFound { get; }
     private bool StopOnCoveringFinalPosition { get; }
     private bool TryReachAllOmegas { get; }
     private bool WithTauTransitions { get; }
@@ -17,11 +18,13 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 
     public CoverabilityGraph(
 	    DataPetriNet dataPetriNet, 
+	    bool continueBranchIfUnboundedPlaceFound,
 	    bool stopOnCoveringFinalPosition = false, 
 	    bool tryReachAllOmegas = true,
 	    bool withTauTransitions = false)
         : base(dataPetriNet)
     {
+	    ContinueBranchIfUnboundedPlaceFound =  continueBranchIfUnboundedPlaceFound;
         StopOnCoveringFinalPosition = stopOnCoveringFinalPosition;
         TryReachAllOmegas = tryReachAllOmegas;
         WithTauTransitions = withTauTransitions;
@@ -44,7 +47,7 @@ internal class CoverabilityGraph : LabeledTransitionSystem
         while (StatesToConsider.Count > 0)
         {
             var currentState = StatesToConsider.Pop();
-            if (currentState.Marking.AsDictionary().Any(placeTokens => placeTokens.Value == int.MaxValue))
+            if (!ContinueBranchIfUnboundedPlaceFound && currentState.Marking.AsDictionary().Any(placeTokens => placeTokens.Value == int.MaxValue))
             {
 	            continue;
             }

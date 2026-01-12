@@ -60,7 +60,7 @@ namespace DPN.VerificationApp
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 		}
-		
+
 		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
 		{
 			this.WindowState = WindowState.Minimized;
@@ -118,7 +118,7 @@ namespace DPN.VerificationApp
 					MessageBox.Show(exception.Message);
 					return;
 				}
-				
+
 				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			}
 		}
@@ -152,7 +152,7 @@ namespace DPN.VerificationApp
 		private async void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Constructing Coverability Graph");
-			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, false));
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, true, false));
 			HideLoader();
 
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);

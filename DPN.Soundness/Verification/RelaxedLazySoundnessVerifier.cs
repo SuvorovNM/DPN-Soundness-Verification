@@ -34,7 +34,7 @@ public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 
 		if (baseStructure is RelaxedLazyVerificationSettingsConstants.CoverabilityGraph or null)
 		{
-			var cg = new CoverabilityGraph(dpn, stopOnCoveringFinalPosition);
+			var cg = new CoverabilityGraph(dpn, continueBranchIfUnboundedPlaceFound: true, stopOnCoveringFinalPosition: stopOnCoveringFinalPosition);
 			cg.GenerateGraph();
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
 

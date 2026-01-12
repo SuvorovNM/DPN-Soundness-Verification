@@ -29,7 +29,7 @@ namespace DPN.Soundness.Transformations
 			LabeledTransitionSystem sourceLts;
 			if (baseStructure is null or RefinementSettingsConstants.CoverabilityGraph)
 			{
-				sourceLts = new CoverabilityGraph(transformedDpn);
+				sourceLts = new CoverabilityGraph(transformedDpn, continueBranchIfUnboundedPlaceFound: false);
 			}
 			else if (baseStructure == RefinementSettingsConstants.FiniteReachabilityGraph)
 			{
@@ -48,142 +48,129 @@ namespace DPN.Soundness.Transformations
 		}
 
 
-		private void Refine(
-			DataPetriNet sourceDpn,
-			List<LtsCycle> cycles,
-			LtsArc[] allArcs)
+		private static void Refine(DataPetriNet sourceDpn, List<LtsCycle> cycles, LtsArc[] allArcs)
 		{
-			var arcToStates = allArcs
-				.GroupBy(a => a.SourceState)
-				.ToDictionary(a => a.Key, a => a.ToArray());
-
-			var baseToRefinedTransitions = sourceDpn
-				.Transitions
-				.GroupBy(t => t.BaseTransitionId)
-				.ToDictionary(t => t.Key, t => t.ToArray());
-
-			var initialRefinedTransitionNumber = sourceDpn.Transitions.Count;
-
-			var refinedTransitions = new List<Transition>(sourceDpn.Transitions.Count * sourceDpn.Transitions.Count);
-
-			var context = sourceDpn.Context;
-
-			foreach (var sourceTransition in sourceDpn.Transitions)
+			while (true)
 			{
-				if (sourceTransition.IsTau)
+				var arcToStates = allArcs.GroupBy(a => a.SourceState)
+					.ToDictionary(a => a.Key, a => a.ToArray());
+
+				var baseToRefinedTransitions = sourceDpn.Transitions.GroupBy(t => t.BaseTransitionId)
+					.ToDictionary(t => t.Key, t => t.ToArray());
+
+				var initialRefinedTransitionNumber = sourceDpn.Transitions.Count;
+
+				var refinedTransitions = new List<Transition>(sourceDpn.Transitions.Count * sourceDpn.Transitions.Count);
+
+				var context = sourceDpn.Context;
+
+				foreach (var sourceTransition in sourceDpn.Transitions)
 				{
-					refinedTransitions.Add(sourceTransition);
-				}
-
-				var writeVarsInSourceTransition = sourceTransition.Guard.WriteVars;
-				if (writeVarsInSourceTransition.Count > 0)
-				{
-					var writeVarsNames = writeVarsInSourceTransition.Select(wv => wv.Key).ToHashSet();
-
-					var cyclesWithTransition = cycles
-						.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.BaseTransitionId))
-						.ToArray();
-
-					// Если имеем, что из конечной позиции не может быть выхода, то можно сделать определять переходы к разделению как:
-					// SelectMany(c => c.OutputArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
-					//		.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
-					// Но в общем случае это неверно. Также можем упустить лайвлоки внутри маленьких циклов
-					var transitionsToInvestigate = cyclesWithTransition
-						.SelectMany(c => c.CycleArcsWithAdjacent
-							.Where(a => arcToStates[a.SourceState].Length > 1) // Очень дешевая эвристика, которая отработает в большой части случаев
-							.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
-							.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
-						.Distinct()
-						.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsNames).Any())
-						.ToArray();
-
-					var transitionsToRefine = new List<Transition> { sourceTransition };
-					var transitionToRefineWriteVars = sourceTransition.Guard.WriteVars;
-
-					foreach (var cycleTransition in transitionsToInvestigate)
+					if (sourceTransition.IsTau)
 					{
-						var cycleTransitionWriteVars = cycleTransition.Guard.WriteVars;
-						var inputCondition = context.GetExistsExpression(cycleTransition.Guard.ActualConstraintExpression, cycleTransitionWriteVars);
-						if (inputCondition is not { IsTrue: false, IsFalse: false })
+						refinedTransitions.Add(sourceTransition);
+					}
+
+					var writeVarsInSourceTransition = sourceTransition.Guard.WriteVars;
+					if (writeVarsInSourceTransition.Count > 0)
+					{
+						var writeVarsNames = writeVarsInSourceTransition.Select(wv => wv.Key).ToHashSet();
+
+						var cyclesWithTransition = cycles.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.BaseTransitionId))
+							.ToArray();
+
+						// Если имеем, что из конечной позиции не может быть выхода, то можно сделать определять переходы к разделению как:
+						// SelectMany(c => c.OutputArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
+						//		.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
+						// Но в общем случае это неверно. Также можем упустить лайвлоки внутри маленьких циклов
+						var transitionsToInvestigate = cyclesWithTransition.SelectMany(c => c.CycleArcsWithAdjacent.Where(a => arcToStates[a.SourceState].Length > 1) // Очень дешевая эвристика, которая отработает в большой части случаев
+								.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
+								.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
+							.Distinct()
+							.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsNames).Any())
+							.ToArray();
+
+						var transitionsToRefine = new List<Transition> { sourceTransition };
+						var transitionToRefineWriteVars = sourceTransition.Guard.WriteVars;
+
+						foreach (var cycleTransition in transitionsToInvestigate)
 						{
-							continue;
-						}
-
-						foreach (var overwrittenVar in transitionToRefineWriteVars)
-						{
-							var readVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
-							var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
-
-							inputCondition = (BoolExpr)inputCondition.Substitute(readVar, writeVar);
-						}
-
-						var updatedTransitions = new List<Transition>();
-
-						foreach (var transitionToRefine in transitionsToRefine)
-						{
-							var positiveCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, inputCondition);
-							if (context.AreEqual(transitionToRefine.Guard.ActualConstraintExpression, positiveCondition) || !context.CanBeSatisfied(positiveCondition))
+							var cycleTransitionWriteVars = cycleTransition.Guard.WriteVars;
+							var inputCondition = context.GetExistsExpression(cycleTransition.Guard.ActualConstraintExpression, cycleTransitionWriteVars);
+							if (inputCondition is not { IsTrue: false, IsFalse: false })
 							{
 								continue;
 							}
 
-							var negativeCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, context.MkNot(inputCondition));
+							foreach (var overwrittenVar in transitionToRefineWriteVars)
+							{
+								var readVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Read);
+								var writeVar = context.GenerateExpression(overwrittenVar.Key, overwrittenVar.Value, VariableType.Written);
 
-							var positiveTransition = new Transition(
-								transitionToRefine.Id + "+[" + cycleTransition.Id + "]",
-								Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition)),
-								transitionToRefine.BaseTransitionId,
-								isSplit: true);
+								inputCondition = (BoolExpr)inputCondition.Substitute(readVar, writeVar);
+							}
 
+							var updatedTransitions = new List<Transition>();
 
-							var negativeTransition = new Transition(
-								transitionToRefine.Id + "-[" + cycleTransition.Id + "]",
-								Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition)),
-								transitionToRefine.BaseTransitionId,
-								isSplit: true);
+							foreach (var transitionToRefine in transitionsToRefine)
+							{
+								var positiveCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, inputCondition);
+								if (context.AreEqual(transitionToRefine.Guard.ActualConstraintExpression, positiveCondition) || !context.CanBeSatisfied(positiveCondition))
+								{
+									continue;
+								}
 
-							updatedTransitions.Add(positiveTransition);
-							updatedTransitions.Add(negativeTransition);
+								var negativeCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, context.MkNot(inputCondition));
+
+								var positiveTransition = new Transition(transitionToRefine.Id + "+[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition)), transitionToRefine.BaseTransitionId, isSplit: true);
+
+								var negativeTransition = new Transition(transitionToRefine.Id + "-[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition)), transitionToRefine.BaseTransitionId, isSplit: true);
+
+								updatedTransitions.Add(positiveTransition);
+								updatedTransitions.Add(negativeTransition);
+							}
+
+							transitionsToRefine = updatedTransitions.Count == 0 ? transitionsToRefine : updatedTransitions;
 						}
 
-						transitionsToRefine = updatedTransitions.Count == 0 ? transitionsToRefine : updatedTransitions;
+						refinedTransitions.AddRange(transitionsToRefine);
+					}
+					else
+					{
+						refinedTransitions.Add(sourceTransition);
+					}
+				}
+
+				var transitionsPreset = new Dictionary<string, List<(Place place, int weight)>>();
+				var transitionsPostset = new Dictionary<string, List<(Place place, int weight)>>();
+				FillTransitionsArcs(sourceDpn, transitionsPreset, transitionsPostset);
+				var refinedArcs = new List<Arc>();
+				foreach (var refinedTransition in refinedTransitions)
+				{
+					var parentTransitionId = baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
+					var preset = transitionsPreset[parentTransitionId];
+					var postset = transitionsPostset[parentTransitionId];
+
+					foreach (var arc in preset)
+					{
+						refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
 					}
 
-					refinedTransitions.AddRange(transitionsToRefine);
+					foreach (var arc in postset)
+					{
+						refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
+					}
 				}
-				else
+
+				sourceDpn.Transitions = refinedTransitions;
+				sourceDpn.Arcs = refinedArcs;
+
+				if (initialRefinedTransitionNumber < refinedTransitions.Count)
 				{
-					refinedTransitions.Add(sourceTransition);
-				}
-			}
-
-			var transitionsPreset = new Dictionary<string, List<(Place place, int weight)>>();
-			var transitionsPostset = new Dictionary<string, List<(Place place, int weight)>>();
-			FillTransitionsArcs(sourceDpn, transitionsPreset, transitionsPostset);
-			var refinedArcs = new List<Arc>();
-			foreach (var refinedTransition in refinedTransitions)
-			{
-				var parentTransitionId = baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
-				var preset = transitionsPreset[parentTransitionId];
-				var postset = transitionsPostset[parentTransitionId];
-
-				foreach (var arc in preset)
-				{
-					refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
+					continue;
 				}
 
-				foreach (var arc in postset)
-				{
-					refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
-				}
-			}
-
-			sourceDpn.Transitions = refinedTransitions;
-			sourceDpn.Arcs = refinedArcs;
-
-			if (initialRefinedTransitionNumber < refinedTransitions.Count)
-			{
-				Refine(sourceDpn, cycles, allArcs);
+				break;
 			}
 		}
 
