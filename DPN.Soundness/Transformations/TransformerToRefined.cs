@@ -19,6 +19,14 @@ namespace DPN.Soundness.Transformations
 
 	public class TransformerToRefined
 	{
+		internal RefinementResult Transform(DataPetriNet sourceDpn, LabeledTransitionSystem sourceDpnLts)
+		{
+			var maximumCycles = CyclesFinder.GetCycles(sourceDpnLts);
+
+			var transformedDpn = (DataPetriNet)sourceDpn.Clone();
+			Refine(transformedDpn, maximumCycles, sourceDpnLts.ConstraintArcs.ToArray());
+			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceDpnLts));
+		}
 
 		public RefinementResult Transform(DataPetriNet sourceDpn, Dictionary<string, string> transformationProperties)
 		{
@@ -47,9 +55,13 @@ namespace DPN.Soundness.Transformations
 			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
 		}
 
-
 		private static void Refine(DataPetriNet sourceDpn, List<LtsCycle> cycles, LtsArc[] allArcs)
 		{
+			string GetArcBaseTransitionId(LtsArc arc)
+			{
+				return arc.Transition.NonRefinedTransitionId; // arc.Transition.Id
+			}
+
 			while (true)
 			{
 				var arcToStates = allArcs.GroupBy(a => a.SourceState)
@@ -76,7 +88,7 @@ namespace DPN.Soundness.Transformations
 					{
 						var writeVarsNames = writeVarsInSourceTransition.Select(wv => wv.Key).ToHashSet();
 
-						var cyclesWithTransition = cycles.Where(x => x.CycleArcs.Any(y => y.Transition.Id == sourceTransition.BaseTransitionId))
+						var cyclesWithTransition = cycles.Where(x => x.CycleArcs.Any(y => GetArcBaseTransitionId(y) == sourceTransition.BaseTransitionId))
 							.ToArray();
 
 						// Если имеем, что из конечной позиции не может быть выхода, то можно сделать определять переходы к разделению как:
@@ -84,8 +96,8 @@ namespace DPN.Soundness.Transformations
 						//		.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
 						// Но в общем случае это неверно. Также можем упустить лайвлоки внутри маленьких циклов
 						var transitionsToInvestigate = cyclesWithTransition.SelectMany(c => c.CycleArcsWithAdjacent.Where(a => arcToStates[a.SourceState].Length > 1) // Очень дешевая эвристика, которая отработает в большой части случаев
-								.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
-								.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
+								.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)])
+								.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)].Where(t => t.IsSplit))))
 							.Distinct()
 							.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsNames).Any())
 							.ToArray();
@@ -117,20 +129,23 @@ namespace DPN.Soundness.Transformations
 								var positiveCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, inputCondition);
 								if (context.AreEqual(transitionToRefine.Guard.ActualConstraintExpression, positiveCondition) || !context.CanBeSatisfied(positiveCondition))
 								{
+									updatedTransitions.Add(transitionToRefine);
 									continue;
 								}
 
 								var negativeCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, context.MkNot(inputCondition));
 
-								var positiveTransition = new Transition(transitionToRefine.Id + "+[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition)), transitionToRefine.BaseTransitionId, isSplit: true);
+								var positiveTransition = new Transition(transitionToRefine.Id + "+[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition)),
+									transitionToRefine.BaseTransitionId, isSplit: true);
 
-								var negativeTransition = new Transition(transitionToRefine.Id + "-[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition)), transitionToRefine.BaseTransitionId, isSplit: true);
+								var negativeTransition = new Transition(transitionToRefine.Id + "-[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition)),
+									transitionToRefine.BaseTransitionId, isSplit: true);
 
 								updatedTransitions.Add(positiveTransition);
 								updatedTransitions.Add(negativeTransition);
 							}
 
-							transitionsToRefine = updatedTransitions.Count == 0 ? transitionsToRefine : updatedTransitions;
+							transitionsToRefine = updatedTransitions;
 						}
 
 						refinedTransitions.AddRange(transitionsToRefine);

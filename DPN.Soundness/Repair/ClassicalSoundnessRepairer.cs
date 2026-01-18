@@ -37,7 +37,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		bool repairmentFailed;
 		var firstIteration = true;
 		var allGreenOnPreviousStep = false;
-		ColoredCoverabilityGraph? coloredCoverabilityGraph;
+		ColoredCoverabilityGraph? coloredCoverabilityGraph = null;
 		var transitionsUpdatedAtPreviousStep = new HashSet<string>();
 		var transitionsToTrySimplify = new HashSet<string>();
 
@@ -48,14 +48,14 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		{
 			if (firstIteration || allGreenOnPreviousStep)
 			{
-				var refinedDpn = transformerToRefined
-					.Transform(
-						dpnToConsider,
-						new Dictionary<string, string>
-						{
-							{ RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph }
-						})
-					.RefinedDpn;
+				var refinedDpn = firstIteration
+					? transformerToRefined
+						.Transform(
+							dpnToConsider,
+							new Dictionary<string, string> { { RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph } })
+						.RefinedDpn
+					: transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph!).RefinedDpn;
+
 				if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
 				{
 					transitionsToTrySimplify = transitionsToTrySimplify
@@ -65,7 +65,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 					dpnToConsider = refinedDpn;
 					dpnToConsider.Transitions
-						.ForEach(t=> transitionsDict[t.Id] = t);
+						.ForEach(t => transitionsDict[t.Id] = t);
 				}
 			}
 
@@ -164,8 +164,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			foreach (var baseTransition in baseTransitions)
 			{
 				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression)).Simplify();
-				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression) 
-					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression 
+				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression)
+					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression
 					: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
 
 				var transitionToInspect = baseTransition.First();
