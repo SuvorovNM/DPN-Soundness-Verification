@@ -50,12 +50,22 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			constraintGraph.GenerateGraph();
 			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
 			stopWatch.Stop();
-			return new VerificationResult(ToStateSpaceConverter.Convert(constraintGraph), soundnessProperties, stopWatch.Elapsed);
+			return new VerificationResult(
+				ToStateSpaceConverter.Convert(constraintGraph), 
+				soundnessProperties, 
+				stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
+				refinedDpn.Transitions.Count - dpn.Transitions.Count,
+				stopWatch.Elapsed);
 		}
 
 		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 		stopWatch.Stop();
-		return new VerificationResult(stateSpace, soundnessProperties, stopWatch.Elapsed);
+		return new VerificationResult(
+			stateSpace, 
+			soundnessProperties, 
+			stateSpace.Arcs.Length, 
+			refinedDpn.Transitions.Count - dpn.Transitions.Count,
+			stopWatch.Elapsed);
 	}
 
 	private static VerificationResult VerifyImproved(DataPetriNet dpn)
@@ -68,7 +78,12 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		if (!soundnessProperties.Soundness)
 		{
 			stopWatch.Stop();
-			return new VerificationResult(ToStateSpaceConverter.Convert(lts), soundnessProperties, stopWatch.Elapsed);
+			return new VerificationResult(
+				ToStateSpaceConverter.Convert(lts), 
+				soundnessProperties,
+				lts.ConstraintArcs.Count, 
+				0,
+				stopWatch.Elapsed);
 		}
 
 		var cg = new ConstraintGraph(dpn);
@@ -79,9 +94,19 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		if (soundnessProperties.Soundness)
 		{
 			var verificationResult = VerifyClassical(dpn);
-			return new VerificationResult(verificationResult.StateSpaceGraph, verificationResult.SoundnessProperties, stopWatch.Elapsed + verificationResult.VerificationTime);
+			return new VerificationResult(
+				verificationResult.StateSpaceGraph, 
+				verificationResult.SoundnessProperties, 
+				lts.ConstraintArcs.Count + cg.ConstraintArcs.Count + verificationResult.TotalStatesConsidered,
+				verificationResult.TotalRefinementsDone,
+				stopWatch.Elapsed + verificationResult.VerificationTime);
 		}
 
-		return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
+		return new VerificationResult(
+			ToStateSpaceConverter.Convert(cg), 
+			soundnessProperties, 
+			lts.ConstraintArcs.Count + cg.ConstraintArcs.Count,
+			0,
+			stopWatch.Elapsed);
 	}
 }

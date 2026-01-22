@@ -40,9 +40,11 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		ColoredCoverabilityGraph? coloredCoverabilityGraph = null;
 		var transitionsUpdatedAtPreviousStep = new HashSet<string>();
 		var transitionsToTrySimplify = new HashSet<string>();
+		var totalModifiedTransitions = new HashSet<string>();
+		var statesConstructed = 0;
 
 		var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
-		uint repairSteps = 0;
+		ushort repairSteps = 0;
 
 		do
 		{
@@ -77,6 +79,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				// We can switch withTauTransitions to false if want only to make net bounded
 				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
 				coloredCoverabilityGraph.GenerateGraph();
+				statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
 
 				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
 				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
@@ -85,19 +88,37 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				{
 					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
 					repairSteps++;
+					totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t=>transitionsDict[t].BaseTransitionId));
+					
 					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
 				}
 				else
 				{
+					/*var refinementsCount = dpnToConsider.Transitions.Count - sourceDpn.Transitions.Count;
 					RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph.ConstraintArcs.ToArray());
+					
+					RemoveIsolatedPlaces(dpnToConsider);
 
-					return new RepairResult(dpnToConsider, allNodesGreen, 0, stopwatch.Elapsed);
+					if (mergeTransitionsBack)
+						MergeTransitions(dpnToConsider, transitionsDict);
+
+					return new RepairResult(
+						dpnToConsider, 
+						allNodesGreen, 
+						0, 
+						new RepairModifications(dpnToConsider.Transitions.Select(t=>t.Id).Except(sourceDpn.Transitions.Select(t=>t.Id)).ToHashSet(),[]), 
+						stopwatch.Elapsed,
+						statesConstructed,
+						refinementsCount);*/
+					repairmentSuccessfullyFinished = allNodesGreen;
+					break;
 				}
 			}
 			else
 			{
 				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
 				coloredCoverabilityGraph.GenerateGraph();
+				statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
 
 				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
 				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
@@ -106,13 +127,22 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				{
 					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
 					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
+					totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t=>transitionsDict[t].BaseTransitionId));
 
 					allNodesGreen = true;
 
 					repairSteps++;
 					transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
+					// Rollback is actually performed with a delay of 1 step
 					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+				}
+				else
+				{
+					if (allNodesGreen)
+					{
+						TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+					}
 				}
 			}
 
@@ -124,9 +154,10 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		} while (!repairmentSuccessfullyFinished && !repairmentFailed);
 
 
+		var refinementsCount = dpnToConsider.Transitions.Count - sourceDpn.Transitions.Count;
 		if (repairmentSuccessfullyFinished)
 		{
-			RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph.ConstraintArcs.ToArray());
+			RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph!.ConstraintArcs.ToArray());
 
 			RemoveIsolatedPlaces(dpnToConsider);
 
@@ -137,8 +168,24 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var resultDpn = repairmentSuccessfullyFinished
 			? dpnToConsider
 			: sourceDpn;
+		
+		var differentTransitions = dpnToConsider.Transitions
+			.Where(t => t.Guard.ActualConstraintExpression.ToString() != sourceDpn.Transitions.First(st=>st.BaseTransitionId == t.BaseTransitionId).Guard.ActualConstraintExpression.ToString())
+			.Select(t => t.BaseTransitionId)
+			.ToHashSet();
+		var deletedTransitions = sourceDpn.Transitions.Select(t=>t.Id).Except(dpnToConsider.Transitions.Select(t=>t.Id));
+		
+		differentTransitions.AddRange(deletedTransitions);
+		totalModifiedTransitions = totalModifiedTransitions.Except(differentTransitions).ToHashSet();
 
-		return new RepairResult(resultDpn, repairmentSuccessfullyFinished, repairSteps, stopwatch.Elapsed);
+		return new RepairResult(
+			resultDpn, 
+			repairmentSuccessfullyFinished, 
+			repairSteps, 
+			new RepairModifications(differentTransitions, totalModifiedTransitions),
+			stopwatch.Elapsed,
+			statesConstructed,
+			refinementsCount);
 
 
 		static void RemoveIsolatedPlaces(DataPetriNet sourceDpn)
@@ -210,12 +257,12 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	{
 		var transitionsInCt = arcs
 			.Where(x => !x.Transition.IsSilent)
-			.Select(x => x.Transition.Id)
+			.Select(x => x.Transition.NonRefinedTransitionId)//.Id везде
 			.ToHashSet();
 
-		sourceDpn.Transitions.RemoveAll(x => !transitionsInCt.Contains(x.Id));
-		sourceDpn.Arcs.RemoveAll(x => x.Source is Transition && !transitionsInCt.Contains(x.Source.Id)
-		                              || x.Destination is Transition && !transitionsInCt.Contains(x.Destination.Id));
+		sourceDpn.Transitions.RemoveAll(x => !transitionsInCt.Contains(x.BaseTransitionId));
+		sourceDpn.Arcs.RemoveAll(x => x.Source is Transition && !transitionsInCt.Contains(((Transition)(x.Source)).BaseTransitionId)
+		                              || x.Destination is Transition && !transitionsInCt.Contains(((Transition)(x.Destination)).BaseTransitionId));
 	}
 
 	// Some transition restriction is redundant - we, thus, rollback what we can
@@ -269,7 +316,10 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		}
 	}
 
-	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(DataPetriNet sourceDpn, ColoredCoverabilityGraph cg, Dictionary<string, Transition> transitionsDict)
+	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(
+		DataPetriNet sourceDpn, 
+		ColoredCoverabilityGraph cg, 
+		Dictionary<string, Transition> transitionsDict)
 	{
 		var arcsDict = cg.ConstraintArcs
 			.GroupBy(x => (x.SourceState.Id, x.TargetState))
@@ -364,10 +414,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		Dictionary<string, List<BoolExpr>> expressionsForTransitions,
 		List<LtsArc> visitedArcs)
 	{
-		if (!parentsDict.ContainsKey(currentNode.Id))
-		{
-		}
-
 		foreach (var arc in parentsDict[currentNode.Id].Except(visitedArcs))
 		{
 			if (arc.Transition.IsSilent)

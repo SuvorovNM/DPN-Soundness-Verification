@@ -12,8 +12,6 @@ public static class RelaxedLazyVerificationSettingsConstants
 	public const string CoverabilityTree = nameof(CoverabilityTree);
 
 	public const string StopOnCoveringFinalPosition = nameof(StopOnCoveringFinalPosition);
-	public const string True = nameof(True);
-	public const string False = nameof(False);
 }
 
 public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
@@ -39,7 +37,7 @@ public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, cg);
 
 			stopWatch.Stop();
-			return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, stopWatch.Elapsed);
+			return new VerificationResult(ToStateSpaceConverter.Convert(cg), soundnessProperties, cg.ConstraintArcs.Count, 0, stopWatch.Elapsed);
 		}
 
 		if (baseStructure == RelaxedLazyVerificationSettingsConstants.CoverabilityTree)
@@ -49,7 +47,7 @@ public class RelaxedLazySoundnessVerifier : ISoundnessVerifier
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(dpn, ct);
 
 			stopWatch.Stop();
-			return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties, stopWatch.Elapsed);
+			return new VerificationResult(ToStateSpaceConverter.Convert(ct), soundnessProperties, ct.ConstraintArcs.Count, 0, stopWatch.Elapsed);
 		}
 
 		throw new ArgumentException($"{nameof(RelaxedLazySoundnessVerifier)} does not support base structure {baseStructure}");

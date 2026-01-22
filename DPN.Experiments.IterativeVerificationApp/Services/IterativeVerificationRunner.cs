@@ -31,6 +31,8 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 		const string PipeClientHandleParameterName = "PipeClientHandle";
 		const string DpnFileParameterName = "DpnFile";
 		const string OutputDirectoryParameterName = "OutputDirectory";
+		private const int NumberOfAttempts = 3;
+		
 
 		private readonly DPNGenerator dpnGenerator = new(new Context());
 		private readonly PnmlxParser parser = new();
@@ -78,7 +80,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						await using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
 						{
 							// Consider here base version as well?
-							var processInfo = FormProcessInfo(verificationInput, VerificationAlgorithmTypeEnum.ImprovedVersion, dpnPath, pipeServer, processPath);
+							var processInfo = FormProcessInfo(verificationInput, dpnPath, pipeServer, processPath);
 							var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
 							proc = Process.Start(processInfo)!;
 							pipeServer.DisposeLocalCopyOfClientHandle();
@@ -137,8 +139,8 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 					bool successfulCase;
 					var verificationTypes = new List<VerificationAlgorithmTypeEnum>
 					{
-						VerificationAlgorithmTypeEnum.ImprovedVersion,
-						//VerificationAlgorithmTypeEnum.DirectVersion                        
+						//VerificationAlgorithmTypeEnum.ImprovedVersion,
+						VerificationAlgorithmTypeEnum.DirectVersion                        
 					};
 
 					do
@@ -164,7 +166,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						Process? proc;
 						await using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
 						{
-							var processInfo = FormProcessInfo(verificationInput, verificationTypes[0], dpnPath, pipeServer, processPath);
+							var processInfo = FormProcessInfo(verificationInput, dpnPath, pipeServer, processPath);
 							var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
 							proc = Process.Start(processInfo)!;
 							pipeServer.DisposeLocalCopyOfClientHandle();
@@ -183,22 +185,15 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						successfulCase = proc.ExitCode == 1;
 						if (successfulCase)
 						{
-							foreach (var verificationType in verificationTypes.Skip(1))
+							for (var r = 1; r < NumberOfAttempts; r++)
 							{
-								if (token.IsCancellationRequested)
-								{
-									return;
-								}
-
-								using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
-								{
-									var processInfo = FormProcessInfo(verificationInput, verificationType, dpnPath, pipeServer, processPath);
-									var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
-									proc = Process.Start(processInfo)!;
-									pipeServer.DisposeLocalCopyOfClientHandle();
-									await proc.WaitForExitAsync(token);
-									await listenTask;
-								}
+								await using var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
+								var processInfo = FormProcessInfo(verificationInput, dpnPath, pipeServer, processPath);
+								var listenTask = ListenToPipe(pipeServer, currentverificationResults, token);
+								proc = Process.Start(processInfo)!;
+								pipeServer.DisposeLocalCopyOfClientHandle();
+								await proc.WaitForExitAsync(token);
+								await listenTask;
 							}
 						}
 					} while (!successfulCase);
@@ -226,9 +221,22 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 			ObservableCollection<VerificationOutputWithNumber> currentVerificationResults,
 			CancellationToken token)
 		{
-			var buffer = new byte[655350];
-			await pipeStream.ReadExactlyAsync(buffer, 0, buffer.Length, token);
-			var lastString = Encoding.UTF8.GetString(buffer);
+			var buffer = new byte[65536];
+			var stringBuilder = new StringBuilder();
+
+			var endOfStream = false;
+			while (!endOfStream)
+			{
+				int bytesRead = await pipeStream.ReadAsync(buffer, token);
+				endOfStream = bytesRead == 0;
+    
+				if (bytesRead > 0)
+				{
+					stringBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+				}
+			}
+
+			var lastString = stringBuilder.ToString();//Encoding.UTF8.GetString(buffer);
 
 			MainVerificationInfo? verificationOutput = null;
 
@@ -256,7 +264,6 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 
 		private ProcessStartInfo FormProcessInfo(
 			VerificationInputBasis verificationInput,
-			VerificationAlgorithmTypeEnum currentVerificationAlgorithmType,
 			string dpnFilePath,
 			AnonymousPipeServerStream serverPipe,
 			ProcessPath path)
@@ -274,7 +281,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 
 			var pipeHandle = serverPipe.GetClientHandleAsString();
 			var outputDirectoryPath = verificationInput.OutputDirectory;
-			var verificationAlgorithmType = currentVerificationAlgorithmType.ToString();
+			var verificationAlgorithmType = nameof(VerificationAlgorithmTypeEnum.DirectVersion);
 
 			var argumentsString = DpnFileParameterName + " " + dpnFilePath +
 			                      " " + PipeClientHandleParameterName + " " + pipeHandle +

@@ -108,12 +108,12 @@ namespace DPN.Parsers
 		{
 			ArgumentNullException.ThrowIfNull(document);
 
-			var validationResult = validator.Validate(document);
+			/*var validationResult = validator.Validate(document);
 			if (!validationResult.IsValid)
 			{
 				var errorText = string.Join(Environment.NewLine, validationResult.Errors.Select(e => $"{e.Severity.ToString()}: {e.Message}"));
 				throw new SerializationException("Error occurred on deserializing:\n" + errorText);
-			}
+			}*/
 
 			var context = new Context();
 			var dpn = new DataPetriNet(context);

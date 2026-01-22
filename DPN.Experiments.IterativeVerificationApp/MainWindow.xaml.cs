@@ -104,7 +104,7 @@ namespace DataPetriNetIterativeVerificationApplication
                         ? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
                         : RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-                    var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), true)
+                    var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length), true)
                     {
 	                    Owner = this
                     };
@@ -120,14 +120,17 @@ namespace DataPetriNetIterativeVerificationApplication
 
             var conditionsInfo = new ConditionsInfo
             {
-                Boundedness = BoundednessChb.IsChecked.Value ? BoundednessChb.IsChecked : null,
-                Soundness = SoundnessChb.IsChecked.Value ? SoundnessChb.IsChecked : null,
+                Boundedness = BoundednessChb.IsChecked.Value 
+	                ? bool.Parse(BoundnessCmb.Text)//BoundednessChb.IsChecked 
+	                : null,
+                Soundness = SoundnessChb.IsChecked.Value 
+	                ? bool.Parse(SoundnessCmb.Text)
+	                : null,
                 DeadTransitions = MaxDtChb.IsChecked.Value ? byte.Parse(MaxDtTb.Text) : null,
             };
 
             if (iterativeGenerationTab.IsSelected)
             {
-
                 var dpnInfo = new DpnToGenerateInfo
                 {
                     Places = double.Parse(PlacesNumberTb.Text, CultureInfo.InvariantCulture),

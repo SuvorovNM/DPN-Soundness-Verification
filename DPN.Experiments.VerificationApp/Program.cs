@@ -34,8 +34,9 @@ namespace DataPetriNetVerificationApplication
 		const string SaveConstraintGraph = "SaveCG";
 		const string VerificationParameters = "VerificationParameters";
 		const string RepairParameters = "RepairParameters";
-		private static readonly TransformerToRefined Transformation = new();
 
+		// TODO: логировать данные по операциям > n минут. Подумать, можем ли мы как-то описать этап, на котором встали. В целом, можно их просто сохранять, а потом руками посмотреть, но может быть долго
+		// Можем писать в лог статусы по каждой доверенности, но как простым образом обеспечить логирование? Прокидывать везде ILogger?
 		// For without IterativeVerificationApp pass the args in the format (splitting by " "):
 		//@"DpnFile \workingDirectory\Output\8fcd9437-a5ee-4277-87bc-6769d5aab87d.pnmlx OutputDirectory \Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False"
 		static int Main(string[] args)
@@ -52,6 +53,8 @@ namespace DataPetriNetVerificationApplication
 			var saveCg = false;
 			var verificationParameters = new Dictionary<string, string>();
 			var repairParameters = new Dictionary<string, string>();
+
+			//args = @"DpnFile C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\7e066b47-6b41-4c4d-b2b9-cce2422655a2.pnmlx PipeClientHandle 2656 OutputDirectory C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False".Split();
 
 			var index = 0;
 			do
@@ -165,11 +168,8 @@ namespace DataPetriNetVerificationApplication
 				outputRow = new MainVerificationInfo(
 					dpnToVerify,
 					satisfiesConditions,
-					verificationResult.StateSpaceGraph, // TODO: вести подсчет всех построенных вершин и дуг?
-					verificationResult.SoundnessProperties,
-					verificationResult.VerificationTime!.Value.Milliseconds,
-					(long?)repairResult?.RepairTime.TotalMilliseconds ?? -1,
-					repairResult?.IsSuccess ?? false);
+					verificationResult,
+					repairResult);
 			}, source.Token);
 
 			if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
@@ -206,7 +206,7 @@ namespace DataPetriNetVerificationApplication
 
 		private static RepairResult? ConductSoundnessRepairIfAnyPathToFinal(
 			DataPetriNet dpnToVerify, 
-			SoundnessProperties? soundnessProps,
+			SoundnessProperties soundnessProps,
 			Dictionary<string,string> repairParameters)
 		{
 			if (soundnessProps.StateTypes.Any(state => state.Value == StateType.Final))
@@ -243,6 +243,7 @@ namespace DataPetriNetVerificationApplication
 		{
 			using PipeStream pipeClient = new AnonymousPipeClientStream(PipeDirection.Out, pipeClientHandle);
 			using var sw = new StreamWriter(pipeClient);
+			//using var sw = new StreamWriter("C:\\workspace\\text.txt");
 			sw.AutoFlush = true;
 			var serializer = new XmlSerializer(typeof(MainVerificationInfo)); //null
 			serializer.Serialize(sw, outputRow);

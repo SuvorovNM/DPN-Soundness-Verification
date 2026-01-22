@@ -146,7 +146,7 @@ namespace DPN.VerificationApp
 			HideLoader();
 
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private async void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
@@ -156,7 +156,7 @@ namespace DPN.VerificationApp
 			HideLoader();
 
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -197,7 +197,7 @@ namespace DPN.VerificationApp
 			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet));
 			HideLoader();
 
-			VisualizeVerificationResult(new VerificationResult(stateSpace, ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace), stateSpace.Arcs.Length));
 		}
 
 		private void VisualizeVerificationResult(VerificationResult verificationResult)
@@ -237,7 +237,7 @@ namespace DPN.VerificationApp
 			var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 			HideLoader();
 
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private void OpenStateSpace_Click(object sender, RoutedEventArgs e)
@@ -267,7 +267,7 @@ namespace DPN.VerificationApp
 					? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
 					: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true)
+				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length), isOpenedFromFile: true)
 				{
 					Owner = this
 				};
