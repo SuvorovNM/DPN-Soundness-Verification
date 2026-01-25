@@ -45,7 +45,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		ushort repairSteps = 0;
 
 
-		coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+		coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: false, tryReachAllOmegas: false);
 		coloredCoverabilityGraph.GenerateGraph();
 		statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
 		(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
@@ -83,8 +83,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
 				totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
 
-				allNodesGreen = true;
-
 				repairSteps++;
 				transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
@@ -93,7 +91,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			}
 			else
 			{
-				if (allNodesGreen)
+				if (!allNodesRed)
 				{
 					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 				}
