@@ -17,7 +17,7 @@ namespace DPN.Parsers
 		private const string arcsElementName = "arcs";
 		private const string transitionsElementName = "transitions";
 		private const string finalMarkingElementName = "final_marking";
-		private const string tokensElementName = "tokens";
+		private const string tokensElementName = "marking";
 		private const string constraintElementName = "constraint";
 		private const string stateElementName = "state";
 		private const string arcElementName = "arc";
@@ -63,7 +63,7 @@ namespace DPN.Parsers
 			var nodes = new List<StateSpaceNode>();
 
 			// Deserialize Variables
-			var variablesElement = cgElement.Element(variablesElementName);
+			var variablesElement = document.Root?.Element(variablesElementName);
 			var typedVariables = new Dictionary<string, DomainType>();
 			foreach (var variableElem in variablesElement.Elements(variableElementName))
 			{
@@ -84,9 +84,9 @@ namespace DPN.Parsers
 				var id = int.Parse(xmlState.Attribute(idAttributeName)?.Value ?? "0");
 				var tokensElement = xmlState.Element(tokensElementName);
 				var markingDict = new Dictionary<string, int>();
-				foreach (var placeElem in tokensElement.Elements())
+				foreach (var placeElem in tokensElement.Elements(placeElementName))
 				{
-					markingDict[placeElem.Name.LocalName] = int.Parse(placeElem.Value);
+					markingDict[placeElem.Value] = int.Parse(placeElem.Attribute(tokensAttributeName)?.Value ?? "0");
 				}
 
 				var constraintStr = xmlState.Element(constraintElementName)?.Value ?? "true";
@@ -114,7 +114,7 @@ namespace DPN.Parsers
 			}
 
 			// Deserialize Final Marking
-			var finalMarkingElement = cgElement.Element(finalMarkingElementName);
+			var finalMarkingElement = document.Root?.Element(finalMarkingElementName);
 			var finalMarkingDict = new Dictionary<string, int>();
 			foreach (var placeElem in finalMarkingElement.Elements(placeElementName))
 			{
@@ -122,7 +122,7 @@ namespace DPN.Parsers
 			}
 
 			// Deserialize Transitions
-			var transitionsElement = cgElement.Element(transitionsElementName);
+			var transitionsElement = document.Root?.Element(transitionsElementName);
 			var transitions = new List<DPN.Models.DPNElements.Transition>();
 			foreach (var xmlTransition in transitionsElement.Elements(transitionElementName))
 			{
@@ -166,10 +166,12 @@ namespace DPN.Parsers
 			foreach (var state in stateSpace.Nodes)
 			{
 				var tokensElement = new XElement(tokensElementName);
-				foreach (var node in state.Marking)
+				foreach (var (place, tokens) in state.Marking)
 				{
-					var nodeElement = new XElement(node.Key, node.Value);
-					tokensElement.Add(nodeElement);
+					var placeElement = new XElement(placeElementName, place);
+					placeElement.SetAttributeValue(tokensAttributeName, tokens);
+
+					tokensElement.Add(placeElement);
 				}
 
 				var constraintFormula = expressionSerializer.Serialize(state.StateConstraint!);
@@ -251,14 +253,16 @@ namespace DPN.Parsers
 			var cgElement = new XElement(
 				stateSpaceElementName,
 				statesElement,
-				arcsElement,
-				finalMarkingElement,
-				transitionsElement,
-				variablesElement);
+				arcsElement);
 			cgElement.SetAttributeValue(graphTypeAttributeName, stateSpace.StateSpaceType.ToString());
 			cgElement.SetAttributeValue(isFullAttributeName, stateSpace.IsFullGraph.ToString().ToLowerInvariant());
 
-			var srcTree = new XElement(rootElementName, cgElement);
+			var srcTree = new XElement(
+				rootElementName, 
+				cgElement,
+				finalMarkingElement,
+				transitionsElement,
+				variablesElement);
 
 			var document = new XDocument(srcTree);
 

@@ -94,22 +94,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				}
 				else
 				{
-					/*var refinementsCount = dpnToConsider.Transitions.Count - sourceDpn.Transitions.Count;
-					RemoveDeadTransitions(dpnToConsider, coloredCoverabilityGraph.ConstraintArcs.ToArray());
-					
-					RemoveIsolatedPlaces(dpnToConsider);
-
-					if (mergeTransitionsBack)
-						MergeTransitions(dpnToConsider, transitionsDict);
-
-					return new RepairResult(
-						dpnToConsider, 
-						allNodesGreen, 
-						0, 
-						new RepairModifications(dpnToConsider.Transitions.Select(t=>t.Id).Except(sourceDpn.Transitions.Select(t=>t.Id)).ToHashSet(),[]), 
-						stopwatch.Elapsed,
-						statesConstructed,
-						refinementsCount);*/
 					repairmentSuccessfullyFinished = allNodesGreen;
 					break;
 				}

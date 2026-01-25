@@ -89,10 +89,7 @@ namespace DPN.Models.DPNElements
 
         public MarkingComparisonResult CompareTo(Marking? other)
         {
-            if (other == null)
-                return MarkingComparisonResult.Incomparable;
-
-            if (other.Keys.Count != this.Keys.Count || other.Keys.Intersect(this.Keys).Count() != this.Keys.Count)
+            if (other == null || other.Keys.Count != this.Keys.Count || other.Keys.Intersect(this.Keys).Count() != this.Keys.Count)
                 return MarkingComparisonResult.Incomparable;
 
             var strictlyGreaterExists = false;

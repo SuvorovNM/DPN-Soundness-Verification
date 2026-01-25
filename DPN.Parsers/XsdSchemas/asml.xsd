@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <!-- Root elements for different file types -->
-  <xs:element name="asml" type="StateSpaceDocument"/>
+  <xs:element name="asml" type="stateSpaceDocument"/>
 
-  <!-- Main document type -->
-  <xs:complexType name="StateSpaceDocument">
+  <xs:complexType name="stateSpaceDocument">
     <xs:sequence>
-      <xs:element name="state_space" type="StateSpaceType"/>
+      <xs:element name="state_space" type="stateSpaceType"/>
+	  <xs:element name="final_marking" type="markingType"/>
+      <xs:element name="transitions" type="transitionsType"/>
+      <xs:element name="variables" type="variablesType"/>
     </xs:sequence>
   </xs:complexType>
 
   <!-- State Space definition -->
-  <xs:complexType name="StateSpaceType">
+  <xs:complexType name="stateSpaceType">
     <xs:sequence>
-      <xs:element name="states" type="StatesType"/>
-      <xs:element name="arcs" type="ArcsType"/>
-      <xs:element name="final_marking" type="FinalMarkingType"/>
-      <xs:element name="transitions" type="TransitionsType"/>
-      <xs:element name="variables" type="VariablesType"/>
+      <xs:element name="states" type="statesType"/>
+      <xs:element name="arcs" type="arcsType"/>
     </xs:sequence>
     <xs:attribute name="graph_type" use="required">
       <xs:simpleType>
@@ -32,38 +30,27 @@
     <xs:attribute name="is_full" type="xs:boolean" use="required"/>
   </xs:complexType>
 
-  <!-- States collection -->
-  <xs:complexType name="StatesType">
+  <xs:complexType name="statesType">
     <xs:sequence>
-      <xs:element name="state" type="StateType" maxOccurs="unbounded"/>
+      <xs:element name="state" type="stateType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <!-- Individual state -->
-  <xs:complexType name="StateType">
+  <xs:complexType name="stateType">
     <xs:sequence>
-      <xs:element name="tokens" type="TokensType"/>
+      <xs:element name="marking" type="markingType"/>
       <xs:element name="constraint" type="xs:string"/>
     </xs:sequence>
     <xs:attribute name="id" type="xs:integer" use="required"/>
   </xs:complexType>
 
-  <!-- Tokens - dynamic elements representing places -->
-  <xs:complexType name="TokensType">
+  <xs:complexType name="arcsType">
     <xs:sequence>
-      <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="arc" type="arcType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <!-- Arcs collection -->
-  <xs:complexType name="ArcsType">
-    <xs:sequence>
-      <xs:element name="arc" type="ArcType" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <!-- Individual arc -->
-  <xs:complexType name="ArcType">
+  <xs:complexType name="arcType">
     <xs:attribute name="label" type="xs:string" use="required"/>
     <xs:attribute name="is_silent" type="xs:boolean" use="required"/>
     <xs:attribute name="source_id" type="xs:integer" use="required"/>
@@ -71,15 +58,14 @@
     <xs:attribute name="base_transition_id" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <!-- Final marking -->
-  <xs:complexType name="FinalMarkingType">
+  <xs:complexType name="markingType">
     <xs:sequence>
-      <xs:element name="place" type="PlaceType" maxOccurs="unbounded"/>
+      <xs:element name="place" type="placeType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <!-- Place in final marking -->
-  <xs:complexType name="PlaceType">
+  <xs:complexType name="placeType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
         <xs:attribute name="tokens" type="xs:integer" use="required"/>
@@ -88,14 +74,14 @@
   </xs:complexType>
 
   <!-- Transitions collection -->
-  <xs:complexType name="TransitionsType">
+  <xs:complexType name="transitionsType">
     <xs:sequence>
-      <xs:element name="transition" type="TransitionType" maxOccurs="unbounded"/>
+      <xs:element name="transition" type="transitionType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <!-- Individual transition -->
-  <xs:complexType name="TransitionType">
+  <xs:complexType name="transitionType">
     <xs:sequence>
       <xs:element name="name">
         <xs:complexType>
@@ -113,14 +99,14 @@
   </xs:complexType>
 
   <!-- Variables collection -->
-  <xs:complexType name="VariablesType">
+  <xs:complexType name="variablesType">
     <xs:sequence>
-      <xs:element name="variable" type="VariableType" maxOccurs="unbounded"/>
+      <xs:element name="variable" type="variableType" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <!-- Individual variable -->
-  <xs:complexType name="VariableType">
+  <xs:complexType name="variableType">
     <xs:sequence>
       <xs:element name="name" type="xs:string"/>
     </xs:sequence>

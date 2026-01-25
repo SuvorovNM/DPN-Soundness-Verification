@@ -19,8 +19,6 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= StateType.Initial;
-		
-		var finalMarking = Marking.FromDictionary(stateSpaceGraph.FinalDpnMarking);
 
 		var finalStates = stateSpaceGraph.Nodes
 			.Where(x => x.Marking.All(y =>

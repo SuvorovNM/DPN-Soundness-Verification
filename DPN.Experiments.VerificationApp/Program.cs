@@ -38,6 +38,7 @@ namespace DataPetriNetVerificationApplication
 		// TODO: логировать данные по операциям > n минут. Подумать, можем ли мы как-то описать этап, на котором встали. В целом, можно их просто сохранять, а потом руками посмотреть, но может быть долго
 		// Можем писать в лог статусы по каждой доверенности, но как простым образом обеспечить логирование? Прокидывать везде ILogger?
 		// For without IterativeVerificationApp pass the args in the format (splitting by " "):
+		// TODO: проверять relaxed lazy нужно с завершением при покрытии o
 		//@"DpnFile \workingDirectory\Output\8fcd9437-a5ee-4277-87bc-6769d5aab87d.pnmlx OutputDirectory \Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False"
 		static int Main(string[] args)
 		{
