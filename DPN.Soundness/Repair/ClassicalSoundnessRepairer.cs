@@ -35,8 +35,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var dpnToConsider = (DataPetriNet)sourceDpn.Clone();
 		bool repairmentSuccessfullyFinished;
 		bool repairmentFailed;
-		var firstIteration = true;
-		var allGreenOnPreviousStep = false;
 		ColoredCoverabilityGraph? coloredCoverabilityGraph = null;
 		var transitionsUpdatedAtPreviousStep = new HashSet<string>();
 		var transitionsToTrySimplify = new HashSet<string>();
@@ -46,95 +44,64 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
 		ushort repairSteps = 0;
 
+
+		coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+		coloredCoverabilityGraph.GenerateGraph();
+		statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
+		(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
+		repairSteps++;
+		totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
+		transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
+
 		do
 		{
-			if (firstIteration || allGreenOnPreviousStep)
+			var refinedDpn = transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph!).RefinedDpn;
+
+			if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
 			{
-				var refinedDpn = firstIteration
-					? transformerToRefined
-						.Transform(
-							dpnToConsider,
-							new Dictionary<string, string> { { RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph } })
-						.RefinedDpn
-					: transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph!).RefinedDpn;
+				transitionsToTrySimplify = transitionsToTrySimplify
+					.Intersect(refinedDpn.Transitions.Select(x => x.Id))
+					.ToHashSet();
+				transitionsUpdatedAtPreviousStep.Clear();
 
-				if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
-				{
-					transitionsToTrySimplify = transitionsToTrySimplify
-						.Intersect(refinedDpn.Transitions.Select(x => x.Id))
-						.ToHashSet();
-					transitionsUpdatedAtPreviousStep.Clear();
-
-					dpnToConsider = refinedDpn;
-					dpnToConsider.Transitions
-						.ForEach(t => transitionsDict[t.Id] = t);
-				}
+				dpnToConsider = refinedDpn;
+				dpnToConsider.Transitions
+					.ForEach(t => transitionsDict[t.Id] = t);
 			}
 
-			bool allNodesGreen;
-			bool allNodesRed;
 
-			if (firstIteration)
+			coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+			coloredCoverabilityGraph.GenerateGraph();
+			statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
+
+			var allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
+			var allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
+
+			if (!allNodesGreen && !allNodesRed)
 			{
-				// We can switch withTauTransitions to false if want only to make net bounded
-				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
-				coloredCoverabilityGraph.GenerateGraph();
-				statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
+				transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
+				(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
+				totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
 
-				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
-				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
+				allNodesGreen = true;
 
-				if (!allNodesGreen && !allNodesRed)
-				{
-					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
-					repairSteps++;
-					totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t=>transitionsDict[t].BaseTransitionId));
-					
-					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
-				}
-				else
-				{
-					repairmentSuccessfullyFinished = allNodesGreen;
-					break;
-				}
+				repairSteps++;
+				transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
+
+				// Rollback is actually performed with a delay of 1 step
+				TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 			}
 			else
 			{
-				coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
-				coloredCoverabilityGraph.GenerateGraph();
-				statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
-
-				allNodesGreen = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Green);
-				allNodesRed = coloredCoverabilityGraph.StateColorDictionary.All(x => x.Value == CtStateColor.Red);
-
-				if (!allNodesGreen && !allNodesRed)
+				if (allNodesGreen)
 				{
-					transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
-					(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
-					totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t=>transitionsDict[t].BaseTransitionId));
-
-					allNodesGreen = true;
-
-					repairSteps++;
-					transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
-
-					// Rollback is actually performed with a delay of 1 step
 					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
-				}
-				else
-				{
-					if (allNodesGreen)
-					{
-						TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
-					}
 				}
 			}
 
-			repairmentSuccessfullyFinished = allNodesGreen && allGreenOnPreviousStep;
-			repairmentFailed = allNodesRed;
-			allGreenOnPreviousStep = allNodesGreen;
 
-			firstIteration = false;
+			repairmentSuccessfullyFinished = allNodesGreen;
+			repairmentFailed = allNodesRed;
 		} while (!repairmentSuccessfullyFinished && !repairmentFailed);
 
 
@@ -152,20 +119,20 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var resultDpn = repairmentSuccessfullyFinished
 			? dpnToConsider
 			: sourceDpn;
-		
+
 		var differentTransitions = dpnToConsider.Transitions
-			.Where(t => t.Guard.ActualConstraintExpression.ToString() != sourceDpn.Transitions.First(st=>st.BaseTransitionId == t.BaseTransitionId).Guard.ActualConstraintExpression.ToString())
+			.Where(t => t.Guard.ActualConstraintExpression.ToString() != sourceDpn.Transitions.First(st => st.BaseTransitionId == t.BaseTransitionId).Guard.ActualConstraintExpression.ToString())
 			.Select(t => t.BaseTransitionId)
 			.ToHashSet();
-		var deletedTransitions = sourceDpn.Transitions.Select(t=>t.Id).Except(dpnToConsider.Transitions.Select(t=>t.Id));
-		
+		var deletedTransitions = sourceDpn.Transitions.Select(t => t.Id).Except(dpnToConsider.Transitions.Select(t => t.Id));
+
 		differentTransitions.AddRange(deletedTransitions);
 		totalModifiedTransitions = totalModifiedTransitions.Except(differentTransitions).ToHashSet();
 
 		return new RepairResult(
-			resultDpn, 
-			repairmentSuccessfullyFinished, 
-			repairSteps, 
+			resultDpn,
+			repairmentSuccessfullyFinished,
+			repairSteps,
 			new RepairModifications(differentTransitions, totalModifiedTransitions),
 			stopwatch.Elapsed,
 			statesConstructed,
@@ -241,7 +208,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	{
 		var transitionsInCt = arcs
 			.Where(x => !x.Transition.IsSilent)
-			.Select(x => x.Transition.NonRefinedTransitionId)//.Id везде
+			.Select(x => x.Transition.NonRefinedTransitionId) //.Id везде
 			.ToHashSet();
 
 		sourceDpn.Transitions.RemoveAll(x => !transitionsInCt.Contains(x.BaseTransitionId));
@@ -301,8 +268,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	}
 
 	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(
-		DataPetriNet sourceDpn, 
-		ColoredCoverabilityGraph cg, 
+		DataPetriNet sourceDpn,
+		ColoredCoverabilityGraph cg,
 		Dictionary<string, Transition> transitionsDict)
 	{
 		var arcsDict = cg.ConstraintArcs
