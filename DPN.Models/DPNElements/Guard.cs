@@ -11,8 +11,6 @@ namespace DPN.Models.DPNElements
         private bool readNeedsToBeRecalculated = false;
         private Dictionary<string, DomainType> readVars = new Dictionary<string, DomainType>();
         public Context Context { get; set; }
-
-        public BoolExpr BaseConstraintExpressions { get; init; }
         public BoolExpr ConstraintExpressionBeforeUpdate { get; init; }
         public BoolExpr ActualConstraintExpression { get; private set; }
 
@@ -44,7 +42,6 @@ namespace DPN.Models.DPNElements
             if (baseConstraints == null)
             {
                 var trueExpression = ctx.MkTrue();
-                BaseConstraintExpressions = trueExpression;
                 ActualConstraintExpression = trueExpression;
                 ConstraintExpressionBeforeUpdate = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
@@ -52,11 +49,8 @@ namespace DPN.Models.DPNElements
             else
             {
                 var smtExpression = ctx.GetSmtExpression(baseConstraints);
-                BaseConstraintExpressions = smtExpression;
                 ActualConstraintExpression = smtExpression;
                 ConstraintExpressionBeforeUpdate = smtExpression;
-                WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
-                ReadVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Read);
             }
 
             Context = ctx;            
@@ -68,14 +62,12 @@ namespace DPN.Models.DPNElements
             {
                 var trueExpression = ctx.MkTrue();
                 
-                BaseConstraintExpressions = trueExpression;
                 ActualConstraintExpression = trueExpression;
                 ConstraintExpressionBeforeUpdate = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
             }
             else
             {
-                BaseConstraintExpressions = smtExpression;
                 ActualConstraintExpression = smtExpression;
                 ConstraintExpressionBeforeUpdate = smtExpression;
                 WriteVars = smtExpression.GetTypedVarsDict(VariableType.Written);
@@ -90,11 +82,10 @@ namespace DPN.Models.DPNElements
             return new Guard
             {
                 Context = baseGuard.Context,
-                BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = updatedConstraintExpression,
                 ConstraintExpressionBeforeUpdate = baseGuard.ActualConstraintExpression,
 
-                WriteVars = baseGuard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written),
+                WriteVars = baseGuard.ActualConstraintExpression.GetTypedVarsDict(VariableType.Written),
                 readNeedsToBeRecalculated = true,
                 isRepaired = false
             };
@@ -104,13 +95,12 @@ namespace DPN.Models.DPNElements
             return new Guard
             {
                 Context = baseGuard.Context,
-                BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = updatedConstraintExpression,
                 ConstraintExpressionBeforeUpdate = baseGuard.isRepaired 
                     ? baseGuard.ConstraintExpressionBeforeUpdate
                     : baseGuard.ActualConstraintExpression,
 
-                WriteVars = baseGuard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written),
+                WriteVars = baseGuard.ActualConstraintExpression.GetTypedVarsDict(VariableType.Written),
                 readNeedsToBeRecalculated = true,
                 isRepaired = true
             };
@@ -121,13 +111,10 @@ namespace DPN.Models.DPNElements
             return new Guard
             {
                 Context = baseGuard.Context,
-                BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = mergedConstraintExpression,
-                ConstraintExpressionBeforeUpdate = baseGuard.isRepaired
-                    ? baseGuard.ConstraintExpressionBeforeUpdate
-                    : baseGuard.ActualConstraintExpression,
+                ConstraintExpressionBeforeUpdate = baseGuard.ActualConstraintExpression,
 
-                WriteVars = baseGuard.BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written),
+                WriteVars = baseGuard.ActualConstraintExpression.GetTypedVarsDict(VariableType.Written),
                 readNeedsToBeRecalculated = true,
                 isRepaired = baseGuard.isRepaired
             };
@@ -136,11 +123,10 @@ namespace DPN.Models.DPNElements
        private Guard(Guard baseGuard, BoolExpr updatedConstraintExpression)
         {
             Context = baseGuard.Context;
-            BaseConstraintExpressions = baseGuard.BaseConstraintExpressions;
             ActualConstraintExpression = updatedConstraintExpression;
             ConstraintExpressionBeforeUpdate = baseGuard.ActualConstraintExpression;
 
-            WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
+            WriteVars = ActualConstraintExpression.GetTypedVarsDict(VariableType.Written);
             readNeedsToBeRecalculated = true;
             isRepaired = baseGuard.isRepaired;
         }
@@ -156,19 +142,7 @@ namespace DPN.Models.DPNElements
                 throw new InvalidOperationException("The transition is not repaired!");
             }
         }
-
-        /*public Guard(Context ctx, List<IConstraintExpression> baseConstraints, BoolExpr actualConstraintExpression)
-        {
-            BaseConstraintExpressions = baseConstraints;
-            ActualConstraintExpression = actualConstraintExpression;
-            Context = ctx;
-
-            WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
-            //ReadVars = ActualConstraintExpression.GetTypedVarsDict(VariableType.Read);
-
-            readNeedsToBeRecalculated = true;
-        }*/
-
+        
         public object Clone()
         {
             var clonedGuard = new Guard(

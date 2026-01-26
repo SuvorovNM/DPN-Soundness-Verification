@@ -55,6 +55,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 		do
 		{
+			// TODO: перепроверить на 4 примере. Обратный мержинг дает уже не sound, что странно
 			var refinedDpn = transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph!).RefinedDpn;
 
 			if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
@@ -93,7 +94,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			{
 				if (!allNodesRed)
 				{
-					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+					//TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 				}
 			}
 
@@ -150,7 +151,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		{
 			var baseTransitions = dpnToConsider.Transitions
 				.GroupBy(x => x.BaseTransitionId)
-				.Where(x => x.Any());
+				.Where(x => x.Any()); // && x.Key == "t1_1"
 
 			var preset = new Dictionary<string, List<(Place place, int weight)>>();
 			var postset = new Dictionary<string, List<(Place place, int weight)>>();
@@ -160,8 +161,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			foreach (var baseTransition in baseTransitions)
 			{
 				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression)).Simplify();
-				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression)
-					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression
+				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression) 
+					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression 
 					: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
 
 				var transitionToInspect = baseTransition.First();
@@ -226,7 +227,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var baseTauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
 		foreach (var transitionId in transitionsToTrySimplify)
 		{
-			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate;
+			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: это что-то странное
 			var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
 			var readExpression = sourceDpn.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 

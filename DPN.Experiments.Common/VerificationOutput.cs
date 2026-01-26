@@ -45,7 +45,7 @@ namespace DPN.Experiments.Common
 			Arcs = (ushort)dpn.Arcs.Count;
 			Variables = (ushort)dpn.Variables.GetAllVariables().Length;
 			Conditions = (ushort)dpn.Transitions
-				.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
+				.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.ActualConstraintExpression));
 			Boundedness = verificationResult.SoundnessProperties.Boundedness;
 			StateSpaceNodes = verificationResult.StateSpaceGraph.Nodes.Length;
 			StateSpaceArcs = verificationResult.StateSpaceGraph.Arcs.Length;

@@ -49,6 +49,7 @@ public static class ClassicalSoundnessAnalyzer
 		static string[] GetDeadTransitions(StateSpaceGraph stateSpaceGraph)
 		{
 			var deadTransitions = stateSpaceGraph.DpnTransitions
+				.Where(t=>!t.IsTau)
 				.Select(x => x.BaseTransitionId)
 				.Except(stateSpaceGraph.Arcs.Select(y => y.BaseTransitionId))
 				.ToArray();
