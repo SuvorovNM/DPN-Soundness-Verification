@@ -194,10 +194,10 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         // All numerics are real, no type promotion needed
         return op switch
         {
-            ">" => ctx.MkGt(left, right),
-            "<" => ctx.MkLt(left, right),
-            ">=" => ctx.MkGe(left, right),
-            "<=" => ctx.MkLe(left, right),
+            ">" => ctx.MkGt((ArithExpr)left, (ArithExpr)right),
+            "<" => ctx.MkLt((ArithExpr)left, (ArithExpr)right),
+            ">=" => ctx.MkGe((ArithExpr)left, (ArithExpr)right),
+            "<=" => ctx.MkLe((ArithExpr)left, (ArithExpr)right),
             "==" => ctx.MkEq(left, right),
             "!=" => ctx.MkNot(ctx.MkEq(left, right)),
             _ => throw new ArgumentException($"Unknown operator: {op}")
@@ -210,7 +210,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         
         try
         {
-            BoolExpr left = ParseBooleanOperand(tokens, ref index);
+            var left = ParseBooleanOperand(tokens, ref index);
             
             if (index >= tokens.Count || !IsComparisonOperator(tokens[index]))
                 return null;
@@ -218,7 +218,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
             string op = tokens[index];
             index++;
             
-            BoolExpr right = ParseBooleanOperand(tokens, ref index);
+            var right = ParseBooleanOperand(tokens, ref index);
             
             return op switch
             {
@@ -234,7 +234,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         }
     }
 
-    private BoolExpr ParseBooleanOperand(List<string> tokens, ref int index)
+    private Expr ParseBooleanOperand(List<string> tokens, ref int index)
     {
         if (index >= tokens.Count)
             throw new ArgumentException("Unexpected end of expression");
@@ -253,7 +253,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         {
             index++;
             var operand = ParseBooleanOperand(tokens, ref index);
-            return ctx.MkNot(operand);
+            return ctx.MkNot((BoolExpr)operand);
         }
 
         string token = tokens[index];
@@ -269,7 +269,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         }
         else if (IsVariable(token))
         {
-            return GetOrCreateBoolVariable(token);
+            return GetOrCreateNumericVariable(token);
         }
         else
         {
@@ -277,7 +277,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
         }
     }
 
-    private ArithExpr ParseNumericOperand(List<string> tokens, ref int index)
+    private Expr ParseNumericOperand(List<string> tokens, ref int index)
     {
         if (index >= tokens.Count)
             throw new ArgumentException("Unexpected end of expression");
@@ -298,12 +298,12 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
             var operand = ParseNumericOperand(tokens, ref index);
             if (operand.IsInt || operand.IsIntNum)
             {
-                return (IntExpr)ctx.MkSub(ctx.MkInt(0), operand);
+                return (IntExpr)ctx.MkSub(ctx.MkInt(0), (ArithExpr)operand);
             }
 
             if (operand.IsReal || operand.IsRatNum)
             {
-                return (RealExpr)ctx.MkSub(ctx.MkReal(0), operand);
+                return (RealExpr)ctx.MkSub(ctx.MkReal(0), (ArithExpr)operand);
             }
             
             throw new ArgumentException($"Invalid numeric operand: {tokens[index]}");
@@ -353,14 +353,7 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
                token != "true" && token != "false";
     }
 
-    private BoolExpr GetOrCreateBoolVariable(string name)
-    {
-        if (!_boolVariables.ContainsKey(name))
-            _boolVariables[name] = ctx.MkBoolConst(name);
-        return _boolVariables[name];
-    }
-
-    private ArithExpr GetOrCreateNumericVariable(string name)
+    private Expr GetOrCreateNumericVariable(string name)
     {
         if (!variablesToTypes.TryGetValue(name, out var type))
             throw new ArgumentException($"Undefined variable: {name}");
@@ -376,6 +369,9 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
                     _realVariables[name] = ctx.MkRealConst(name);
                 return _realVariables[name];
             case DomainType.Boolean:
+	            if (!_boolVariables.ContainsKey(name))
+		            _boolVariables[name] = ctx.MkBoolConst(name);
+	            return _boolVariables[name];
             default:
                 throw new ArgumentOutOfRangeException("Unsupported variable type: " + type);
         }

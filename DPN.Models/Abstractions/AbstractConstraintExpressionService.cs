@@ -39,12 +39,7 @@ namespace DPN.Models.Abstractions
             var exprWithTargetNegated = Context.MkAnd(expressionSource, Context.MkNot(expressionTarget));
             var expressionToCheck = Context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
 
-            Solver s = Context.MkSimpleSolver();
-            s.Assert(expressionToCheck);
-
-            var result = s.Check() == Status.UNSATISFIABLE;
-
-            return result;
+            return !Context.CanBeSatisfied(expressionToCheck);
         }
         
         public bool DoesTargetCoverSource(BoolExpr? expressionSource, BoolExpr? expressionTarget)
@@ -98,10 +93,11 @@ namespace DPN.Models.Abstractions
 
                 var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
 
-                Goal g = Context.MkGoal(true, true, false);
+                Goal g = Context.MkGoal(true, false, false);
                 g.Assert(existsExpression);
                 Tactic tac = Context.MkTactic("qe");
                 ApplyResult a = tac.Apply(g);
+                
                 var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
 
 

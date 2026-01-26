@@ -52,7 +52,7 @@ internal static class ToStateSpaceConverter
 
 			foreach (var baseTransitionId in tauTransitions)
 			{
-				var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.Single(t => t.Id == baseTransitionId);
+				var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.First(t => t.Id == baseTransitionId);
 
 				var tauTransition = baseTransition.MakeTau()!;
 

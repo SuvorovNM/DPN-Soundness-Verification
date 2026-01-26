@@ -64,7 +64,7 @@ namespace DPN.Models.Extensions
             {
                 var existsExpression = context.MkExists(variablesToOverwrite, smtExpression);
 
-                Goal g = context.MkGoal(true, true, false);
+                Goal g = context.MkGoal(true, false, false);
                 g.Assert((BoolExpr)existsExpression);
                 Tactic tac = context.MkTactic("qe");
                 ApplyResult a = tac.Apply(g);

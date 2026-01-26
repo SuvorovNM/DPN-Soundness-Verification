@@ -45,29 +45,35 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		ushort repairSteps = 0;
 
 
-		coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: false, tryReachAllOmegas: false);
+		/*coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: false, tryReachAllOmegas: false);
 		coloredCoverabilityGraph.GenerateGraph();
 		statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
 		(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
 		repairSteps++;
 		totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
-		transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
+		transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();*/
 
 		do
 		{
 			// TODO: перепроверить на 4 примере. Обратный мержинг дает уже не sound, что странно
-			var refinedDpn = transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph!).RefinedDpn;
 
-			if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
+			if (repairSteps >= 0)
 			{
-				transitionsToTrySimplify = transitionsToTrySimplify
-					.Intersect(refinedDpn.Transitions.Select(x => x.Id))
-					.ToHashSet();
-				transitionsUpdatedAtPreviousStep.Clear();
+				var refinedDpn = coloredCoverabilityGraph == null
+					? transformerToRefined.Transform(dpnToConsider, new Dictionary<string, string>()).RefinedDpn
+					: transformerToRefined.Transform(dpnToConsider, coloredCoverabilityGraph).RefinedDpn;
 
-				dpnToConsider = refinedDpn;
-				dpnToConsider.Transitions
-					.ForEach(t => transitionsDict[t.Id] = t);
+				if (refinedDpn.Transitions.Count != dpnToConsider.Transitions.Count)
+				{
+					transitionsToTrySimplify = transitionsToTrySimplify
+						.Intersect(refinedDpn.Transitions.Select(x => x.Id))
+						.ToHashSet();
+					transitionsUpdatedAtPreviousStep.Clear();
+
+					dpnToConsider = refinedDpn;
+					dpnToConsider.Transitions
+						.ForEach(t => transitionsDict[t.Id] = t);
+				}
 			}
 
 
@@ -88,7 +94,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
 				// Rollback is actually performed with a delay of 1 step
-				TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+				//TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 			}
 			else
 			{
@@ -160,15 +166,16 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 			foreach (var baseTransition in baseTransitions)
 			{
-				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression)).Simplify();
-				resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression) 
-					? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression 
-					: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
+				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression).ToArray());//.Simplify()
+				//resultantConstraint = dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression) 
+				//	? transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression 
+				//	: dpnToConsider.Context.SimplifyExpression(resultantConstraint);
+
 
 				var transitionToInspect = baseTransition.First();
 				var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
 				var label = transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
-				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint);
+				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint, dpnToConsider.Variables);
 				var transitionToAdd = new Transition(baseTransition.Key, guard, label: label);
 				dpnToConsider.Transitions.RemoveAll(x => baseTransition.Contains(x));
 				dpnToConsider.Transitions.Add(transitionToAdd);
@@ -345,7 +352,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition.Id]));
 
-				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition);
+				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition, sourceDpn.Variables);
 
 				updatedTransitions.Add(transition.Id);
 			}
@@ -364,7 +371,12 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		Dictionary<string, List<BoolExpr>> expressionsForTransitions,
 		List<LtsArc> visitedArcs)
 	{
-		foreach (var arc in parentsDict[currentNode.Id].Except(visitedArcs))
+		if (!parentsDict.TryGetValue(currentNode.Id, out var parents))
+		{
+			return;
+		}
+		
+		foreach (var arc in parents.Except(visitedArcs))
 		{
 			if (arc.Transition.IsSilent)
 			{

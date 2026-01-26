@@ -61,6 +61,8 @@ namespace DPN.Soundness.Transformations
 			{
 				return arc.Transition.NonRefinedTransitionId; // arc.Transition.Id
 			}
+			
+			var variables = sourceDpn.Variables;
 
 			while (true)
 			{
@@ -135,11 +137,17 @@ namespace DPN.Soundness.Transformations
 
 								var negativeCondition = context.MkAnd(transitionToRefine.Guard.ActualConstraintExpression, context.MkNot(inputCondition));
 
-								var positiveTransition = new Transition(transitionToRefine.Id + "+[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition)),
-									transitionToRefine.BaseTransitionId, isSplit: true);
+								var positiveTransition = new Transition(
+									transitionToRefine.Id + "+[" + cycleTransition.Id + "]",
+									Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition), sourceDpn.Variables),
+									transitionToRefine.BaseTransitionId, 
+									isSplit: true);
 
-								var negativeTransition = new Transition(transitionToRefine.Id + "-[" + cycleTransition.Id + "]", Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition)),
-									transitionToRefine.BaseTransitionId, isSplit: true);
+								var negativeTransition = new Transition(
+									transitionToRefine.Id + "-[" + cycleTransition.Id + "]", 
+									Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition), sourceDpn.Variables),
+									transitionToRefine.BaseTransitionId, 
+									isSplit: true);
 
 								updatedTransitions.Add(positiveTransition);
 								updatedTransitions.Add(negativeTransition);

@@ -1,12 +1,16 @@
-﻿using DPN.Models.Enums;
+﻿using DPN.Models.DPNElements;
+using DPN.Models.Enums;
 using Microsoft.Z3;
 
 namespace DPN.Models.Extensions
 {
     public static class BoolExprExtensions
     {
-        public static Dictionary<string, DomainType> GetTypedVarsDict(this BoolExpr expression, VariableType varType)
+        public static Dictionary<string, DomainType> GetTypedVarsDict(this BoolExpr expression, VariableType varType, VariablesStore? variables = null)
         {
+	        var varToType = (variables?.GetAllVariables() ?? Array.Empty<(DomainType domain, string name)>())
+		        .ToDictionary(x => x.name, x => x.domain);
+	        
             var postfix = varType == VariableType.Written
                 ? "_w"
                 : "_r";
@@ -15,48 +19,75 @@ namespace DPN.Models.Extensions
             Stack<Expr> expressionsToConsider = new Stack<Expr>();
             expressionsToConsider.Push(expression);
 
-            HashSet<Expr> variables = new HashSet<Expr>();
+            HashSet<Expr> vars = new HashSet<Expr>();
 
             while (expressionsToConsider.Count > 0)
             {
                 var expressionToConsider = expressionsToConsider.Pop();
-                if (expressionToConsider.IsAnd || expressionToConsider.IsOr || expressionToConsider.IsNot)
+                /*if (expressionToConsider.IsAnd || expressionToConsider.IsOr || expressionToConsider.IsNot)
                 {
                     foreach(var expressionArg in expressionToConsider.Args)
                     {
                         expressionsToConsider.Push(expressionArg);
                     }
+                }*/
+                if (expressionToConsider.Args.Length >= 1)
+                {
+	                foreach(var expressionArg in expressionToConsider.Args)
+	                {
+		                expressionsToConsider.Push(expressionArg);
+	                }
                 }
                 else
                 {
-                    if (!expressionToConsider.IsTrue && !expressionToConsider.IsFalse)
+	                if (expressionToConsider.ToString().EndsWith(postfix) )
+	                {
+		                vars.Add(expressionToConsider);
+	                }
+	                
+                    /*if (!expressionToConsider.IsTrue && !expressionToConsider.IsFalse)
                     {
-                        foreach (var expressionArg in expressionToConsider.Args)
-                        {
-                            if (!expressionArg.IsNumeral && expressionArg.ToString().EndsWith(postfix))
-                            {
-                                variables.Add(expressionArg);
-                            }
-                        }
-                    }
+	                    if ((expressionToConsider.IsConst) && expressionToConsider.ToString().EndsWith(postfix) )
+	                    {
+		                    variables.Add(expressionToConsider);
+	                    }
+	                    else
+	                    {
+		                    foreach (var expressionArg in expressionToConsider.Args)
+		                    {
+			                    if (!expressionArg.IsNumeral && expressionArg.ToString().EndsWith(postfix))
+			                    {
+				                    variables.Add(expressionArg);
+			                    }
+		                    }
+	                    }
+                    }*/
                 }
             }
 
             var result = new Dictionary<string, DomainType>();
-            foreach (var variable in variables)
+            foreach (var variable in vars)
             {
-                if (variable.IsBool)
-                {
-                    result.TryAdd(variable.ToString()[..^2], DomainType.Boolean);
-                }
-                if (variable.IsInt)
-                {
-                    result.TryAdd(variable.ToString()[..^2], DomainType.Integer);
-                }
-                if (variable.IsReal)
-                {
-                    result.TryAdd(variable.ToString()[..^2], DomainType.Real);
-                }
+	            var varName = variable.ToString()[..^2];
+	            if (varToType.TryGetValue(varName, out var typeOfVariable))
+	            {
+		            result[varName] = typeOfVariable;
+	            }
+	            else
+	            {
+		            if (variable.IsInt)
+		            {
+			            result.TryAdd(varName, DomainType.Integer);
+		            }
+		            else if (variable.IsReal)
+		            {
+			            result.TryAdd(varName, DomainType.Real);
+		            }
+		            else if (variable.IsBool)
+		            {
+			            result.TryAdd(varName, DomainType.Boolean);
+		            }
+	            }
             }
 
             return result;

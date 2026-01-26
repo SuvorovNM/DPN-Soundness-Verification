@@ -10,6 +10,9 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 	    public override void GenerateGraph()
         {
             IsFullGraph = false;
+            
+            var readConditions = dataPetriNet.Transitions
+	            .ToDictionary(t=>t.Id, t=>DataPetriNet.Context.GetExistsExpression(t.Guard.ActualConstraintExpression, t.Guard.WriteVars));
 
             while (StatesToConsider.Count > 0)
             {
@@ -17,13 +20,13 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 
                 foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
                 {
-                    var smtExpression = transition.Guard.ActualConstraintExpression;
-
-                    var overwrittenVarNames = transition.Guard.WriteVars;
-                    var readExpression = DataPetriNet.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
+	                if (transition.Id == "t1_2")
+	                {
+		                
+	                }
 
                     var constraintsIfTransitionFires = ExpressionService
-	                    .ConcatExpressions(currentState.Constraints, smtExpression, overwrittenVarNames);
+	                    .ConcatExpressions(currentState.Constraints, transition.Guard.ActualConstraintExpression, transition.Guard.WriteVars);
 
                     if (ExpressionService.CanBeSatisfied(constraintsIfTransitionFires))
                     {
@@ -45,7 +48,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
                         continue;
                     }
                     
-                    var negatedGuardExpressions = DataPetriNet.Context.MkNot(readExpression);
+                    var negatedGuardExpressions = DataPetriNet.Context.MkNot(readConditions[transition.Id]);
 
                     if (!negatedGuardExpressions.IsTrue && !negatedGuardExpressions.IsFalse)
                     {
