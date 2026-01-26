@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Soundness", "DPN.Soundn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.VerificationConsoleApp", "DPN.VerificationConsoleApp\DPN.VerificationConsoleApp.csproj", "{FC92A0E7-4B58-4CB8-B99F-A2175C78937E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{C53C8013-7941-4753-82C5-63CEE94B2188}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,18 @@ Global
 		{FC92A0E7-4B58-4CB8-B99F-A2175C78937E}.Release|x64.Build.0 = Release|Any CPU
 		{FC92A0E7-4B58-4CB8-B99F-A2175C78937E}.Release|x86.ActiveCfg = Release|Any CPU
 		{FC92A0E7-4B58-4CB8-B99F-A2175C78937E}.Release|x86.Build.0 = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|x64.Build.0 = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Debug|x86.Build.0 = Debug|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x64.ActiveCfg = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x64.Build.0 = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x86.ActiveCfg = Release|Any CPU
+		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

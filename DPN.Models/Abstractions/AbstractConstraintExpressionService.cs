@@ -41,28 +41,6 @@ namespace DPN.Models.Abstractions
 
             return !Context.CanBeSatisfied(expressionToCheck);
         }
-        
-        public bool DoesTargetCoverSource(BoolExpr? expressionSource, BoolExpr? expressionTarget)
-        {
-            if (expressionSource is null)
-            {
-                throw new ArgumentNullException(nameof(expressionSource));
-            }
-            if (expressionTarget is null)
-            {
-                throw new ArgumentNullException(nameof(expressionTarget));
-            }
-
-            // 2 expressions are equal if [(not(x) and y) or (x and not(y))] is not satisfiable
-            var exprWithSourceNegated = Context.MkAnd(Context.MkNot(expressionSource), expressionTarget);
-
-            Solver s = Context.MkSimpleSolver();
-            s.Assert(exprWithSourceNegated);
-
-            var result = s.Check() == Status.UNSATISFIABLE;
-
-            return result;
-        }
 
         public BoolExpr ConcatExpressions(
             BoolExpr? source,
@@ -95,8 +73,9 @@ namespace DPN.Models.Abstractions
 
                 Goal g = Context.MkGoal(true, false, false);
                 g.Assert(existsExpression);
-                Tactic tac = Context.MkTactic("qe");
-                ApplyResult a = tac.Apply(g);
+                Params qeParams = context.MkParams();
+                Tactic tac = Context.MkTactic("qe_rec");
+                ApplyResult a = tac.Apply(g, qeParams);
                 
                 var expressionWithRemovedOverwrittenVars = a.Subgoals[0].AsBoolExpr();
 
@@ -111,16 +90,7 @@ namespace DPN.Models.Abstractions
                 resultBlockExpression = expressionWithRemovedOverwrittenVars;
             }
 
-            var tactic = Context.MkTactic("ctx-simplify");
-
-            var goal = Context.MkGoal();
-            goal.Assert(resultBlockExpression);
-
-            var result = tactic.Apply(goal);
-
-            resultBlockExpression = (BoolExpr)result.Subgoals[0].Simplify().AsBoolExpr();
-
-            return resultBlockExpression;
+            return Context.SimplifyExpression(resultBlockExpression);
         }
     }
 }
