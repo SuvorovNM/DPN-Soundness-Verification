@@ -47,6 +47,11 @@
                <text>expire</text>
             </name>
          </transition>
+		 <transition guard="o_r == 0" id="reset">
+            <name>
+               <text>reset</text>
+            </name>
+         </transition>
          <arc id="a0" source="start" target="init">
             <arctype>
                <text>normal</text>
@@ -97,6 +102,16 @@
                <text>normal</text>
             </arctype>
          </arc>
+		 <arc id="a12" source="end" target="reset">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+        </arc>
+		<arc id="a13" source="reset" target="start">
+            <arctype>
+               <text>normal</text>
+            </arctype>
+        </arc>
       </page>
       <variables>
       <variable type="Real">

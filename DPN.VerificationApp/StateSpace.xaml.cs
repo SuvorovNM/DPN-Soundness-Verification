@@ -13,8 +13,8 @@ namespace DPN.VerificationApp
 {
 	public partial class StateSpace : Window
 	{
-		private const int maxNodesToVisualize = 2000;
-		private const int maxArcsToVisualize = 5000;
+		private const int maxNodesToVisualize = 250;
+		private const int maxArcsToVisualize = 500;
 
 		private readonly VerificationResult verificationResult;
 

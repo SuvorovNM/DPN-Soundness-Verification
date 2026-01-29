@@ -276,7 +276,7 @@ namespace DPN.VerificationConsoleApp
 
 		private static void SaveStateSpace(StateSpaceGraph stateSpaceGraph, string outputDirectory)
 		{
-			var stateSpacePath = Path.Combine(outputDirectory, "state_space.xml");
+			var stateSpacePath = Path.Combine(outputDirectory, "state_space.asml");
 
 			var asmlParser = new AsmlParser();
 			asmlParser.Serialize(stateSpaceGraph).Save(stateSpacePath);

@@ -144,7 +144,7 @@ namespace DataPetriNetGeneration
 
             while (transitionsRemained > 0)
             {
-                var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count)];
+                var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count - 1)];
                 var chosenPlace2 = dpn.Places[random.Next(dpn.Places.Count)];
 
                 var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(Context));

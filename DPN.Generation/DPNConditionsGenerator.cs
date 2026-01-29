@@ -8,7 +8,7 @@ namespace DataPetriNetGeneration
 {
     internal class DPNConditionsGenerator(Context context) : IDisposable
     {
-        private const int VOC = 0;
+        private const int VOV = 0;
         private readonly Random random = new Random();
         private Context Context { get; set; } = context;
 
@@ -57,27 +57,27 @@ namespace DataPetriNetGeneration
                     var variableName = GetVarName(varsPool);
                     var predicate = GetPredicate(predicatesPool);
 
-                    if (GetConditionType() == VOC)
+                    if (GetConditionType() == VOV)
                     {
-                        var vocExpression = GenerateVOCExpression(
-                            constantsPool,
-                            firstVariableType,
-                            logicalConnectiveType,
-                            variableName,
-                            predicate);
+	                    var vovExpression = GenerateVOVExpression(
+		                    varsPool,
+		                    firstVariableType,
+		                    logicalConnectiveType,
+		                    variableName,
+		                    predicate);
 
-                        conditions.Add(vocExpression);
+	                    conditions.Add(vovExpression);
                     }
                     else
                     {
-                        var vovExpression = GenerateVOVExpression(
-                            varsPool,
-                            firstVariableType,
-                            logicalConnectiveType,
-                            variableName,
-                            predicate);
+	                    var vocExpression = GenerateVOCExpression(
+		                    constantsPool,
+		                    firstVariableType,
+		                    logicalConnectiveType,
+		                    variableName,
+		                    predicate);
 
-                        conditions.Add(vovExpression);
+	                    conditions.Add(vocExpression);
                     }
                 }
 
@@ -91,7 +91,7 @@ namespace DataPetriNetGeneration
 
         private int GetConditionType()
         {
-            return random.Next(0, 2);
+            return random.Next(0, 4);
         }
 
         private BinaryPredicate GetPredicate(List<BinaryPredicate> predicatesPool)

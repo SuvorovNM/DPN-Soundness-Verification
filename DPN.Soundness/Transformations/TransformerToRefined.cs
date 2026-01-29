@@ -61,8 +61,6 @@ namespace DPN.Soundness.Transformations
 			{
 				return arc.Transition.NonRefinedTransitionId; // arc.Transition.Id
 			}
-			
-			var variables = sourceDpn.Variables;
 
 			while (true)
 			{
@@ -86,9 +84,22 @@ namespace DPN.Soundness.Transformations
 					}
 
 					var writeVarsInSourceTransition = sourceTransition.Guard.WriteVars;
-					if (writeVarsInSourceTransition.Count > 0)
+					var writeVarsComparedToOtherVars = writeVarsInSourceTransition
+						.Where(wv =>
+							sourceTransition.Guard.ActualConstraintExpression
+								.GetVariablesComparedTo(
+									VariableType.Written,
+									wv.Key,
+									VariableType.Read,
+									sourceDpn.Variables)
+								.Any(cv => !writeVarsInSourceTransition.ContainsKey(cv)))
+						.Select(wv=>wv.Key)
+						.ToHashSet();
+						
+					
+					if (writeVarsComparedToOtherVars.Count > 0)// && sourceTransition.Guard.ReadVars.Keys.Except(sourceTransition.Guard.WriteVars.Keys).Any()
 					{
-						var writeVarsNames = writeVarsInSourceTransition.Select(wv => wv.Key).ToHashSet();
+						//var writeVarsNames = writeVarsComparedToOtherVars.Select(wv => wv.Key).ToHashSet();
 
 						var cyclesWithTransition = cycles.Where(x => x.CycleArcs.Any(y => GetArcBaseTransitionId(y) == sourceTransition.BaseTransitionId))
 							.ToArray();
@@ -101,7 +112,7 @@ namespace DPN.Soundness.Transformations
 								.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)])
 								.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)].Where(t => t.IsSplit))))
 							.Distinct()
-							.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsNames).Any())
+							.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsComparedToOtherVars).Any())
 							.ToArray();
 
 						var transitionsToRefine = new List<Transition> { sourceTransition };
