@@ -7,7 +7,7 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers
 {
-	public class AsmlParser
+	public class AsmlParser // TODO: вынести State Space Structure на уровень Soundness!
 	{
 		private const string xsdSchema = "XsdSchemas\\asml.xsd";
 

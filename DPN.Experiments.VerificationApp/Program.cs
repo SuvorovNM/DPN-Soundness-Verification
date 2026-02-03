@@ -140,6 +140,7 @@ namespace DataPetriNetVerificationApplication
 					case SoundnessType.RelaxedLazy:
 					{
 						var soundnessVerifier = new RelaxedLazySoundnessVerifier();
+						//verificationParameters[RelaxedLazyVerificationSettingsConstants.StopOnCoveringFinalPosition] = "false";
 						verificationResult = soundnessVerifier.Verify(dpnToVerify, verificationParameters);
 						break;
 					}
@@ -157,10 +158,10 @@ namespace DataPetriNetVerificationApplication
 				satisfiesConditions = VerifyConditions(
 					conditionsInfo,
 					dpnToVerify.Transitions.Count,
-					verificationResult.SoundnessProperties!);
+					verificationResult);
 				
 				RepairResult? repairResult = null;
-				if (withRepair)
+				if (withRepair && satisfiesConditions)
 				{
 					repairResult = ConductSoundnessRepairIfAnyPathToFinal(dpnToVerify, verificationResult.SoundnessProperties, repairParameters);
 					satisfiesConditions &= repairResult != null;
@@ -173,7 +174,7 @@ namespace DataPetriNetVerificationApplication
 					repairResult);
 			}, source.Token);
 
-			if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
+			if (!verificationTask.Wait(TimeSpan.FromMinutes(3)))
 			{
 				var conditionsCount = dpnToVerify
 					.Transitions
@@ -250,9 +251,27 @@ namespace DataPetriNetVerificationApplication
 			serializer.Serialize(sw, outputRow);
 		}
 
-		private static bool VerifyConditions(ConditionsInfo conditionsInfo, int transitionsCount,
-			SoundnessProperties soundnessProperties)
+		private static bool VerifyConditions(
+			ConditionsInfo conditionsInfo, 
+			int transitionsCount,
+			VerificationResult verificationResult)
 		{
+			/*var notCoverOutput = verificationResult.StateSpaceGraph.Nodes
+				.All(n => n.Marking["o"] <= 1);
+			var existsPathToFinal = verificationResult.StateSpaceGraph.Nodes
+				.Any(n => n.Marking["o"] == 1 && n.Marking.All(p=> p.Key == "o" || p.Value == 0));// && n.Marking.All(p=> p.Key == "o" || p.Value == 0)
+			if (!existsPathToFinal || !notCoverOutput)
+			{
+				return false;
+			}*/
+
+			if (!verificationResult.StateSpaceGraph.Nodes
+			    .Any(n => n.Marking["o"] == 1 && n.Marking.All(p => p.Key == "o" || p.Value == 0)))
+			{
+				return false;
+			}
+			
+			var soundnessProperties = verificationResult.SoundnessProperties;
 			var satisfiesConditions = true;
 			if (conditionsInfo.Boundedness.HasValue)
 			{

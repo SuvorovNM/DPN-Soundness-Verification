@@ -87,7 +87,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		}
 
 		var cg = new ConstraintGraph(dpn);
-		cg.GenerateGraph();
+		cg.GenerateGraph(lts);
 		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, cg);
 		stopWatch.Stop();
 
@@ -97,7 +97,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			return new VerificationResult(
 				verificationResult.StateSpaceGraph, 
 				verificationResult.SoundnessProperties, 
-				lts.ConstraintArcs.Count + cg.ConstraintArcs.Count + verificationResult.TotalStatesConsidered,
+				cg.ConstraintArcs.Count + verificationResult.TotalStatesConsidered,
 				verificationResult.TotalRefinementsDone,
 				stopWatch.Elapsed + verificationResult.VerificationTime);
 		}
@@ -105,7 +105,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		return new VerificationResult(
 			ToStateSpaceConverter.Convert(cg), 
 			soundnessProperties, 
-			lts.ConstraintArcs.Count + cg.ConstraintArcs.Count,
+			cg.ConstraintArcs.Count,
 			0,
 			stopWatch.Elapsed);
 	}

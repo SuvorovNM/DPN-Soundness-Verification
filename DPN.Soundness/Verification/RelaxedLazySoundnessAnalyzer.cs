@@ -90,7 +90,7 @@ public static class RelaxedLazySoundnessAnalyzer
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
 			stateDictionary,
-			stateSpaceGraph.IsFullGraph,
+			!stateSpaceGraph.Nodes.Any(cs=>cs.Marking.ContainsValue(int.MaxValue)),
 			unfeasibleTransitions,
 			hasDeadlocks,
 			isSound);
@@ -146,7 +146,7 @@ public static class RelaxedLazySoundnessAnalyzer
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
 			stateDictionary.ToDictionary(x => x.Key.Id, x => x.Value),
-			cg.IsFullGraph,
+			!cg.ConstraintStates.Any(cs=>cs.Marking.AsDictionary().ContainsValue(int.MaxValue)),
 			unfeasibleTransitions,
 			hasDeadlocks,
 			isSound);

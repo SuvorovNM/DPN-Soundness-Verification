@@ -21,7 +21,7 @@ namespace DataPetriNetGeneration
             int conditionsCount,
             bool soundnessPreference = false)
         {
-            var dpn = backboneGenerator.GenerateBackbone(placesCount, transitionsCount, additionalArcsCount);
+            var dpn = backboneGenerator.GenerateBackbone(placesCount, transitionsCount,additionalArcsCount, 0);
             conditionsGenerator.GenerateConditions(dpn, varsCount, conditionsCount, soundnessPreference);
 
             return dpn;

@@ -281,7 +281,11 @@ namespace DPN.VerificationApp
 			var repairResult = await Task.Run(() => classicalSoundnessRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
 			var message = repairResult.IsSuccess
-				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}."
+				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. " +
+				  $"Repair steps: {repairResult.RepairSteps}. " +
+				  $"States constructed: {repairResult.TotalStatesConsidered}. " +
+				  $"Transition refinements: {repairResult.TotalRefinementsDone}. " +
+				  $"Modified transitions: {repairResult.RepairModifications.EnhancedTransitions}"
 				: "Failed to repair the model. Try using different repair algorithm.";
 			ModernMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);

@@ -38,18 +38,18 @@ namespace DataPetriNetIterativeVerificationApplication
             BoundnessCmb.Visibility = Visibility.Hidden;
             SoundnessCmb.Visibility = Visibility.Hidden;
 
-            PlacesNumberTb.Text = "0.8";
+            PlacesNumberTb.Text = "0.9";
             TransitionsNumberTb.Text = "1";
-            ArcsNumberTb.Text = "0.5";
-            VariablesNumberTb.Text = "0.5";
-            ConditionsNumberTb.Text = "1";
-            MaxDtTb.Text = "60";
+            ArcsNumberTb.Text = "0.2";
+            VariablesNumberTb.Text = "0.25";
+            ConditionsNumberTb.Text = "0.75";
+            MaxDtTb.Text = "25";
             BoundnessCmb.SelectedIndex = 0;
             SoundnessCmb.SelectedIndex = 0;
             SoundnessTypeCmb.SelectedIndex = 0;
             WithRepairCmb.SelectedIndex = 0;
             InitialValueTb.Text = "5";
-            IncrementValueTb.Text = "5";
+            IncrementValueTb.Text = "1";
             DpnNumberTb.Text = "3";
             DirectoryTb.Text = AppDomain.CurrentDomain.BaseDirectory + "Output";
 
