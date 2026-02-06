@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
-        Title="" Height="120" Width="420" WindowStartupLocation="CenterOwner" WindowStyle="None" Background="{DynamicResource WindowBackgroundBrush}" ResizeMode="NoResize">
+        Title="" Height="190" Width="420" WindowStartupLocation="CenterOwner" WindowStyle="None" Background="{DynamicResource WindowBackgroundBrush}" ResizeMode="NoResize">
 
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="32" CornerRadius="6" GlassFrameThickness="0" UseAeroCaptionButtons="False" />

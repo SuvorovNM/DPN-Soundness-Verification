@@ -308,6 +308,16 @@ internal class Z3ExpressionParser(Context ctx, Dictionary<string, DomainType> va
             
             throw new ArgumentException($"Invalid numeric operand: {tokens[index]}");
         }
+
+        /*if (tokens[index].Equals("true", StringComparison.InvariantCultureIgnoreCase))
+        {
+	        return ctx.MkBool(true);
+        }
+        
+        if (tokens[index].Equals("false", StringComparison.InvariantCultureIgnoreCase))
+        {
+	        return ctx.MkBool(false);
+        }*/
         
         var secondOperand = index >= 1 && IsComparisonOperator(tokens[index - 1])
             ? tokens[index - 2]

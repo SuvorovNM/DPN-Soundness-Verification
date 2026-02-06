@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
@@ -281,12 +282,12 @@ namespace DPN.VerificationApp
 			var repairResult = await Task.Run(() => classicalSoundnessRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
 			var message = repairResult.IsSuccess
-				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. " +
-				  $"Repair steps: {repairResult.RepairSteps}. " +
-				  $"States constructed: {repairResult.TotalStatesConsidered}. " +
-				  $"Transition refinements: {repairResult.TotalRefinementsDone}. " +
-				  $"Modified transitions: {repairResult.RepairModifications.EnhancedTransitions}"
-				: "Failed to repair the model. Try using different repair algorithm.";
+				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. \n" +
+				  $"Repair steps: {repairResult.RepairSteps}. \n" +
+				  $"States constructed: {repairResult.TotalStatesConsidered}. \n" +
+				  $"Transition refinements: {repairResult.TotalRefinementsDone}. \n" +
+				  $"Modified transitions: {string.Join(',',repairResult.RepairModifications.EnhancedTransitions.ToArray())}"
+				: $"Failed to repair the model. Try using different repair algorithm. Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms.";
 			ModernMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
 			currentDisplayedNet = repairResult.Dpn;

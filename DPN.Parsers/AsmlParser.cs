@@ -7,40 +7,42 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers
 {
-	public class AsmlParser // TODO: вынести State Space Structure на уровень Soundness!
+	public class AsmlParser
 	{
-		private const string xsdSchema = "XsdSchemas\\asml.xsd";
-
-		private const string rootElementName = "asml";
-		private const string stateSpaceElementName = "state_space";
-		private const string statesElementName = "states";
-		private const string arcsElementName = "arcs";
-		private const string transitionsElementName = "transitions";
-		private const string finalMarkingElementName = "final_marking";
-		private const string tokensElementName = "marking";
-		private const string constraintElementName = "constraint";
-		private const string stateElementName = "state";
-		private const string arcElementName = "arc";
-		private const string placeElementName = "place";
-		private const string transitionElementName = "transition";
-		private const string nameElementName = "name";
-		private const string textElementName = "text";
-		private const string variablesElementName = "variables";
-		private const string variableElementName = "variable";
-		private const string idAttributeName = "id";
-		private const string labelAttributeName = "label";
-		private const string isSilentAttributeName = "is_silent";
-		private const string sourceIdAttributeName = "source_id";
-		private const string targetIdAttributeName = "target_id";
-		private const string baseTransitionIdAttributeName = "base_transition_id";
-		private const string tokensAttributeName = "tokens";
-		private const string isTauAttributeName = "is_tau";
-		private const string isSplitAttributeName = "is_split";
-		private const string guardAttributeName = "guard";
-		private const string typeAttributeName = "type";
-		private const string graphTypeAttributeName = "graph_type";
-		private const string isFullAttributeName = "is_full";
-
+		private const string xsdSchema = "XsdSchemas\\graphml.xsd";
+		private const string rootElementName = "graphml";
+		
+		// Graph IDs
+		private const string variablesGraphId = "variables";
+		private const string transitionsGraphId = "transitions";
+		private const string stateSpaceGraphId = "state_space";
+		private const string metadataGraphId = "metadata";
+		private const string relationshipsGraphId = "relationships";
+		
+		// Attribute keys
+		private const string dStateId = "state_id";
+		private const string dMarking = "marking";
+		private const string dConstraint = "constraint";
+		private const string dLabel = "label";
+		private const string dBaseTransitionId = "base_transition_id";
+		private const string dIsSilent = "is_silent";
+		private const string dTransitionId = "transition_id";
+		private const string dGuard = "guard";
+		private const string dIsTau = "is_tau";
+		private const string dIsSplit = "is_split";
+		private const string dVariableId = "variable_id";
+		private const string dDataType = "data_type";
+		private const string dEdgeType = "edge_type";
+		private const string dFinalMarking = "final_marking";
+		private const string dVariables = "variables";
+		private const string dGraphType = "graph_type";
+		private const string dIsFull = "is_full";
+		
+		// Node types
+		private const string nodeTypeState = "state";
+		private const string nodeTypeTransition = "transition";
+		private const string nodeTypeVariable = "variable";
+		
 		private readonly XsdValidator validator = new(xsdSchema);
 
 		public StateSpaceGraph Deserialize(XDocument document)
@@ -54,99 +56,28 @@ namespace DPN.Parsers
 				throw new SerializationException("Error occurred on deserializing:\n" + errorText);
 			}
 			
-			var cgElement = document.Root?.Element(stateSpaceElementName);
-			if (cgElement == null)
-				throw new Exception("Document is incorrect. Can't find <state_space> tag");
-
-			// Deserialize States
-			var statesElement = cgElement.Element(statesElementName);
-			var nodes = new List<StateSpaceNode>();
-
-			// Deserialize Variables
-			var variablesElement = document.Root?.Element(variablesElementName);
-			var typedVariables = new Dictionary<string, DomainType>();
-			foreach (var variableElem in variablesElement.Elements(variableElementName))
-			{
-				var name = variableElem.Element(nameElementName)?.Value ?? "";
-				var typeStr = variableElem.Attribute(typeAttributeName)?.Value ?? "Integer";
-				if (Enum.TryParse<DomainType>(typeStr, out var domainType))
-				{
-					typedVariables[name + "_r"] = domainType;
-					typedVariables[name + "_w"] = domainType;
-				}
-			}
-
+			var graphmlRoot = document.Root;
+			var graphs = graphmlRoot.Elements("graph").ToList();
+			
+			// Parse variables from variables graph
+			var variablesGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == variablesGraphId);
+			var typedVariables = ParseVariables(variablesGraph, out var variablesInFormulas);
+			
 			var context = new Context();
-			var expressionParser = new Z3ExpressionParser(context, typedVariables);
-
-			foreach (var xmlState in statesElement.Elements(stateElementName))
-			{
-				var id = int.Parse(xmlState.Attribute(idAttributeName)?.Value ?? "0");
-				var tokensElement = xmlState.Element(tokensElementName);
-				var markingDict = new Dictionary<string, int>();
-				foreach (var placeElem in tokensElement.Elements(placeElementName))
-				{
-					markingDict[placeElem.Value] = int.Parse(placeElem.Attribute(tokensAttributeName)?.Value ?? "0");
-				}
-
-				var constraintStr = xmlState.Element(constraintElementName)?.Value ?? "true";
-				// NOTE: Actual deserialization of BoolExpr may require a parser, here we keep as string
-				// You may want to parse constraintStr to BoolExpr if needed
-				nodes.Add(new StateSpaceNode(
-					markingDict,
-					expressionParser.Parse(constraintStr), // Constraint parsing to BoolExpr can be added if needed
-					id
-				));
-			}
-
-			// Deserialize Arcs
-			var arcsElement = cgElement.Element(arcsElementName);
-			var arcs = new List<StateSpaceArc>();
-			foreach (var xmlArc in arcsElement.Elements(arcElementName))
-			{
-				arcs.Add(new StateSpaceArc(
-					bool.Parse(xmlArc.Attribute(isSilentAttributeName)?.Value ?? "false"),
-					xmlArc.Attribute(baseTransitionIdAttributeName)?.Value ?? "",
-					int.Parse(xmlArc.Attribute(sourceIdAttributeName)?.Value ?? "0"),
-					int.Parse(xmlArc.Attribute(targetIdAttributeName)?.Value ?? "0"),
-					xmlArc.Attribute(labelAttributeName)?.Value ?? ""
-				));
-			}
-
-			// Deserialize Final Marking
-			var finalMarkingElement = document.Root?.Element(finalMarkingElementName);
-			var finalMarkingDict = new Dictionary<string, int>();
-			foreach (var placeElem in finalMarkingElement.Elements(placeElementName))
-			{
-				finalMarkingDict[placeElem.Value] = int.Parse(placeElem.Attribute(tokensAttributeName)?.Value ?? "0");
-			}
-
-			// Deserialize Transitions
-			var transitionsElement = document.Root?.Element(transitionsElementName);
-			var transitions = new List<DPN.Models.DPNElements.Transition>();
-			foreach (var xmlTransition in transitionsElement.Elements(transitionElementName))
-			{
-				var id = xmlTransition.Attribute(idAttributeName)?.Value ?? "";
-				var label = xmlTransition.Element(nameElementName)?.Element(textElementName)?.Value ?? "";
-				var baseTransitionId = xmlTransition.Attribute(baseTransitionIdAttributeName)?.Value ?? id;
-				var isTau = bool.Parse(xmlTransition.Attribute(isTauAttributeName)?.Value ?? "false");
-				var isSplit = bool.Parse(xmlTransition.Attribute(isSplitAttributeName)?.Value ?? "false");
-				var constraintStr = xmlTransition.Attribute(guardAttributeName)?.Value ?? "true";
-				// Guard deserialization is skipped for brevity
-				var guard = new DPN.Models.DPNElements.Guard(context, expressionParser.Parse(constraintStr)); // You may want to parse guard from attribute
-				transitions.Add(new DPN.Models.DPNElements.Transition(id, guard, baseTransitionId)
-				{
-					Label = label,
-					IsTau = isTau,
-					IsSplit = isSplit
-				});
-			}
-
-			// Get attributes
-			var isFullGraph = bool.Parse(cgElement.Attribute(isFullAttributeName)?.Value ?? "true");
-			var graphTypeStr = cgElement.Attribute(graphTypeAttributeName)?.Value ?? "AbstractReachabilityGraph";
-			var stateSpaceType = Enum.TryParse<TransitionSystemType>(graphTypeStr, out var type) ? type : TransitionSystemType.AbstractReachabilityGraph;
-
+			var expressionParser = new Z3ExpressionParser(context, variablesInFormulas);
+			
+			// Parse transitions from transitions graph
+			var transitionsGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == transitionsGraphId);
+			var transitions = ParseTransitions(transitionsGraph, expressionParser, context);
+			
+			// Parse states and arcs from state space graph
+			var stateSpaceGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == stateSpaceGraphId);
+			var (nodes, arcs) = ParseStateSpace(stateSpaceGraph, expressionParser);
+			
+			// Parse metadata from metadata graph
+			var metadataGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == metadataGraphId);
+			var (isFullGraph, stateSpaceType, finalMarkingDict) = ParseMetadata(metadataGraph);
+			
 			return new StateSpaceGraph(
 				nodes.ToArray(),
 				arcs.ToArray(),
@@ -158,115 +89,455 @@ namespace DPN.Parsers
 			);
 		}
 
+		private Dictionary<string, DomainType> ParseVariables(XElement variablesGraph, out Dictionary<string, DomainType> variablesInFormulas)
+		{
+			var typedVariables = new Dictionary<string, DomainType>();
+			variablesInFormulas = new Dictionary<string, DomainType>();
+			
+			if (variablesGraph == null) return typedVariables;
+			
+			foreach (var variableNode in variablesGraph.Elements("node"))
+			{
+				var variableId = variableNode.Attribute("id")?.Value;
+				var dataTypeElem = variableNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dDataType);
+				
+				if (variableId != null && dataTypeElem != null)
+				{
+					if (Enum.TryParse<DomainType>(dataTypeElem.Value, out var domainType))
+					{
+						typedVariables[variableId] = domainType;
+						variablesInFormulas[variableId + "_r"] = domainType;
+						variablesInFormulas[variableId + "_w"] = domainType;
+					}
+				}
+			}
+			
+			return typedVariables;
+		}
+
+		private List<DPN.Models.DPNElements.Transition> ParseTransitions(XElement transitionsGraph, Z3ExpressionParser expressionParser, Context context)
+		{
+			var transitions = new List<DPN.Models.DPNElements.Transition>();
+			
+			if (transitionsGraph == null) return transitions;
+			
+			foreach (var transitionNode in transitionsGraph.Elements("node"))
+			{
+				var id = transitionNode.Attribute("id")?.Value ?? "";
+				
+				// Get transition properties from data elements
+				var labelElem = transitionNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dLabel);
+				var guardElem = transitionNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dGuard);
+				var isTauElem = transitionNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dIsTau);
+				var isSplitElem = transitionNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dIsSplit);
+				
+				var label = labelElem?.Value ?? id;
+				var isTau = bool.Parse(isTauElem?.Value ?? "false");
+				var isSplit = bool.Parse(isSplitElem?.Value ?? "false");
+				var guardStr = guardElem?.Value ?? "true";
+				
+				// Note: Need to re-parse guard with proper variables context
+				var guard = new DPN.Models.DPNElements.Guard(context, expressionParser.Parse(guardStr));
+				
+				transitions.Add(new DPN.Models.DPNElements.Transition(id, guard, id)
+				{
+					Label = label,
+					IsTau = isTau,
+					IsSplit = isSplit
+				});
+			}
+			
+			return transitions;
+		}
+
+		private (List<StateSpaceNode> nodes, List<StateSpaceArc> arcs) ParseStateSpace(
+			XElement stateSpaceGraph, Z3ExpressionParser expressionParser)
+		{
+			var nodes = new List<StateSpaceNode>();
+			var arcs = new List<StateSpaceArc>();
+			
+			if (stateSpaceGraph == null) return (nodes, arcs);
+			
+			// Parse state nodes
+			foreach (var stateNode in stateSpaceGraph.Elements("node"))
+			{
+				var stateId = int.Parse(stateNode.Attribute("id")?.Value ?? "0");
+				
+				var markingElem = stateNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dMarking);
+				var constraintElem = stateNode.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dConstraint);
+				
+				if (markingElem == null) continue;
+				
+				// Parse marking string format: "i=1,p1=0,p2=0,..."
+				var markingDict = ParseMarkingString(markingElem.Value);
+				var constraintStr = constraintElem?.Value ?? "true";
+				
+				nodes.Add(new StateSpaceNode(
+					markingDict,
+					expressionParser.Parse(constraintStr),
+					stateId
+				));
+			}
+			
+			// Parse arcs
+			foreach (var edge in stateSpaceGraph.Elements("edge"))
+			{
+				var sourceId = int.Parse(edge.Attribute("source")?.Value ?? "0");
+				var targetId = int.Parse(edge.Attribute("target")?.Value ?? "0");
+				
+				var labelElem = edge.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dLabel);
+				var isSilentElem = edge.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dIsSilent);
+				var baseTransitionIdElem = edge.Elements("data")
+					.FirstOrDefault(e => e.Attribute("key")?.Value == dBaseTransitionId);
+				
+				var label = labelElem?.Value ?? "";
+				var isSilent = bool.Parse(isSilentElem?.Value ?? "false");
+				var baseTransitionId = baseTransitionIdElem?.Value ?? "";
+				
+				arcs.Add(new StateSpaceArc(
+					isSilent,
+					baseTransitionId,
+					sourceId,
+					targetId,
+					label
+				));
+			}
+			
+			return (nodes, arcs);
+		}
+
+		private (bool isFull, TransitionSystemType type, Dictionary<string, int> finalMarking) ParseMetadata(XElement metadataGraph)
+		{
+			var isFull = true;
+			var type = TransitionSystemType.AbstractReachabilityGraph;
+			var finalMarking = new Dictionary<string, int>();
+			
+			if (metadataGraph == null) return (isFull, type, finalMarking);
+			
+			// Parse data elements from metadata graph
+			var graphTypeElem = metadataGraph.Elements("data")
+				.FirstOrDefault(e => e.Attribute("key")?.Value == dGraphType);
+			var isFullElem = metadataGraph.Elements("data")
+				.FirstOrDefault(e => e.Attribute("key")?.Value == dIsFull);
+			var finalMarkingElem = metadataGraph.Elements("data")
+				.FirstOrDefault(e => e.Attribute("key")?.Value == dFinalMarking);
+			
+			if (graphTypeElem != null)
+			{
+				Enum.TryParse<TransitionSystemType>(graphTypeElem.Value, out type);
+			}
+			
+			if (isFullElem != null)
+			{
+				bool.TryParse(isFullElem.Value, out isFull);
+			}
+			
+			if (finalMarkingElem != null)
+			{
+				finalMarking = ParseMarkingString(finalMarkingElem.Value);
+			}
+			
+			return (isFull, type, finalMarking);
+		}
+
+		private Dictionary<string, int> ParseMarkingString(string markingStr)
+		{
+			var markingDict = new Dictionary<string, int>();
+			
+			if (string.IsNullOrEmpty(markingStr)) return markingDict;
+			
+			var parts = markingStr.Split(',');
+			foreach (var part in parts)
+			{
+				var keyValue = part.Split('=');
+				if (keyValue.Length == 2)
+				{
+					var place = keyValue[0].Trim();
+					if (int.TryParse(keyValue[1].Trim(), out var tokens))
+					{
+						markingDict[place] = tokens;
+					}
+				}
+			}
+			
+			return markingDict;
+		}
+
 		public XDocument Serialize(StateSpaceGraph stateSpace)
 		{
-			var statesElement = new XElement(statesElementName);
-			var expressionSerializer = new Z3ExpressionSerializer();
+			var graphmlRoot = new XElement(rootElementName);
+			
+			// Add keys definitions
+			AddKeys(graphmlRoot);
+			
+			// Add variables graph
+			var variablesGraph = CreateVariablesGraph(stateSpace.TypedVariables);
+			graphmlRoot.Add(variablesGraph);
+			
+			// Add transitions graph
+			var transitionsGraph = CreateTransitionsGraph(stateSpace.DpnTransitions);
+			graphmlRoot.Add(transitionsGraph);
+			
+			// Add state space graph
+			var stateSpaceGraph = CreateStateSpaceGraph(stateSpace);
+			graphmlRoot.Add(stateSpaceGraph);
+			
+			// Add metadata graph
+			var metadataGraph = CreateMetadataGraph(stateSpace);
+			graphmlRoot.Add(metadataGraph);
+			
+			// Optionally add relationships graph (if needed)
+			// var relationshipsGraph = CreateRelationshipsGraph(stateSpace);
+			// graphmlRoot.Add(relationshipsGraph);
+			
+			return new XDocument(graphmlRoot);
+		}
 
-			foreach (var state in stateSpace.Nodes)
+		private void AddKeys(XElement graphmlRoot)
+		{
+			// Add keys for different data types
+			var keys = new[]
 			{
-				var tokensElement = new XElement(tokensElementName);
-				foreach (var (place, tokens) in state.Marking)
+				new { Id = dStateId, For = "node", Type = "string" },
+				new { Id = dMarking, For = "node", Type = "string" },
+				new { Id = dConstraint, For = "node", Type = "string" },
+				new { Id = dLabel, For = "edge", Type = "string" },
+				new { Id = dBaseTransitionId, For = "edge", Type = "string" },
+				new { Id = dIsSilent, For = "edge", Type = "boolean" },
+				new { Id = dTransitionId, For = "node", Type = "string" },
+				new { Id = dGuard, For = "node", Type = "string" },
+				new { Id = dIsTau, For = "node", Type = "boolean" },
+				new { Id = dIsSplit, For = "node", Type = "boolean" },
+				new { Id = dVariableId, For = "node", Type = "string" },
+				new { Id = dDataType, For = "node", Type = "string" },
+				new { Id = dEdgeType, For = "edge", Type = "string" },
+				new { Id = dFinalMarking, For = "graph", Type = "string" },
+				new { Id = dVariables, For = "graph", Type = "string" },
+				new { Id = dGraphType, For = "graph", Type = "string" },
+				new { Id = dIsFull, For = "graph", Type = "boolean" }
+			};
+			
+			foreach (var key in keys)
+			{
+				var keyElement = new XElement("key",
+					new XAttribute("id", key.Id),
+					new XAttribute("for", key.For),
+					new XAttribute("attr.name", key.Id),
+					new XAttribute("attr.type", key.Type));
+				graphmlRoot.Add(keyElement);
+			}
+		}
+
+		private XElement CreateVariablesGraph(Dictionary<string, DomainType> typedVariables)
+		{
+			var variablesGraph = new XElement("graph",
+				new XAttribute("id", variablesGraphId),
+				new XAttribute("edgedefault", "undirected"));
+			
+			// Group variables by removing suffixes and get unique variable names
+			var uniqueVariables = typedVariables
+				.Select(kvp => kvp.Key.Replace("_r", "").Replace("_w", ""))
+				.Distinct()
+				.ToList();
+			
+			// Group by type
+			var variablesByType = new Dictionary<DomainType, List<string>>();
+			foreach (var variable in uniqueVariables)
+			{
+				var type = typedVariables[variable];
+					/*typedVariables.ContainsKey(variable + "_r") 
+					? typedVariables[variable + "_r"] 
+					: typedVariables.ContainsKey(variable + "_w") 
+						? typedVariables[variable + "_w"] 
+						: DomainType.Integer;*/
+				
+				if (!variablesByType.ContainsKey(type))
+					variablesByType[type] = new List<string>();
+				
+				variablesByType[type].Add(variable);
+			}
+			
+			foreach (var (type, variableList) in variablesByType)
+			{
+				foreach (var variable in variableList)
 				{
-					var placeElement = new XElement(placeElementName, place);
-					placeElement.SetAttributeValue(tokensAttributeName, tokens);
-
-					tokensElement.Add(placeElement);
+					var variableNode = new XElement("node",
+						new XAttribute("id", variable));
+					
+					variableNode.Add(new XElement("data",
+						new XAttribute("key", dVariableId),
+						variable));
+					
+					variableNode.Add(new XElement("data",
+						new XAttribute("key", dDataType),
+						type.ToString()));
+					
+					variablesGraph.Add(variableNode);
 				}
-
-				var constraintFormula = expressionSerializer.Serialize(state.StateConstraint!);
-				var constraintElement = new XElement(constraintElementName, constraintFormula);
-
-				var stateElement = new XElement(stateElementName);
-				stateElement.Add(tokensElement);
-				stateElement.Add(constraintElement);
-				stateElement.SetAttributeValue(idAttributeName, state.Id.ToString());
-
-				statesElement.Add(stateElement);
 			}
+			
+			return variablesGraph;
+		}
 
-			var arcsElement = new XElement(arcsElementName);
-			foreach (var arc in stateSpace.Arcs)
+		private XElement CreateTransitionsGraph(DPN.Models.DPNElements.Transition[] dpnTransitions)
+		{
+			var transitionsGraph = new XElement("graph",
+				new XAttribute("id", transitionsGraphId),
+				new XAttribute("edgedefault", "undirected"));
+			
+			var expressionSerializer = new Z3ExpressionSerializer();
+			
+			foreach (var transition in dpnTransitions)
 			{
-				var arcElement = new XElement(arcElementName);
-				arcElement.SetAttributeValue(labelAttributeName, arc.Label);
-				arcElement.SetAttributeValue(isSilentAttributeName, arc.IsSilent);
-				arcElement.SetAttributeValue(sourceIdAttributeName, arc.SourceNodeId);
-				arcElement.SetAttributeValue(targetIdAttributeName, arc.TargetNodeId);
-				arcElement.SetAttributeValue(baseTransitionIdAttributeName, arc.BaseTransitionId);
-
-				arcsElement.Add(arcElement);
-			}
-
-			var finalMarkingElement = new XElement(finalMarkingElementName);
-			foreach (var (place, tokens) in stateSpace.FinalDpnMarking)
-			{
-				var placeElement = new XElement(placeElementName, place);
-				placeElement.SetAttributeValue(tokensAttributeName, tokens);
-
-				finalMarkingElement.Add(placeElement);
-			}
-
-			var transitionsElement = new XElement(transitionsElementName);
-
-			foreach (var transition in stateSpace.DpnTransitions)
-			{
-				var transitionElement = new XElement(transitionElementName,
-					new XElement(nameElementName,
-						new XElement(textElementName, transition.Label)));
-				transitionElement.SetAttributeValue(idAttributeName, transition.Id);
-				transitionElement.SetAttributeValue(baseTransitionIdAttributeName, transition.BaseTransitionId);
-				transitionElement.SetAttributeValue(isTauAttributeName, transition.IsTau);
-				transitionElement.SetAttributeValue(isSplitAttributeName, transition.IsTau);
-
+				var transitionNode = new XElement("node",
+					new XAttribute("id", transition.Id));
+				
+				transitionNode.Add(new XElement("data",
+					new XAttribute("key", dTransitionId),
+					transition.Id));
+				
+				transitionNode.Add(new XElement("data",
+					new XAttribute("key", dLabel),
+					transition.Label));
+				
 				if (!transition.Guard.ActualConstraintExpression.IsTrue)
 				{
-					var stringExpression = expressionSerializer.Serialize(transition.Guard.ActualConstraintExpression);
-					transitionElement.SetAttributeValue(guardAttributeName, stringExpression);
+					var guardStr = expressionSerializer.Serialize(transition.Guard.ActualConstraintExpression);
+					transitionNode.Add(new XElement("data",
+						new XAttribute("key", dGuard),
+						guardStr));
 				}
-
-				transitionsElement.Add(transitionElement);
+				
+				transitionNode.Add(new XElement("data",
+					new XAttribute("key", dIsTau),
+					transition.IsTau.ToString().ToLowerInvariant()));
+				
+				transitionNode.Add(new XElement("data",
+					new XAttribute("key", dIsSplit),
+					transition.IsSplit.ToString().ToLowerInvariant()));
+				
+				transitionsGraph.Add(transitionNode);
 			}
+			
+			return transitionsGraph;
+		}
 
-			XElement variablesElement = new XElement(variablesElementName);
-			var variables = stateSpace.TypedVariables
-				.Select(kvp => (kvp.Key, kvp.Value))
-				.GroupBy(kvp => kvp.Value)
-				.ToDictionary(g => g.Key, g => g.Select(x => x.Key).ToArray());
-
-			foreach (var domainType in Enum.GetValues<DomainType>())
+		private XElement CreateStateSpaceGraph(StateSpaceGraph stateSpace)
+		{
+			var stateSpaceGraph = new XElement("graph",
+				new XAttribute("id", stateSpaceGraphId),
+				new XAttribute("edgedefault", "directed"));
+			
+			var expressionSerializer = new Z3ExpressionSerializer();
+			
+			// Add state nodes
+			foreach (var state in stateSpace.Nodes)
 			{
-				if (!variables.TryGetValue(domainType, out var typedVariables))
+				var stateNode = new XElement("node",
+					new XAttribute("id", state.Id));
+				
+				stateNode.Add(new XElement("data",
+					new XAttribute("key", dStateId),
+					state.Id.ToString()));
+				
+				// Serialize marking as string: "i=1,p1=0,p2=0,..."
+				var markingStr = string.Join(",",
+					state.Marking.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+				stateNode.Add(new XElement("data",
+					new XAttribute("key", dMarking),
+					markingStr));
+				
+				if (state.StateConstraint != null)
 				{
-					continue;
+					var constraintStr = expressionSerializer.Serialize(state.StateConstraint);
+					stateNode.Add(new XElement("data",
+						new XAttribute("key", dConstraint),
+						constraintStr));
 				}
-
-				foreach (var variable in typedVariables)
-				{
-					var variableElement = new XElement(variableElementName,
-						new XElement(nameElementName, variable));
-					variableElement.SetAttributeValue(typeAttributeName, domainType.ToString());
-					variablesElement.Add(variableElement);
-				}
+				
+				stateSpaceGraph.Add(stateNode);
 			}
+			
+			// Add arcs
+			foreach (var arc in stateSpace.Arcs)
+			{
+				var edge = new XElement("edge",
+					new XAttribute("source", arc.SourceNodeId),
+					new XAttribute("target", arc.TargetNodeId));
+				
+				edge.Add(new XElement("data",
+					new XAttribute("key", dLabel),
+					arc.Label));
+				
+				edge.Add(new XElement("data",
+					new XAttribute("key", dIsSilent),
+					arc.IsSilent.ToString().ToLowerInvariant()));
+				
+				edge.Add(new XElement("data",
+					new XAttribute("key", dBaseTransitionId),
+					arc.BaseTransitionId));
+				
+				stateSpaceGraph.Add(edge);
+			}
+			
+			return stateSpaceGraph;
+		}
 
-			var cgElement = new XElement(
-				stateSpaceElementName,
-				statesElement,
-				arcsElement);
-			cgElement.SetAttributeValue(graphTypeAttributeName, stateSpace.StateSpaceType.ToString());
-			cgElement.SetAttributeValue(isFullAttributeName, stateSpace.IsFullGraph.ToString().ToLowerInvariant());
+		private XElement CreateMetadataGraph(StateSpaceGraph stateSpace)
+		{
+			var metadataGraph = new XElement("graph",
+				new XAttribute("id", metadataGraphId),
+				new XAttribute("edgedefault", "undirected"));
+			
+			// Add metadata as data elements
+			metadataGraph.Add(new XElement("data",
+				new XAttribute("key", dGraphType),
+				stateSpace.StateSpaceType.ToString()));
+			
+			metadataGraph.Add(new XElement("data",
+				new XAttribute("key", dIsFull),
+				stateSpace.IsFullGraph.ToString().ToLowerInvariant()));
+			
+			// Serialize final marking
+			var finalMarkingStr = string.Join(",",
+				stateSpace.FinalDpnMarking.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+			metadataGraph.Add(new XElement("data",
+				new XAttribute("key", dFinalMarking),
+				finalMarkingStr));
+			
+			// Serialize variables info (optional)
+			var variablesStr = string.Join(",",
+				stateSpace.TypedVariables
+					.Select(kvp => $"{kvp.Key}:{kvp.Value}")
+					.Distinct());
+			metadataGraph.Add(new XElement("data",
+				new XAttribute("key", dVariables),
+				variablesStr));
+			
+			return metadataGraph;
+		}
 
-			var srcTree = new XElement(
-				rootElementName, 
-				cgElement,
-				finalMarkingElement,
-				transitionsElement,
-				variablesElement);
-
-			var document = new XDocument(srcTree);
-
-			return document;
+		// Optional: Create relationships graph
+		private XElement CreateRelationshipsGraph(StateSpaceGraph stateSpace)
+		{
+			var relationshipsGraph = new XElement("graph",
+				new XAttribute("id", relationshipsGraphId),
+				new XAttribute("edgedefault", "directed"));
+			
+			// This would contain edges linking transitions to variables they use,
+			// states to variables in constraints, etc.
+			// Implementation depends on specific relationship needs
+			
+			return relationshipsGraph;
 		}
 	}
 }

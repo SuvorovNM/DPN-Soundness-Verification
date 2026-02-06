@@ -24,8 +24,8 @@ namespace DataPetriNetGeneration
             while (arcsRemained > 0)
             {
                 var arcTypeChosen = (ArcType)random.Next(0, 1);
-                var placeChosen = dpn.Places[random.Next(0, dpn.Places.Count)];
-                var transitionChosen = dpn.Transitions[random.Next(placesCount-1, dpn.Transitions.Count)];// TODO: rollback to 0
+                var placeChosen = dpn.Places[random.Next(1, dpn.Places.Count-1)];
+                var transitionChosen = dpn.Transitions[random.Next(1, dpn.Transitions.Count)];
 
                 if (arcTypeChosen == ArcType.PlaceTransition)
                 {

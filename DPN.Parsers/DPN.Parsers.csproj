@@ -18,16 +18,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="XsdSchemas\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="XsdSchemas\pnmlx.xsd" />
     <EmbeddedResource Include="XsdSchemas\pnmlx.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <None Remove="XsdSchemas\asml.xsd" />
     <EmbeddedResource Include="XsdSchemas\asml.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="XsdSchemas\graphml.xsd" />
+    <EmbeddedResource Include="XsdSchemas\graphml.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
