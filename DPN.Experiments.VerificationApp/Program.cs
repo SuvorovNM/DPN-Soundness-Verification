@@ -56,6 +56,7 @@ namespace DataPetriNetVerificationApplication
 			var repairParameters = new Dictionary<string, string>();
 
 			//args = @"DpnFile C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\7e066b47-6b41-4c4d-b2b9-cce2422655a2.pnmlx PipeClientHandle 2656 OutputDirectory C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False".Split();
+			//args = @"DpnFile C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\test\a2ddc07c-fc36-453c-adfd-9ca2fe4dc5d0.pnmlx PipeClientHandle 772 OutputDirectory C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\console-test\ VerificationAlgorithmTypeEnum DirectVersion SoundnessType Classical WithRepair True".Split();
 
 			var index = 0;
 			do

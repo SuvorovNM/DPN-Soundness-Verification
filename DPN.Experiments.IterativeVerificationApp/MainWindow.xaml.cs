@@ -41,6 +41,7 @@ namespace DataPetriNetIterativeVerificationApplication
             PlacesNumberTb.Text = "0.9";
             TransitionsNumberTb.Text = "1";
             ArcsNumberTb.Text = "0.2";
+            ResourcesNumberTb.Text = "0";
             VariablesNumberTb.Text = "0.25";
             ConditionsNumberTb.Text = "0.75";
             MaxDtTb.Text = "25";
@@ -135,6 +136,7 @@ namespace DataPetriNetIterativeVerificationApplication
                 {
                     Places = double.Parse(PlacesNumberTb.Text, CultureInfo.InvariantCulture),
                     Transitions = double.Parse(TransitionsNumberTb.Text, CultureInfo.InvariantCulture),
+                    ResourcePlaces = double.Parse(ResourcesNumberTb.Text, CultureInfo.InvariantCulture),
                     ExtraArcs = double.Parse(ArcsNumberTb.Text, CultureInfo.InvariantCulture),
                     Conditions = double.Parse(ConditionsNumberTb.Text, CultureInfo.InvariantCulture),
                     Variables = double.Parse(VariablesNumberTb.Text, CultureInfo.InvariantCulture)

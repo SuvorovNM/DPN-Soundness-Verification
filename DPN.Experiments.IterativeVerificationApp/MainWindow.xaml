@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataPetriNetIterativeVerificationApplication"
         mc:Ignorable="d"
-        Title="Iterative Verifier" Height="450" Width="900">
+        Title="Iterative Verifier" Height="600" Width="900">
     <Grid Margin="0,1,0,-1">
         <TabControl x:Name="generationTypes">
             <TabItem x:Name="iterativeGenerationTab">
@@ -19,14 +19,16 @@
                         <Label Content="DPN Characteristics" HorizontalAlignment="Left" Margin="20,0,0,0" VerticalAlignment="Top" Width="142" Height="26" FontSize="15"/>
                         <Label Content="Places:" HorizontalAlignment="Left" Margin="35,31,0,0" VerticalAlignment="Top" Width="72"/>
                         <Label Content="Transitions:" HorizontalAlignment="Left" Margin="35,57,0,0" VerticalAlignment="Top" Width="72"/>
-                        <Label Content="Extra Arcs:" HorizontalAlignment="Left" Margin="35,83,0,0" VerticalAlignment="Top" Width="72"/>
-                        <Label Content="Variables:" HorizontalAlignment="Left" Margin="35,109,0,0" VerticalAlignment="Top" Width="72"/>
-                        <Label Content="Conditions:" HorizontalAlignment="Left" Margin="35,135,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Resources:" HorizontalAlignment="Left" Margin="35,83,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Extra Arcs:" HorizontalAlignment="Left" Margin="35,109,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Variables:" HorizontalAlignment="Left" Margin="35,135,0,0" VerticalAlignment="Top" Width="72"/>
+                        <Label Content="Conditions:" HorizontalAlignment="Left" Margin="35,161,0,0" VerticalAlignment="Top" Width="72"/>
                         <TextBox Name="PlacesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,36,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
                         <TextBox Name="TransitionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,62,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <TextBox Name="ArcsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <TextBox Name="VariablesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,114,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
-                        <TextBox Name="ConditionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,140,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="ResourcesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="ArcsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,114,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="VariablesNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,140,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
+                        <TextBox Name="ConditionsNumberTb" PreviewTextInput="PositiveRealNumber_PreviewTextInput" HorizontalAlignment="Left" Margin="107,166,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="45"/>
                         <Label Content="Iterations" HorizontalAlignment="Left" Margin="710,1,0,0" VerticalAlignment="Top" Width="80" Height="30" FontSize="15"/>
                         <Label Content="Initial n-value:" HorizontalAlignment="Left" Margin="720,30,0,0" VerticalAlignment="Top" Width="122"/>
                         <Label Content="DPNs per Config:" HorizontalAlignment="Left" Margin="720,55,0,0" VerticalAlignment="Top" Width="141"/>
@@ -39,6 +41,7 @@
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,85,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,112,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
                         <Label Content="n" HorizontalAlignment="Left" Margin="152,137,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
+                        <Label Content="n" HorizontalAlignment="Left" Margin="152,163,0,0" VerticalAlignment="Top" FontSize="11" Width="21"/>
                     </Grid>
                 </TabItem.Content>
             </TabItem>
@@ -114,17 +117,17 @@
             <ComboBoxItem Content="True"/>
         </ComboBox>
         
-        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,197,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
-        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,202,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
-        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,202,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
-        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,201,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
+        <Label Content="Output Directory:" HorizontalAlignment="Left" Margin="20,217,0,0" VerticalAlignment="Top" Width="132" FontSize="14"/>
+        <TextBox Name="DirectoryTb" HorizontalAlignment="Left" Margin="152,224,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="487" MaxHeight="18" Height="18"/>
+        <Button Name="BrowseBtn" Content="..." HorizontalAlignment="Left" Margin="645,224,0,0" VerticalAlignment="Top" Height="18" Width="25"/>
+        <Button Name="StartBtn" Content="Start" HorizontalAlignment="Left" Margin="716,224,0,0" VerticalAlignment="Top" Width="90" Click="StartBtn_Click">
         </Button>
-        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,201,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
+        <Button Name="StopsBtn" HorizontalAlignment="Left" Margin="819,224,0,0" VerticalAlignment="Top" Width="25" Click="StopsBtn_Click" Height="20">
             <StackPanel Orientation="Horizontal">
                 <Image Source="Resources/Stop_img.png" Width="13" Height="20"/>
             </StackPanel>
         </Button>
-        <Grid Margin="0,244,0,0">
+        <Grid Margin="0,260,0,0">
             <DataGrid Name="VerificationDG" IsReadOnly="True">
                 <DataGrid.Resources>
                     <ContextMenu x:Key="verificationContextMenu">

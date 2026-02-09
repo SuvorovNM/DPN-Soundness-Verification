@@ -20,13 +20,11 @@ namespace DPN.Parsers
 		private const string relationshipsGraphId = "relationships";
 		
 		// Attribute keys
-		private const string dStateId = "state_id";
 		private const string dMarking = "marking";
 		private const string dConstraint = "constraint";
 		private const string dLabel = "label";
 		private const string dBaseTransitionId = "base_transition_id";
 		private const string dIsSilent = "is_silent";
-		private const string dTransitionId = "transition_id";
 		private const string dGuard = "guard";
 		private const string dIsTau = "is_tau";
 		private const string dIsSplit = "is_split";
@@ -38,10 +36,6 @@ namespace DPN.Parsers
 		private const string dGraphType = "graph_type";
 		private const string dIsFull = "is_full";
 		
-		// Node types
-		private const string nodeTypeState = "state";
-		private const string nodeTypeTransition = "transition";
-		private const string nodeTypeVariable = "variable";
 		
 		private readonly XsdValidator validator = new(xsdSchema);
 
@@ -59,20 +53,21 @@ namespace DPN.Parsers
 			var graphmlRoot = document.Root;
 			var graphs = graphmlRoot.Elements("graph").ToList();
 			
+						
 			// Parse variables from variables graph
 			var variablesGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == variablesGraphId);
 			var typedVariables = ParseVariables(variablesGraph, out var variablesInFormulas);
 			
 			var context = new Context();
 			var expressionParser = new Z3ExpressionParser(context, variablesInFormulas);
+						
+			// Parse states and arcs from state space graph
+			var stateSpaceGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == stateSpaceGraphId);
+			var (nodes, arcs) = ParseStateSpace(stateSpaceGraph, expressionParser);
 			
 			// Parse transitions from transitions graph
 			var transitionsGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == transitionsGraphId);
 			var transitions = ParseTransitions(transitionsGraph, expressionParser, context);
-			
-			// Parse states and arcs from state space graph
-			var stateSpaceGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == stateSpaceGraphId);
-			var (nodes, arcs) = ParseStateSpace(stateSpaceGraph, expressionParser);
 			
 			// Parse metadata from metadata graph
 			var metadataGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == metadataGraphId);
@@ -279,6 +274,10 @@ namespace DPN.Parsers
 			// Add keys definitions
 			AddKeys(graphmlRoot);
 			
+			// Add state space graph
+			var stateSpaceGraph = CreateStateSpaceGraph(stateSpace);
+			graphmlRoot.Add(stateSpaceGraph);
+			
 			// Add variables graph
 			var variablesGraph = CreateVariablesGraph(stateSpace.TypedVariables);
 			graphmlRoot.Add(variablesGraph);
@@ -286,10 +285,6 @@ namespace DPN.Parsers
 			// Add transitions graph
 			var transitionsGraph = CreateTransitionsGraph(stateSpace.DpnTransitions);
 			graphmlRoot.Add(transitionsGraph);
-			
-			// Add state space graph
-			var stateSpaceGraph = CreateStateSpaceGraph(stateSpace);
-			graphmlRoot.Add(stateSpaceGraph);
 			
 			// Add metadata graph
 			var metadataGraph = CreateMetadataGraph(stateSpace);
@@ -307,13 +302,11 @@ namespace DPN.Parsers
 			// Add keys for different data types
 			var keys = new[]
 			{
-				new { Id = dStateId, For = "node", Type = "string" },
 				new { Id = dMarking, For = "node", Type = "string" },
 				new { Id = dConstraint, For = "node", Type = "string" },
 				new { Id = dLabel, For = "edge", Type = "string" },
 				new { Id = dBaseTransitionId, For = "edge", Type = "string" },
 				new { Id = dIsSilent, For = "edge", Type = "boolean" },
-				new { Id = dTransitionId, For = "node", Type = "string" },
 				new { Id = dGuard, For = "node", Type = "string" },
 				new { Id = dIsTau, For = "node", Type = "boolean" },
 				new { Id = dIsSplit, For = "node", Type = "boolean" },
@@ -402,10 +395,6 @@ namespace DPN.Parsers
 					new XAttribute("id", transition.Id));
 				
 				transitionNode.Add(new XElement("data",
-					new XAttribute("key", dTransitionId),
-					transition.Id));
-				
-				transitionNode.Add(new XElement("data",
 					new XAttribute("key", dLabel),
 					transition.Label));
 				
@@ -444,10 +433,6 @@ namespace DPN.Parsers
 			{
 				var stateNode = new XElement("node",
 					new XAttribute("id", state.Id));
-				
-				stateNode.Add(new XElement("data",
-					new XAttribute("key", dStateId),
-					state.Id.ToString()));
 				
 				// Serialize marking as string: "i=1,p1=0,p2=0,..."
 				var markingStr = string.Join(",",
@@ -513,15 +498,6 @@ namespace DPN.Parsers
 			metadataGraph.Add(new XElement("data",
 				new XAttribute("key", dFinalMarking),
 				finalMarkingStr));
-			
-			// Serialize variables info (optional)
-			var variablesStr = string.Join(",",
-				stateSpace.TypedVariables
-					.Select(kvp => $"{kvp.Key}:{kvp.Value}")
-					.Distinct());
-			metadataGraph.Add(new XElement("data",
-				new XAttribute("key", dVariables),
-				variablesStr));
 			
 			return metadataGraph;
 		}

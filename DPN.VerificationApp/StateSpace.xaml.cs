@@ -38,7 +38,7 @@ namespace DPN.VerificationApp
 		{
 			var ofd = new SaveFileDialog()
 			{
-				Filter = "State space files (*.asml) | *.asml"
+				Filter = "State space files (*.graphml) | *.graphml"
 			};
 			if (ofd.ShowDialog() == true)
 			{

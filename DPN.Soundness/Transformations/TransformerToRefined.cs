@@ -30,6 +30,18 @@ namespace DPN.Soundness.Transformations
 
 		public RefinementResult Transform(DataPetriNet sourceDpn, Dictionary<string, string> transformationProperties)
 		{
+			var (transformedDpn, sourceLts) = TransformInner(sourceDpn, transformationProperties);
+			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
+		}
+		
+		internal RefinementResult TransformAndReturnLts(DataPetriNet sourceDpn, Dictionary<string, string> transformationProperties, out LabeledTransitionSystem sourceLts)
+		{
+			(var transformedDpn, sourceLts) = TransformInner(sourceDpn, transformationProperties);
+			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
+		}
+
+		private (DataPetriNet refinedDpn, LabeledTransitionSystem lts) TransformInner(DataPetriNet sourceDpn, Dictionary<string, string> transformationProperties)
+		{
 			transformationProperties.TryGetValue(RefinementSettingsConstants.BaseStructure, out var baseStructure);
 
 			var transformedDpn = (DataPetriNet)sourceDpn.Clone();
@@ -52,7 +64,8 @@ namespace DPN.Soundness.Transformations
 			var maximumCycles = CyclesFinder.GetCycles(sourceLts);
 
 			Refine(transformedDpn, maximumCycles, sourceLts.ConstraintArcs.ToArray());
-			return new RefinementResult(transformedDpn, ToStateSpaceConverter.Convert(sourceLts));
+			
+			return (transformedDpn, sourceLts);
 		}
 
 		private static void Refine(DataPetriNet sourceDpn, List<LtsCycle> cycles, LtsArc[] allArcs)

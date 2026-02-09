@@ -133,6 +133,7 @@ namespace DPN.VerificationApp
 				currentDisplayedNet = dpnGenerator.Generate(
 					modelGenerationPropertiesWindow.PlacesCount,
 					modelGenerationPropertiesWindow.TransitionCount,
+					modelGenerationPropertiesWindow.ResourcePlacesCount,
 					modelGenerationPropertiesWindow.ExtraArcsCount,
 					modelGenerationPropertiesWindow.VarsCount,
 					modelGenerationPropertiesWindow.ConditionsCount);
@@ -245,7 +246,7 @@ namespace DPN.VerificationApp
 		{
 			var ofd = new OpenFileDialog
 			{
-				Filter = "State space files (*.asml) | *.asml"
+				Filter = "State space files (*.graphml) | *.graphml"
 			};
 			if (ofd.ShowDialog() == true)
 			{

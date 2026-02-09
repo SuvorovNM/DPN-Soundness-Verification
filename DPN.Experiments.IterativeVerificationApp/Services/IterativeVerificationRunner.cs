@@ -69,6 +69,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						var dpn = dpnGenerator.Generate(
 							placesCount,
 							transitionsCount,
+							0, // TODO: allow generation of resource places in random verification
 							arcsCount,
 							varsCount,
 							conditionsCount,
@@ -155,6 +156,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						var dpn = dpnGenerator.Generate(
 							(int)Math.Round(verificationInput.DpnInfo.Places * n),
 							(int)Math.Round(verificationInput.DpnInfo.Transitions * n),
+							(int)Math.Round(verificationInput.DpnInfo.ResourcePlaces * n),
 							(int)Math.Round(verificationInput.DpnInfo.ExtraArcs * n),
 							(int)Math.Round(verificationInput.DpnInfo.Variables * n),
 							(int)Math.Round(verificationInput.DpnInfo.Conditions * n),

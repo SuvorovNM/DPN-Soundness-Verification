@@ -7,7 +7,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
     Title="Model Generation Properties" 
-    Height="330" 
+    Height="360" 
         Width="300"
     WindowStartupLocation="CenterOwner"
     WindowStyle="None"
@@ -254,13 +254,25 @@
                              Width="70"
                              HorizontalAlignment="Left"
                              Margin="0,0,0,10"/>
-
-                    <!-- Extra Arcs Count -->
+                    
                     <Label Grid.Row="2" Grid.Column="0"
-                           Content="Number of Extra Arcs:"
+                           Content="Number of Resources:"
                            Style="{StaticResource ModernLabel}"
                            Margin="0,0,15,10"/>
                     <TextBox Grid.Row="2" Grid.Column="1"
+                             x:Name="tbResourcePlacesCount"
+                             Text="0"
+                             Style="{StaticResource ModernTextBox}"
+                             Width="70"
+                             HorizontalAlignment="Left"
+                             Margin="0,0,0,10"/>
+
+                    <!-- Extra Arcs Count -->
+                    <Label Grid.Row="3" Grid.Column="0"
+                           Content="Number of Extra Arcs:"
+                           Style="{StaticResource ModernLabel}"
+                           Margin="0,0,15,10"/>
+                    <TextBox Grid.Row="3" Grid.Column="1"
                              x:Name="tbExtraArcsCount"
                              Text="0"
                              Style="{StaticResource ModernTextBox}"
@@ -269,11 +281,11 @@
                              Margin="0,0,0,10"/>
 
                     <!-- Variables Count -->
-                    <Label Grid.Row="3" Grid.Column="0"
+                    <Label Grid.Row="4" Grid.Column="0"
                            Content="Number of Variables:"
                            Style="{StaticResource ModernLabel}"
                            Margin="0,0,15,10"/>
-                    <TextBox Grid.Row="3" Grid.Column="1"
+                    <TextBox Grid.Row="4" Grid.Column="1"
                              x:Name="tbVarsCount"
                              Text="0"
                              Style="{StaticResource ModernTextBox}"
@@ -282,11 +294,11 @@
                              Margin="0,0,0,10"/>
 
                     <!-- Conditions Count -->
-                    <Label Grid.Row="4" Grid.Column="0"
+                    <Label Grid.Row="5" Grid.Column="0"
                            Content="Number of Conditions:"
                            Style="{StaticResource ModernLabel}"
                            Margin="0,0,15,10"/>
-                    <TextBox Grid.Row="4" Grid.Column="1"
+                    <TextBox Grid.Row="5" Grid.Column="1"
                              x:Name="tbConditionsCount"
                              Text="0"
                              Style="{StaticResource ModernTextBox}"

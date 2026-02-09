@@ -16,12 +16,13 @@ namespace DataPetriNetGeneration
         public DataPetriNet Generate(
             int placesCount, 
             int transitionsCount, 
+            int additionalResourcePlacesCount,
             int additionalArcsCount, 
             int varsCount, 
             int conditionsCount,
             bool soundnessPreference = false)
         {
-            var dpn = backboneGenerator.GenerateBackbone(placesCount, transitionsCount,additionalArcsCount, 0);
+            var dpn = backboneGenerator.GenerateBackbone(placesCount, transitionsCount,additionalArcsCount, additionalResourcePlacesCount);
             conditionsGenerator.GenerateConditions(dpn, varsCount, conditionsCount, soundnessPreference);
 
             return dpn;

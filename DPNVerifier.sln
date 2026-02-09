@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.VerificationConsoleApp"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{C53C8013-7941-4753-82C5-63CEE94B2188}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Experiments.ConsoleIterativeVerifier", "DPN.Experiments.ConsoleIterativeVerifier\DPN.Experiments.ConsoleIterativeVerifier.csproj", "{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,6 +171,18 @@ Global
 		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x64.Build.0 = Release|Any CPU
 		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x86.ActiveCfg = Release|Any CPU
 		{C53C8013-7941-4753-82C5-63CEE94B2188}.Release|x86.Build.0 = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|x64.Build.0 = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Debug|x86.Build.0 = Debug|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x64.ActiveCfg = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x64.Build.0 = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x86.ActiveCfg = Release|Any CPU
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -180,5 +194,6 @@ Global
 		{F1A65E68-B269-4CD6-B1E5-A7513F6847DE} = {BF987AF2-258A-4C36-A5A8-B32D6595C7DF}
 		{5C7B2000-3119-4A16-811D-433FAED64C0A} = {BF987AF2-258A-4C36-A5A8-B32D6595C7DF}
 		{9CB4239B-4CDB-429B-92B9-65EF9FC50BAC} = {BF987AF2-258A-4C36-A5A8-B32D6595C7DF}
+		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F} = {BF987AF2-258A-4C36-A5A8-B32D6595C7DF}
 	EndGlobalSection
 EndGlobal

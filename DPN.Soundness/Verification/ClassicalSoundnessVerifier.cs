@@ -36,24 +36,37 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	{
 		var stopWatch = Stopwatch.StartNew();
 		var dpnTransformation = new TransformerToRefined();
-		var (refinedDpn, stateSpace) = dpnTransformation.Transform(
+		var (refinedDpn, stateSpace) = dpnTransformation.TransformAndReturnLts(
 			dpn,
 			new Dictionary<string, string>
 			{
 				{ RefinementSettingsConstants.BaseStructure, RefinementSettingsConstants.FiniteReachabilityGraph }
-			});
+			},
+			out var lts);
 
 		SoundnessProperties soundnessProperties;
 		if (stateSpace.IsFullGraph)
 		{
+			var canExtendLts = refinedDpn.Transitions.Count == dpn.Transitions.Count;
+			
 			var constraintGraph = new ConstraintGraph(refinedDpn);
-			constraintGraph.GenerateGraph();
+
+			if (canExtendLts)
+			{
+				constraintGraph.GenerateGraph(lts);
+			}
+			else
+			{
+				constraintGraph.GenerateGraph();
+			}
+
 			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
 			stopWatch.Stop();
 			return new VerificationResult(
 				ToStateSpaceConverter.Convert(constraintGraph), 
 				soundnessProperties, 
-				stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
+				//stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
+				canExtendLts ? constraintGraph.ConstraintArcs.Count : stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
 				refinedDpn.Transitions.Count - dpn.Transitions.Count,
 				stopWatch.Elapsed);
 		}
@@ -89,19 +102,39 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		var cg = new ConstraintGraph(dpn);
 		cg.GenerateGraph(lts);
 		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, cg);
-		stopWatch.Stop();
 
 		if (soundnessProperties.Soundness)
 		{
-			var verificationResult = VerifyClassical(dpn);
+			var dpnTransformation = new TransformerToRefined();
+			var (refinedDpn, stateSpace) = dpnTransformation.Transform(
+				dpn,
+				lts);
+
+			if (refinedDpn.Transitions.Count == dpn.Transitions.Count)
+			{
+				stopWatch.Stop();
+				return new VerificationResult(
+					ToStateSpaceConverter.Convert(cg), 
+					soundnessProperties, 
+					cg.ConstraintArcs.Count,
+					0,
+					stopWatch.Elapsed);
+			}
+			
+			var constraintGraph = new ConstraintGraph(refinedDpn);
+			constraintGraph.GenerateGraph();
+			
+			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, constraintGraph);
+			stopWatch.Stop();
 			return new VerificationResult(
-				verificationResult.StateSpaceGraph, 
-				verificationResult.SoundnessProperties, 
-				cg.ConstraintArcs.Count + verificationResult.TotalStatesConsidered,
-				verificationResult.TotalRefinementsDone,
-				stopWatch.Elapsed + verificationResult.VerificationTime);
+				ToStateSpaceConverter.Convert(constraintGraph), 
+				soundnessProperties, 
+				cg.ConstraintArcs.Count + stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
+				refinedDpn.Transitions.Count - dpn.Transitions.Count,
+				stopWatch.Elapsed);
 		}
 
+		stopWatch.Stop();
 		return new VerificationResult(
 			ToStateSpaceConverter.Convert(cg), 
 			soundnessProperties, 
