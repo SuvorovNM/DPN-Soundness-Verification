@@ -59,14 +59,11 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 			ConstraintStates = baseLts.ConstraintStates;
 			ConstraintArcs = baseLts.ConstraintArcs;
 			IsFullGraph = baseLts.IsFullGraph;
-			
-			var outGoingTransitionsDict = baseLts
-				.ConstraintArcs
-				.GroupBy(a => a.SourceState)
-				.ToDictionary(a => a.Key, a => a.Select(ltsArc => ltsArc.Transition.Id).ToHashSet());
 
 			var readConditions = dataPetriNet.Transitions
 				.ToDictionary(t => t.Id, t => DataPetriNet.Context.GetExistsExpression(t.Guard.ActualConstraintExpression, t.Guard.WriteVars));
+			
+			var existingStates = baseLts.ConstraintStates.Select(cs=>cs.Id).ToHashSet();
 
 			StatesToConsider.Clear();
 			baseLts.ConstraintStates.ForEach(s => StatesToConsider.Push(s));
@@ -77,7 +74,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 
 				foreach (var transition in currentState.Marking.GetEnabledTransitions(DataPetriNet))
 				{
-					if (!outGoingTransitionsDict.TryGetValue(currentState, out var outGoingTransitions) || !outGoingTransitions.Contains(transition.Id))
+					if (!existingStates.Contains(currentState.Id))
 					{
 						TryAddStateResultedFromFiringNormalTransition(currentState, transition, out var isStrictlyCovering);
 						if (isStrictlyCovering)

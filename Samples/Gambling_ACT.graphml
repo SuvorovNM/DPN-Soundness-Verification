@@ -1,0 +1,332 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<graphml>
+  <key id="marking" for="node" attr.name="marking" attr.type="string" />
+  <key id="constraint" for="node" attr.name="constraint" attr.type="string" />
+  <key id="label" for="edge" attr.name="label" attr.type="string" />
+  <key id="base_transition_id" for="edge" attr.name="base_transition_id" attr.type="string" />
+  <key id="is_silent" for="edge" attr.name="is_silent" attr.type="boolean" />
+  <key id="guard" for="node" attr.name="guard" attr.type="string" />
+  <key id="is_tau" for="node" attr.name="is_tau" attr.type="boolean" />
+  <key id="is_split" for="node" attr.name="is_split" attr.type="boolean" />
+  <key id="variable_id" for="node" attr.name="variable_id" attr.type="string" />
+  <key id="data_type" for="node" attr.name="data_type" attr.type="string" />
+  <key id="edge_type" for="edge" attr.name="edge_type" attr.type="string" />
+  <key id="final_marking" for="graph" attr.name="final_marking" attr.type="string" />
+  <key id="variables" for="graph" attr.name="variables" attr.type="string" />
+  <key id="graph_type" for="graph" attr.name="graph_type" attr.type="string" />
+  <key id="is_full" for="graph" attr.name="is_full" attr.type="boolean" />
+  <graph id="state_space" edgedefault="directed">
+    <node id="121">
+      <data key="marking">i=1,p1=0,p2=0,p3=0,o=0</data>
+      <data key="constraint">(res_r == 0.0)</data>
+    </node>
+    <node id="122">
+      <data key="marking">i=0,p1=1,p2=0,p3=3,o=0</data>
+      <data key="constraint">(res_r == 0.0)</data>
+    </node>
+    <node id="123">
+      <data key="marking">i=0,p1=0,p2=1,p3=3,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="124">
+      <data key="marking">i=0,p1=0,p2=0,p3=3,o=1</data>
+      <data key="constraint">(res_r == 0.0)</data>
+    </node>
+    <node id="125">
+      <data key="marking">i=0,p1=1,p2=0,p3=3,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <node id="126">
+      <data key="marking">i=0,p1=1,p2=0,p3=6,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="127">
+      <data key="marking">i=0,p1=1,p2=0,p3=2,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="128">
+      <data key="marking">i=0,p1=0,p2=1,p3=2,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="129">
+      <data key="marking">i=0,p1=0,p2=0,p3=2,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="130">
+      <data key="marking">i=0,p1=1,p2=0,p3=2,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <node id="131">
+      <data key="marking">i=0,p1=1,p2=0,p3=5,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="132">
+      <data key="marking">i=0,p1=1,p2=0,p3=1,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="133">
+      <data key="marking">i=0,p1=0,p2=1,p3=1,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="134">
+      <data key="marking">i=0,p1=0,p2=0,p3=1,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="135">
+      <data key="marking">i=0,p1=1,p2=0,p3=1,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <node id="136">
+      <data key="marking">i=0,p1=1,p2=0,p3=4,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="137">
+      <data key="marking">i=0,p1=1,p2=0,p3=0,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="138">
+      <data key="marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; !((40.0 &lt;= res_r))</data>
+    </node>
+    <node id="139">
+      <data key="marking">i=0,p1=0,p2=1,p3=2147483647,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="140">
+      <data key="marking">i=0,p1=0,p2=0,p3=4,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="141">
+      <data key="marking">i=0,p1=0,p2=1,p3=1,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="142">
+      <data key="marking">i=0,p1=0,p2=0,p3=1,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <node id="143">
+      <data key="marking">i=0,p1=0,p2=1,p3=2147483647,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="144">
+      <data key="marking">i=0,p1=0,p2=0,p3=5,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="145">
+      <data key="marking">i=0,p1=0,p2=1,p3=2,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="146">
+      <data key="marking">i=0,p1=0,p2=0,p3=2,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <node id="147">
+      <data key="marking">i=0,p1=0,p2=1,p3=2147483647,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="148">
+      <data key="marking">i=0,p1=0,p2=0,p3=6,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 85.0)</data>
+    </node>
+    <node id="149">
+      <data key="marking">i=0,p1=0,p2=1,p3=3,o=0</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0)</data>
+    </node>
+    <node id="150">
+      <data key="marking">i=0,p1=0,p2=0,p3=3,o=1</data>
+      <data key="constraint">(res_r &gt;= 0.0) &amp;&amp; (res_r &lt;= 100.0) &amp;&amp; (res_r &gt;= 40.0) &amp;&amp; !((85.0 &lt;= res_r))</data>
+    </node>
+    <edge source="121" target="122">
+      <data key="label">Start Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t0</data>
+    </edge>
+    <edge source="122" target="123">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="122" target="124">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="123" target="125">
+      <data key="label">Draw</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="123" target="126">
+      <data key="label">Win</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="123" target="127">
+      <data key="label">Lose</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t4</data>
+    </edge>
+    <edge source="127" target="128">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="127" target="129">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="128" target="130">
+      <data key="label">Draw</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="128" target="131">
+      <data key="label">Win</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="128" target="132">
+      <data key="label">Lose</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t4</data>
+    </edge>
+    <edge source="132" target="133">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="132" target="134">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="133" target="135">
+      <data key="label">Draw</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="133" target="136">
+      <data key="label">Win</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="133" target="137">
+      <data key="label">Lose</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t4</data>
+    </edge>
+    <edge source="137" target="138">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="136" target="139">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="136" target="140">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="135" target="141">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="135" target="142">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="131" target="143">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="131" target="144">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="130" target="145">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="130" target="146">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="126" target="147">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="126" target="148">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="125" target="149">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="125" target="150">
+      <data key="label">End Gambling</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+  </graph>
+  <graph id="variables" edgedefault="undirected">
+    <node id="res">
+      <data key="variable_id">res</data>
+      <data key="data_type">Real</data>
+    </node>
+  </graph>
+  <graph id="transitions" edgedefault="undirected">
+    <node id="t0">
+      <data key="label">Start Gambling</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t1">
+      <data key="label">Gamble</data>
+      <data key="guard">(res_w &gt;= 0.0) &amp;&amp; (res_w &lt;= 100.0)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t2">
+      <data key="label">Draw</data>
+      <data key="guard">(res_r &gt;= 40.0) &amp;&amp; (res_r &lt; 85.0)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t3">
+      <data key="label">Win</data>
+      <data key="guard">(res_r &gt;= 85.0)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t4">
+      <data key="label">Lose</data>
+      <data key="guard">(res_r &lt; 40.0)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t5">
+      <data key="label">End Gambling</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+  </graph>
+  <graph id="metadata" edgedefault="undirected">
+    <data key="graph_type">AbstractCoverabilityTree</data>
+    <data key="is_full">true</data>
+    <data key="final_marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+  </graph>
+</graphml>

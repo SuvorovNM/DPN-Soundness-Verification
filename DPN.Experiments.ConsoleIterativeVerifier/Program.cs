@@ -9,19 +9,34 @@ using DPN.Experiments.Common;
 using DPN.Soundness;
 using Newtonsoft.Json;
 
-const string dirPath = @"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\test\";
-const string filePath = dirPath + "DirectVersion.csv";
-const string outputDirPath = @"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\console-test\";
-const bool doRepair = true;
-const SoundnessType soundnessType = SoundnessType.Classical;
+const string dirPath = @"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\bounded-remained\";
+//@"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\sound\"
+const string filePath = dirPath + "DirectVersion.csv";// concurrency-acyclic.csv
+const string outputDirPath = @"C:\Experiments\bounded-relaxed-lazy-verification\";
+const bool doRepair = false;
+const SoundnessType soundnessType = SoundnessType.RelaxedLazy;
 const int NumberOfAttempts = 3;
+
+// TODO: использовать алгоритм для concurrency tests
+
+throw new Exception("ex");
 
 var ids = File.ReadAllLines(filePath)
 	.Select(l => l.Split(',').First())
 	.ToHashSet();
 
-foreach (var id in ids)
+foreach (var id in ids) 
 {
+	try
+	{
+		File.Copy(dirPath + id + ".pnmlx", outputDirPath + id + ".pnmlx");
+	}
+	catch (Exception ex)
+	{
+		Console.WriteLine(ex.Message);
+	}
+
+	Console.WriteLine($"{DateTime.Now}: Starting working on {id}");
 	for (var r = 0; r < NumberOfAttempts; r++)
 	{
 		await using var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
@@ -32,6 +47,10 @@ foreach (var id in ids)
 		try
 		{
 			await proc.WaitForExitAsync();
+			if (proc.ExitCode < 0)
+			{
+				break;
+			}
 			await listenTask;
 		}
 		catch (Exception)
@@ -42,7 +61,7 @@ foreach (var id in ids)
 	}
 }
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("Finished execution!");
 
 ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dpnId)
 {
@@ -52,7 +71,7 @@ ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dp
 	const string PipeClientHandleParameterName = "PipeClientHandle";
 	const string DpnFileParameterName = "DpnFile";
 	const string OutputDirectoryParameterName = "OutputDirectory";
-	
+
 	ProcessPath processPath;
 	using (var r = new StreamReader("Configuration.json"))
 	{
@@ -63,7 +82,7 @@ ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dp
 			DPNVerificationApplicationWorkingDir = Path.GetFullPath(paths.DPNVerificationApplicationWorkingDir)
 		};
 	}
-	
+
 	var processInfo = new ProcessStartInfo
 	{
 		UseShellExecute = false,
@@ -79,7 +98,7 @@ ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dp
 	var outputDirectoryPath = outputDirPath;
 	var verificationAlgorithmType = nameof(VerificationAlgorithmTypeEnum.DirectVersion);
 
-	var argumentsString = DpnFileParameterName + " " + (dirPath + dpnId)+".pnmlx" +
+	var argumentsString = DpnFileParameterName + " " + (dirPath + dpnId) + ".pnmlx" +
 	                      " " + PipeClientHandleParameterName + " " + pipeHandle +
 	                      " " + OutputDirectoryParameterName + " " + outputDirectoryPath +
 	                      " " + VerificationAlgorithmTypeParameterName + " " + verificationAlgorithmType +
@@ -103,14 +122,14 @@ static async Task ListenToPipe(
 	{
 		int bytesRead = await pipeStream.ReadAsync(buffer, token);
 		endOfStream = bytesRead == 0;
-    
+
 		if (bytesRead > 0)
 		{
 			stringBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
 		}
 	}
 
-	var lastString = stringBuilder.ToString();//Encoding.UTF8.GetString(buffer);
+	var lastString = stringBuilder.ToString(); //Encoding.UTF8.GetString(buffer);
 
 	MainVerificationInfo? verificationOutput = null;
 
@@ -128,7 +147,7 @@ static async Task ListenToPipe(
 				await Console.Error.WriteLineAsync(ex.Message);
 			}
 		}
-		
-		Console.WriteLine($"Executed the algorithm on the DPN with ID {verificationOutput.Id}. Verification time: {verificationOutput.VerificationTime}. Repair time: {verificationOutput.RepairTime}");
+
+		Console.WriteLine($"{DateTime.Now}: Executed the algorithm on the DPN with ID {verificationOutput.Id}. Verification time: {verificationOutput.VerificationTime}. Repair time: {verificationOutput.RepairTime}");
 	}
 }

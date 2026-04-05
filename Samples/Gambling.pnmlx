@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net_gambling" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
          <text>Gambling</text>
       </name>
@@ -73,92 +73,81 @@
                <text>1</text>
             </name>
          </arc>
-		 <arc id="arc1" source="t0" target="p3">
+		 <arc id="arc2" source="t0" target="p3">
             <name>
                <text>3</text>
             </name>
          </arc>
-		 
-		 <arc id="arc2" source="p1" target="t1">
+		 <arc id="arc3" source="p1" target="t1">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 <arc id="arc2" source="t1" target="p2">
+		 <arc id="arc4" source="t1" target="p2">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 
-		 
-		 <arc id="arc2" source="p2" target="t2">
+		 <arc id="arc5" source="p2" target="t2">
             <name>
                <text>1</text>
             </name>
          </arc>
-		  <arc id="arc2" source="p2" target="t3">
+		  <arc id="arc6" source="p2" target="t3">
             <name>
                <text>1</text>
             </name>
          </arc>
-		  <arc id="arc2" source="p2" target="t4">
+		  <arc id="arc7" source="p2" target="t4">
             <name>
                <text>1</text>
             </name>
          </arc>
-		  <arc id="arc2" source="p3" target="t4">
+		  <arc id="arc8" source="p3" target="t4">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 
-		 
-		 <arc id="arc3" source="t2" target="p1">
+		 <arc id="arc9" source="t2" target="p1">
             <name>
                <text>1</text>
             </name>
          </arc>		 
-		 <arc id="arc4" source="t3" target="p3">
+		 <arc id="arc10" source="t3" target="p3">
             <name>
                <text>3</text>
             </name>
          </arc>
-		 <arc id="arc4" source="t3" target="p1">
+		 <arc id="arc11" source="t3" target="p1">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 
-		 <arc id="arc4" source="t4" target="p1">
+		 <arc id="arc12" source="t4" target="p1">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>	 
+		 <arc id="arc13" source="p1" target="t5">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>	 
+		 <arc id="arc14" source="t5" target="o">
+            <name>
+               <text>1</text>
+            </name>
+         </arc>	 
+		 <arc id="arc15" source="t1" target="p3">
             <name>
                <text>1</text>
             </name>
          </arc>
-		 
-		 <arc id="arc2" source="p1" target="t5">
+		 <arc id="arc16" source="p3" target="t1">
             <name>
                <text>1</text>
             </name>
-         </arc>
-		 
-		 <arc id="arc4" source="t5" target="o">
-            <name>
-               <text>1</text>
-            </name>
-         </arc>
-		 
-		 
-		 <arc id="arc5" source="t1" target="p3">
-            <name>
-               <text>1</text>
-            </name>
-         </arc>
-		 <arc id="arc5" source="p3" target="t1">
-            <name>
-               <text>1</text>
-            </name>
-         </arc>
-		 
+         </arc>		 
       </page>
       <variables>
          <variable type="Real">

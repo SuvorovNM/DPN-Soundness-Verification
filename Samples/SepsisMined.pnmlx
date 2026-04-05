@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net_s" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
          <text>Sepsis mined</text>
       </name>
-      <source>
-        <text>Mannhardt, F.: Multi-perspective Process Mining. Ph.D. thesis, Technical University of Eindhoven (2018), Fig. 13.6</text>
-      </source>
       <page id="n0">
          <name>
             <text/>

@@ -131,7 +131,7 @@ namespace DataPetriNetVerificationApplication
 			timer.Start();
 			var satisfiesConditions = false;
 
-			VerificationResult verificationResult;
+			VerificationResult? verificationResult = null;
 
 			var verificationTask = Task.Run(() =>
 			{
@@ -175,16 +175,16 @@ namespace DataPetriNetVerificationApplication
 					repairResult);
 			}, source.Token);
 
-			if (!verificationTask.Wait(TimeSpan.FromMinutes(3)))
+			if (!verificationTask.Wait(TimeSpan.FromMinutes(25)))
 			{
 				var conditionsCount = dpnToVerify
 					.Transitions
 					.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
 				var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
 				File.AppendAllText(badCasesPath,
-					$"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}\n");
+					$"{dpnToVerify.Name}, {dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}, {verificationResult != null}\n");
 
-				throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
+				throw new TimeoutException("Process requires more than 25 minutes to verify soundness");
 			}
 
 			if (pipeClientHandle != null)
@@ -212,7 +212,7 @@ namespace DataPetriNetVerificationApplication
 			SoundnessProperties soundnessProps,
 			Dictionary<string,string> repairParameters)
 		{
-			if (soundnessProps.StateTypes.Any(state => state.Value == StateType.Final))
+			//if (soundnessProps.StateTypes.Any(state => state.Value == StateType.Final))
 			{
 				var dpnRepairer = new ClassicalSoundnessRepairer();
 				return dpnRepairer.Repair(dpnToVerify, repairParameters);
@@ -266,11 +266,11 @@ namespace DataPetriNetVerificationApplication
 				return false;
 			}*/
 
-			if (!verificationResult.StateSpaceGraph.Nodes
-			    .Any(n => n.Marking["o"] == 1 && n.Marking.All(p => p.Key == "o" || p.Value == 0)))
+			/*if (!verificationResult.StateSpaceGraph.Nodes
+				     .Any(n => n.Marking["o"] == 1 && n.Marking.All(p => p.Key == "o" || p.Value == 0)))
 			{
 				return false;
-			}
+			}*/
 			
 			var soundnessProperties = verificationResult.SoundnessProperties;
 			var satisfiesConditions = true;

@@ -64,65 +64,64 @@
          </transition>
 		       
          <arc id="arc0" source="i" target="t0">
-            <name>
-               <text>1</text>
-            </name>
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc1" source="t0" target="p1">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc1" source="t0" target="p1">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc2" source="p1" target="t1">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc2" source="p1" target="t1">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc2" source="p1" target="t2">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc3" source="p1" target="t2">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc2" source="p1" target="t3">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc4" source="p1" target="t3">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc3" source="t1" target="p2">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc5" source="t1" target="p2">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc4" source="t2" target="o">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc6" source="t2" target="o">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc4" source="t3" target="p3">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc7" source="t3" target="p3">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-
-		 <arc id="arc5" source="p2" target="t4">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc8" source="p2" target="t4">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc6" source="t4" target="p1">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc9" source="t4" target="p1">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc7" source="p3" target="t5">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc10" source="p3" target="t5">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
-		 <arc id="arc8" source="t5" target="p1">
-            <name>
-               <text>1</text>
-            </name>
+         <arc id="arc11" source="t5" target="p1">
+             <name>
+                 <text>1</text>
+             </name>
          </arc>
       </page>
       <variables>

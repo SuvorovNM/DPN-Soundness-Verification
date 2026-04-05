@@ -19,7 +19,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	{
 		verificationSettings.TryGetValue(ClassicalVerificationSettingsConstants.AlgorithmVersion, out var algorithmVersion);
 
-		if (algorithmVersion == ClassicalVerificationSettingsConstants.ImprovedVersion)
+		if (algorithmVersion is ClassicalVerificationSettingsConstants.ImprovedVersion)
 		{
 			return VerifyImproved(dpn);
 		}
@@ -129,7 +129,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			return new VerificationResult(
 				ToStateSpaceConverter.Convert(constraintGraph), 
 				soundnessProperties, 
-				cg.ConstraintArcs.Count + stateSpace.Arcs.Length + constraintGraph.ConstraintArcs.Count,
+				cg.ConstraintArcs.Count + constraintGraph.ConstraintArcs.Count,
 				refinedDpn.Transitions.Count - dpn.Transitions.Count,
 				stopWatch.Elapsed);
 		}

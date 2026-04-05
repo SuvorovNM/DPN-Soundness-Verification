@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net_l" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
          <text>Livelock</text>
       </name>
@@ -10,14 +10,12 @@
                <text>i</text>
             </name>
             <initialMarking tokens="1"/>
-         </place>
-		 
+         </place>	 
 		 <place id="p0">
             <name>
                <text>p0</text>
             </name>
-         </place>
-         
+         </place>       
          <place id="o">
             <name>
                <text>o</text>
@@ -39,8 +37,7 @@
             <name>
                <text>t2</text>
             </name>
-         </transition> 	
-		 
+         </transition> 			 
          
          <arc id="arc0" source="i" target="t0">
             <name>
@@ -67,7 +64,7 @@
                <text>1</text>
             </name>
          </arc>
-		 <arc id="arc3" source="t2" target="o">
+		 <arc id="arc5" source="t2" target="o">
             <name>
                <text>1</text>
             </name>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net_ph" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
          <text>Package handling</text>
       </name>

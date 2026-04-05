@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<graphml>
+  <key id="marking" for="node" attr.name="marking" attr.type="string" />
+  <key id="constraint" for="node" attr.name="constraint" attr.type="string" />
+  <key id="label" for="edge" attr.name="label" attr.type="string" />
+  <key id="base_transition_id" for="edge" attr.name="base_transition_id" attr.type="string" />
+  <key id="is_silent" for="edge" attr.name="is_silent" attr.type="boolean" />
+  <key id="guard" for="node" attr.name="guard" attr.type="string" />
+  <key id="is_tau" for="node" attr.name="is_tau" attr.type="boolean" />
+  <key id="is_split" for="node" attr.name="is_split" attr.type="boolean" />
+  <key id="variable_id" for="node" attr.name="variable_id" attr.type="string" />
+  <key id="data_type" for="node" attr.name="data_type" attr.type="string" />
+  <key id="edge_type" for="edge" attr.name="edge_type" attr.type="string" />
+  <key id="final_marking" for="graph" attr.name="final_marking" attr.type="string" />
+  <key id="variables" for="graph" attr.name="variables" attr.type="string" />
+  <key id="graph_type" for="graph" attr.name="graph_type" attr.type="string" />
+  <key id="is_full" for="graph" attr.name="is_full" attr.type="boolean" />
+  <graph id="state_space" edgedefault="directed">
+    <node id="177">
+      <data key="marking">i=1,p1=0,p2=0,p3=0,o=0</data>
+      <data key="constraint">(hasPass_r == false) &amp;&amp; (age_r == 0.0)</data>
+    </node>
+    <node id="178">
+      <data key="marking">i=0,p1=1,p2=0,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0))</data>
+    </node>
+    <node id="179">
+      <data key="marking">i=0,p1=0,p2=1,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)</data>
+    </node>
+    <node id="180">
+      <data key="marking">i=0,p1=1,p2=0,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <node id="181">
+      <data key="marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+      <data key="constraint">!((age_r &lt;= 0.0))</data>
+    </node>
+    <node id="182">
+      <data key="marking">i=0,p1=0,p2=0,p3=1,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <node id="183">
+      <data key="marking">i=0,p1=1,p2=0,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)</data>
+    </node>
+    <node id="184">
+      <data key="marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false)</data>
+    </node>
+    <node id="185">
+      <data key="marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <node id="186">
+      <data key="marking">i=0,p1=1,p2=0,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 18.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <node id="187">
+      <data key="marking">i=0,p1=0,p2=1,p3=0,o=0</data>
+      <data key="constraint">!((age_r &lt;= 0.0)) &amp;&amp; (hasPass_r == false) &amp;&amp; (age_r &lt;= 18.0)</data>
+    </node>
+    <node id="188">
+      <data key="marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+      <data key="constraint">!((age_r &lt;= 18.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <node id="189">
+      <data key="marking">i=0,p1=0,p2=0,p3=1,o=0</data>
+      <data key="constraint">!((age_r &lt;= 18.0)) &amp;&amp; (hasPass_r == true)</data>
+    </node>
+    <edge source="177" target="178">
+      <data key="label">Enter Casino</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t0</data>
+    </edge>
+    <edge source="178" target="179">
+      <data key="label">Register</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="178" target="180">
+      <data key="label">Register</data>
+      <data key="is_silent">true</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="178" target="181">
+      <data key="label">Quit</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="178" target="182">
+      <data key="label">Enter Gambling Room</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="178" target="183">
+      <data key="label">Enter Gambling Room</data>
+      <data key="is_silent">true</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="183" target="179">
+      <data key="label">Register</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t1</data>
+    </edge>
+    <edge source="183" target="184">
+      <data key="label">Quit</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="182" target="180">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+    <edge source="180" target="185">
+      <data key="label">Quit</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="180" target="182">
+      <data key="label">Enter Gambling Room</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="179" target="186">
+      <data key="label">Receive Pass</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t4</data>
+    </edge>
+    <edge source="179" target="187">
+      <data key="label">Receive Pass</data>
+      <data key="is_silent">true</data>
+      <data key="base_transition_id">t4</data>
+    </edge>
+    <edge source="186" target="188">
+      <data key="label">Quit</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t2</data>
+    </edge>
+    <edge source="186" target="189">
+      <data key="label">Enter Gambling Room</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t3</data>
+    </edge>
+    <edge source="189" target="186">
+      <data key="label">Gamble</data>
+      <data key="is_silent">false</data>
+      <data key="base_transition_id">t5</data>
+    </edge>
+  </graph>
+  <graph id="variables" edgedefault="undirected">
+    <node id="hasPass">
+      <data key="variable_id">hasPass</data>
+      <data key="data_type">Boolean</data>
+    </node>
+    <node id="age">
+      <data key="variable_id">age</data>
+      <data key="data_type">Real</data>
+    </node>
+  </graph>
+  <graph id="transitions" edgedefault="undirected">
+    <node id="t0">
+      <data key="label">Enter Casino</data>
+      <data key="guard">((age_w &gt; 0.0) &amp;&amp; (hasPass_w == true)) || ((age_w &gt; 0.0) &amp;&amp; (hasPass_w == false))</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t1">
+      <data key="label">Register</data>
+      <data key="guard">(hasPass_r == false)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t2">
+      <data key="label">Quit</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t3">
+      <data key="label">Enter Gambling Room</data>
+      <data key="guard">(hasPass_r == true)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t4">
+      <data key="label">Receive Pass</data>
+      <data key="guard">(hasPass_w == true) &amp;&amp; (age_r &gt; 18.0)</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="t5">
+      <data key="label">Gamble</data>
+      <data key="is_tau">false</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="τ(Register)">
+      <data key="label">τ(Register)</data>
+      <data key="guard">(hasPass_r != false)</data>
+      <data key="is_tau">true</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="τ(Enter Gambling Room)">
+      <data key="label">τ(Enter Gambling Room)</data>
+      <data key="guard">(hasPass_r != true)</data>
+      <data key="is_tau">true</data>
+      <data key="is_split">false</data>
+    </node>
+    <node id="τ(Receive Pass)">
+      <data key="label">τ(Receive Pass)</data>
+      <data key="guard">(age_r &lt;= 18.0)</data>
+      <data key="is_tau">true</data>
+      <data key="is_split">false</data>
+    </node>
+  </graph>
+  <graph id="metadata" edgedefault="undirected">
+    <data key="graph_type">AbstractReachabilityGraph</data>
+    <data key="is_full">true</data>
+    <data key="final_marking">i=0,p1=0,p2=0,p3=0,o=1</data>
+  </graph>
+</graphml>

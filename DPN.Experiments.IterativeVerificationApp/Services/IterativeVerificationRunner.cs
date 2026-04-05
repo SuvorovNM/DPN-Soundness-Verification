@@ -98,6 +98,10 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 						}
 
 						successfulCase = proc.ExitCode >= 0;
+						if (!successfulCase)
+						{
+							File.Delete(dpnPath);
+						}
 					} while (!successfulCase);
 				}
 			}
