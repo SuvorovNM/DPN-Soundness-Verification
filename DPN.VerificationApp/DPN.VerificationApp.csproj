@@ -15,7 +15,6 @@
     <PackageReference Include="AutomaticGraphLayout.Drawing" Version="1.1.12" />
     <PackageReference Include="AutomaticGraphLayout.WpfGraphControl" Version="1.1.12" />
     <PackageReference Include="Enums.NET" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Z3" Version="4.12.2" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
 
@@ -25,6 +24,10 @@
     <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
     <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
     <ProjectReference Include="..\DPN.Visualization\DPN.Visualization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

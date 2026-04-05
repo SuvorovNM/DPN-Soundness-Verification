@@ -19,7 +19,6 @@ using DPN.Soundness.Transformations;
 using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.Verification;
-using DPN.VerificationApp.Services;
 using DPN.Visualization.Converters;
 using Microsoft.Win32;
 using Microsoft.Z3;

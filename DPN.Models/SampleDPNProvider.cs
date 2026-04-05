@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using DPN.Models;
-using DPN.Models.Abstractions;
+﻿using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using Microsoft.Z3;
 
-namespace DPN.VerificationApp.Services
+namespace DPN.Models
 {
     public class SampleDPNProvider
     {
