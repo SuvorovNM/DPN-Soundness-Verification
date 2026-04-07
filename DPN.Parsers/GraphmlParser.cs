@@ -7,7 +7,7 @@ using Microsoft.Z3;
 
 namespace DPN.Parsers
 {
-	public class AsmlParser
+	public class GraphmlParser
 	{
 		private const string xsdSchema = "XsdSchemas\\graphml.xsd";
 		private const string rootElementName = "graphml";

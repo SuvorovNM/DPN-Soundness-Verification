@@ -96,7 +96,7 @@ namespace DataPetriNetIterativeVerificationApplication
             {
                 using (var fs = new FileStream(paths[item.Number] + ".asml", FileMode.Open))
                 {
-                    var asmlParser = new AsmlParser();
+                    var asmlParser = new GraphmlParser();
                     var xDocument = XDocument.Load(fs);
 
                     var stateSpace = asmlParser.Deserialize(xDocument);

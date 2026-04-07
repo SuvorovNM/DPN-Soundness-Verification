@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.VerificationConsoleApp"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Experiments.ConsoleIterativeVerifier", "DPN.Experiments.ConsoleIterativeVerifier\DPN.Experiments.ConsoleIterativeVerifier.csproj", "{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DPN.Tests", "DPN.Tests\DPN.Tests.csproj", "{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,6 +171,18 @@ Global
 		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x64.Build.0 = Release|Any CPU
 		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A4B207A-CA54-4C4E-9C89-E06ADF6FE76F}.Release|x86.Build.0 = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Debug|x86.Build.0 = Debug|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|x64.Build.0 = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|x86.ActiveCfg = Release|Any CPU
+		{AB7EFC45-B434-4ADC-95F1-1CEEC2B74584}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

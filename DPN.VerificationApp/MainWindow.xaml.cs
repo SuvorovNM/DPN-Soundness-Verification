@@ -250,7 +250,7 @@ namespace DPN.VerificationApp
 			if (ofd.ShowDialog() == true)
 			{
 				using var fs = new FileStream(ofd.FileName, FileMode.Open);
-				var asmlParser = new AsmlParser();
+				var asmlParser = new GraphmlParser();
 				var xDocument = XDocument.Load(fs);
 
 				StateSpaceGraph stateSpace;

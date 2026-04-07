@@ -44,7 +44,7 @@ namespace DPN.VerificationApp
 			{
 				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
 				{
-					var asmlParser = new AsmlParser();
+					var asmlParser = new GraphmlParser();
 					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceGraph);
 
 					xDocument.Save(fs, SaveOptions.None);
