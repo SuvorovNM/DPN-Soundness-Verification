@@ -48,7 +48,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 			IsFullGraph = true;
 		}
 
-		public void GenerateGraph(LabeledTransitionSystem baseLts)
+		public override void GenerateGraph(LabeledTransitionSystem baseLts)
 		{
 			if (!baseLts.IsFullGraph)
 			{

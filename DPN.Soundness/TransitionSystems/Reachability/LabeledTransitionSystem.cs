@@ -21,6 +21,8 @@ namespace DPN.Soundness.TransitionSystems.Reachability
         }
 
         public abstract void GenerateGraph();
+        
+        public abstract void GenerateGraph(LabeledTransitionSystem lts);
 
         protected void AddNewState(LtsState currentState,
             LtsTransition transition,
