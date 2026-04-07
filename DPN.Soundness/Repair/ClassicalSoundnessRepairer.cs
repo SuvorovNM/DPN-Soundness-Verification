@@ -16,8 +16,7 @@ namespace DPN.Soundness.Repair;
 public static class ClassicalRepairSettingsConstants
 {
 	public const string MergeTransitionsBack = nameof(MergeTransitionsBack);
-	public const string True = nameof(True);
-	public const string False = nameof(False);
+	public const string TryRollbackRestrictions = nameof(TryRollbackRestrictions);
 }
 
 [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
@@ -27,7 +26,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	// Algorithm terminates either if no paths remain leading to failure points or if all paths start to leading to failure points
 	public RepairResult Repair(DataPetriNet sourceDpn, Dictionary<string, string> repairProperties)
 	{
-		var mergeTransitionsBack = GetMergeTransitionsBackProperty(repairProperties);
+		var mergeTransitionsBack = GetBoolRepairProperty(repairProperties, ClassicalRepairSettingsConstants.MergeTransitionsBack);
+		var rollbackRestrictions = GetBoolRepairProperty(repairProperties, ClassicalRepairSettingsConstants.TryRollbackRestrictions);
 
 		var transformerToRefined = new TransformerToRefined();
 		var stopwatch = Stopwatch.StartNew();
@@ -87,7 +87,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			}
 			else
 			{
-				if (!allNodesRed)
+				if (!allNodesRed && rollbackRestrictions)
 				{
 					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
 				}
@@ -182,26 +182,26 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 					dpnToConsider.Arcs.Add(new Arc(inputArc.place, transitionToAdd, inputArc.weight));
 				}
 
-				foreach (var ouputArc in postset[transitionToInspect.Id])
+				foreach (var outputArc in postset[transitionToInspect.Id])
 				{
-					dpnToConsider.Arcs.Add(new Arc(transitionToAdd, ouputArc.place, ouputArc.weight));
+					dpnToConsider.Arcs.Add(new Arc(transitionToAdd, outputArc.place, outputArc.weight));
 				}
 			}
 		}
 	}
 
-	private static bool GetMergeTransitionsBackProperty(Dictionary<string, string> repairProperties)
+	private static bool GetBoolRepairProperty(Dictionary<string, string> repairProperties, string attributeKey)
 	{
-		var mergeTransitionsBack = true;
-		if (repairProperties.TryGetValue(ClassicalRepairSettingsConstants.MergeTransitionsBack, out var mergeTransitionsBackString))
+		var boolProperty = true;
+		if (repairProperties.TryGetValue(attributeKey, out var boolPropertyString))
 		{
-			if (!bool.TryParse(mergeTransitionsBackString, out mergeTransitionsBack))
+			if (!bool.TryParse(boolPropertyString, out boolProperty))
 			{
-				throw new ArgumentException($"Invalid value for parameter {nameof(ClassicalRepairSettingsConstants.MergeTransitionsBack)}");
+				throw new ArgumentException($"Invalid value for parameter {attributeKey}");
 			}
 		}
 
-		return mergeTransitionsBack;
+		return boolProperty;
 	}
 
 	private static void RemoveDeadTransitions<TState, TTransition>(DataPetriNet sourceDpn, AbstractArc<TState, TTransition>[] arcs)
