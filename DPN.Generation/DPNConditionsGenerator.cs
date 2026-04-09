@@ -6,7 +6,7 @@ using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    internal class DPNConditionsGenerator(Context context) : IDisposable
+    internal class DPNConditionsGenerator(Context context)
     {
         private const int VOV = 0;
         private readonly Random random = new Random();
@@ -262,11 +262,6 @@ namespace DataPetriNetGeneration
             }
 
             return varsPool;
-        }
-
-        public void Dispose()
-        {
-            Context.Dispose();
         }
     }
 }
