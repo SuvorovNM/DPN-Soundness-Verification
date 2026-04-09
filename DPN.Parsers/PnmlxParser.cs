@@ -104,9 +104,9 @@ namespace DPN.Parsers
 			return document;
 		}
 
-		public DataPetriNet Deserialize(XDocument document)
+		public DataPetriNet Deserialize(Stream stream)
 		{
-			ArgumentNullException.ThrowIfNull(document);
+			var document = XDocument.Load(stream);
 
 			var validationResult = validator.Validate(document);
 			if (!validationResult.IsValid)

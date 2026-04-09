@@ -40,15 +40,12 @@ namespace DPN.VerificationApp
 			{
 				Filter = "State space files (*.graphml) | *.graphml"
 			};
+
 			if (ofd.ShowDialog() == true)
 			{
-				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
-				{
-					var asmlParser = new GraphmlParser();
-					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceGraph);
-
-					xDocument.Save(fs, SaveOptions.None);
-				}
+				using var fs = new FileStream(ofd.FileName, FileMode.Create);
+				var graphmlParser = new GraphmlParser();
+				graphmlParser.Serialize(verificationResult.StateSpaceGraph, fs);
 			}
 		}
 
@@ -73,9 +70,9 @@ namespace DPN.VerificationApp
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
-				graphToVisualize, 
-				verificationResult.StateSpaceGraph.DpnTransitions, 
-				verificationResult.StateSpaceGraph.TypedVariables, 
+				graphToVisualize,
+				verificationResult.StateSpaceGraph.DpnTransitions,
+				verificationResult.StateSpaceGraph.TypedVariables,
 				verificationResult.VerificationTime);
 			if (showOnlyLog)
 			{

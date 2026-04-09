@@ -253,10 +253,9 @@ namespace DPN.VerificationConsoleApp
 
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDocument = XDocument.Load(dpnFilePath);
-
+			using var fs = new FileStream(dpnFilePath, FileMode.Open);
 			var parser = new PnmlxParser();
-			return parser.Deserialize(xDocument);
+			return parser.Deserialize(fs);
 		}
 
 		private static Dictionary<string, string> ParseKeyValueParameters(Dictionary<string, string> parameters, string parameterName)
@@ -276,10 +275,11 @@ namespace DPN.VerificationConsoleApp
 
 		private static void SaveStateSpace(StateSpaceGraph stateSpaceGraph, string outputDirectory)
 		{
-			var stateSpacePath = Path.Combine(outputDirectory, "state_space.asml");
+			var stateSpacePath = Path.Combine(outputDirectory, "state_space.graphml");
+			using var fs = new FileStream(stateSpacePath, FileMode.Create);
 
-			var asmlParser = new GraphmlParser();
-			asmlParser.Serialize(stateSpaceGraph).Save(stateSpacePath);
+			var graphmlParser = new GraphmlParser();
+			graphmlParser.Serialize(stateSpaceGraph, fs);
 			Console.WriteLine($"State space saved to {stateSpacePath}");
 		}
 

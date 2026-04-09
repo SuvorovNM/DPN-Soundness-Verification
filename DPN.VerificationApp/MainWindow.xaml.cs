@@ -107,11 +107,11 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = XDocument.Load(ofd.FileName);
+				using var fs = new FileStream(ofd.FileName, FileMode.Open);
 
 				try
 				{
-					currentDisplayedNet = pnmlxParser.Deserialize(xDocument);
+					currentDisplayedNet = pnmlxParser.Deserialize(fs);
 				}
 				catch (SerializationException exception)
 				{
@@ -250,13 +250,13 @@ namespace DPN.VerificationApp
 			if (ofd.ShowDialog() == true)
 			{
 				using var fs = new FileStream(ofd.FileName, FileMode.Open);
-				var asmlParser = new GraphmlParser();
-				var xDocument = XDocument.Load(fs);
+				var graphmlParser = new GraphmlParser();
 
 				StateSpaceGraph stateSpace;
 				try
 				{
-					stateSpace = asmlParser.Deserialize(xDocument);
+					using var context = new Context();
+					stateSpace = graphmlParser.Deserialize(fs, context);
 				}
 				catch (SerializationException exception)
 				{

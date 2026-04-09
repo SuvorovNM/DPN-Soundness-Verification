@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Xml.Linq;
 using DPN.Models.Enums;
 using DPN.Soundness.TransitionSystems;
@@ -39,10 +40,9 @@ namespace DPN.Parsers
 		
 		private readonly XsdValidator validator = new(xsdSchema);
 
-		public StateSpaceGraph Deserialize(XDocument document)
+		public StateSpaceGraph Deserialize(Stream stream, Context context)
 		{
-			ArgumentNullException.ThrowIfNull(document);
-			
+			var document = XDocument.Load(stream);
 			var validationResult = validator.Validate(document);
 			if (!validationResult.IsValid)
 			{
@@ -58,7 +58,6 @@ namespace DPN.Parsers
 			var variablesGraph = graphs.FirstOrDefault(g => g.Attribute("id")?.Value == variablesGraphId);
 			var typedVariables = ParseVariables(variablesGraph, out var variablesInFormulas);
 			
-			var context = new Context();
 			var expressionParser = new Z3ExpressionParser(context, variablesInFormulas);
 						
 			// Parse states and arcs from state space graph
@@ -267,34 +266,26 @@ namespace DPN.Parsers
 			return markingDict;
 		}
 
-		public XDocument Serialize(StateSpaceGraph stateSpace)
+		public void Serialize(StateSpaceGraph stateSpace, Stream stream)
 		{
 			var graphmlRoot = new XElement(rootElementName);
 			
-			// Add keys definitions
 			AddKeys(graphmlRoot);
 			
-			// Add state space graph
 			var stateSpaceGraph = CreateStateSpaceGraph(stateSpace);
 			graphmlRoot.Add(stateSpaceGraph);
-			
-			// Add variables graph
+
 			var variablesGraph = CreateVariablesGraph(stateSpace.TypedVariables);
 			graphmlRoot.Add(variablesGraph);
-			
-			// Add transitions graph
+
 			var transitionsGraph = CreateTransitionsGraph(stateSpace.DpnTransitions);
 			graphmlRoot.Add(transitionsGraph);
-			
-			// Add metadata graph
+
 			var metadataGraph = CreateMetadataGraph(stateSpace);
 			graphmlRoot.Add(metadataGraph);
 			
-			// Optionally add relationships graph (if needed)
-			// var relationshipsGraph = CreateRelationshipsGraph(stateSpace);
-			// graphmlRoot.Add(relationshipsGraph);
-			
-			return new XDocument(graphmlRoot);
+			var xDocument =  new XDocument(graphmlRoot);
+			xDocument.Save(stream);
 		}
 
 		private void AddKeys(XElement graphmlRoot)

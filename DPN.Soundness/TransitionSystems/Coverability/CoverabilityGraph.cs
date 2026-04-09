@@ -119,7 +119,7 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 			}
 
 
-			AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
+			AddNewState(currentState, new LtsTransition(transition, transition.IsTau), stateToAddInfo);
 
 
 			if (StopOnCoveringFinalPosition && stateToAddInfo.Marking[FinalPosition] > 1)

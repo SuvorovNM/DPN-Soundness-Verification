@@ -35,7 +35,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 							return; // The net is unbounded
 						}
 
-						AddNewState(currentState, new LtsTransition(transition), stateToAddInfo);
+						AddNewState(currentState, new LtsTransition(transition, transition.IsTau), stateToAddInfo);
 					}
 				}
 			}

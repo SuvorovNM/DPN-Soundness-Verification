@@ -29,4 +29,35 @@
       <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="TestData\ACG.graphml" />
+      <EmbeddedResource Include="TestData\ACG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\ACT.graphml" />
+      <EmbeddedResource Include="TestData\ACT.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\ARG.graphml" />
+      <EmbeddedResource Include="TestData\ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Tau_ARG.graphml" />
+      <EmbeddedResource Include="TestData\Tau_ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Tau_refined_ARG.graphml" />
+      <EmbeddedResource Include="TestData\Tau_refined_ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Unbounded.pnmlx" />
+      <EmbeddedResource Include="TestData\Unbounded.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Livelock.pnmlx" />
+      <EmbeddedResource Include="TestData\Livelock.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>

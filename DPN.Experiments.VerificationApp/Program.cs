@@ -223,11 +223,10 @@ namespace DataPetriNetVerificationApplication
 
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDocument = XDocument.Load(dpnFilePath);
+			using var fs = new FileStream(dpnFilePath, FileMode.Open);
 
 			var parser = new PnmlxParser();
-			var dpn = parser.Deserialize(xDocument);
-			//dpn.Context = context;
+			var dpn = parser.Deserialize(fs);
 			return dpn;
 		}
 
