@@ -5,7 +5,7 @@ using Microsoft.Z3;
 namespace DPN.Models
 {
     [Serializable]
-    public class DataPetriNet : IDisposable, ICloneable
+    public class DataPetriNet : IDisposable
     {
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public Context Context { get; set; }
@@ -40,12 +40,12 @@ namespace DPN.Models
             //Context.Dispose();
         }
 
-        public object Clone()
+        public object Clone(bool resetBaseTransitionIds = false)
         {
             var dpn = new DataPetriNet(Context);
             dpn.Name = Name;
             dpn.Places = this.Places.Select(place => (Place)place.Clone()).ToList();
-            dpn.Transitions = this.Transitions.Select(transition => (Transition)transition.Clone()).ToList();
+            dpn.Transitions = this.Transitions.Select(transition => (Transition)transition.Clone(resetBaseTransitionIds)).ToList();
 
             var placesDict = dpn.Places.ToDictionary(place => place.Id);
             var transitionsDict = dpn.Transitions.ToDictionary(transition => transition.Id);

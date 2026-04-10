@@ -32,7 +32,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var transformerToRefined = new TransformerToRefined();
 		var stopwatch = Stopwatch.StartNew();
 
-		var dpnToConsider = (DataPetriNet)sourceDpn.Clone();
+		var dpnToConsider = (DataPetriNet)sourceDpn.Clone(resetBaseTransitionIds: true);
 		bool repairmentSuccessfullyFinished;
 		bool repairmentFailed;
 		ColoredCoverabilityGraph? coloredCoverabilityGraph = null;
@@ -116,7 +116,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			: sourceDpn;
 
 		var differentTransitions = dpnToConsider.Transitions
-			.Where(t => t.Guard.ActualConstraintExpression.ToString() != sourceDpn.Transitions.First(st => st.BaseTransitionId == t.BaseTransitionId).Guard.ActualConstraintExpression.ToString())
+			.Where(t => t.Guard.ActualConstraintExpression.ToString() != sourceDpn.Transitions.First(st => st.Id == t.BaseTransitionId).Guard.ActualConstraintExpression.ToString())
 			.Select(t => t.BaseTransitionId)
 			.ToHashSet();
 		var deletedTransitions = sourceDpn.Transitions.Select(t => t.Id).Except(dpnToConsider.Transitions.Select(t => t.Id));
@@ -157,9 +157,10 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			foreach (var baseTransition in baseTransitions)
 			{
 				var resultantConstraint = (BoolExpr)dpnToConsider.Context.MkOr(baseTransition.Select(x => x.Guard.ActualConstraintExpression).ToArray()).Simplify();
-				if (dpnToConsider.Context.AreEqual(resultantConstraint, transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression))
+				var sourceTransition = transitionsDict[baseTransition.Key];
+				if (dpnToConsider.Context.AreEqual(resultantConstraint, sourceTransition.Guard.ActualConstraintExpression))
 				{
-					resultantConstraint = transitionsDict[baseTransition.Key].Guard.ActualConstraintExpression;
+					resultantConstraint = sourceTransition.Guard.ActualConstraintExpression;
 				}
 				else
 				{
@@ -169,8 +170,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 
 				var transitionToInspect = baseTransition.First();
-				var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
-				var label = transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
+				//var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
+				var label = sourceTransition.Label;// transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
 				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint, dpnToConsider.Variables);
 				var transitionToAdd = new Transition(baseTransition.Key, guard, label: label);
 				dpnToConsider.Transitions.RemoveAll(x => baseTransition.Contains(x));

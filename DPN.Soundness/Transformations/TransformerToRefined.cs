@@ -72,25 +72,17 @@ namespace DPN.Soundness.Transformations
 		{
 			string GetArcBaseTransitionId(LtsArc arc)
 			{
-				return arc.Transition.NonRefinedTransitionId; // arc.Transition.Id
+				return arc.Transition.Id; // arc.Transition.Id NonRefinedTransitionId
 			}
-
-			//if (sourceDpn.Transitions.Any(t => t.IsTau) || allArcs.Any(a => a.Transition.IsSilent))
-			//{
-			//	throw new ArgumentException("Refining of a DPN with tau transitions is not supported"); // TODO: надо перехватывать эту ошибку в приложении
-			//}
 
 			while (true)
 			{
 				var arcToStates = allArcs.GroupBy(a => a.SourceState)
 					.ToDictionary(a => a.Key, a => a.ToArray());
 
-				var baseToRefinedTransitions = allArcs
-					.Select(a => a.Transition.Id)
-					.ToHashSet()
-					.ToDictionary(
-						a => a,
-						a => sourceDpn.Transitions.Where(t => t.IsTau ? t.Id == a : t.BaseTransitionId == a).ToArray());
+				var baseToRefinedTransitions = sourceDpn.Transitions
+					.GroupBy(t => t.BaseTransitionId)
+					.ToDictionary(t => t.Key, t => t.ToArray());
 
 				var initialRefinedTransitionNumber = sourceDpn.Transitions.Count;
 
@@ -120,7 +112,7 @@ namespace DPN.Soundness.Transformations
 						.ToHashSet();
 
 
-					if (writeVarsComparedToOtherVars.Count > 0) // && sourceTransition.Guard.ReadVars.Keys.Except(sourceTransition.Guard.WriteVars.Keys).Any()
+					if (writeVarsComparedToOtherVars.Count > 0)
 					{
 						//var writeVarsNames = writeVarsComparedToOtherVars.Select(wv => wv.Key).ToHashSet();
 
@@ -135,7 +127,6 @@ namespace DPN.Soundness.Transformations
 								.Where(a => arcToStates[a.SourceState].Length > 1) // Очень дешевая эвристика, которая отработает в большой части случаев
 								.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)])
 								.Union(c.CycleArcs
-									//.Where(a=>!a.Transition.IsSilent)  && !a.Transition.IsSilent
 									.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)].Where(t => t.IsSplit))))
 							.Distinct()
 							.Where(x => x.Guard.ReadVars.Keys.Intersect(writeVarsComparedToOtherVars).Any())
@@ -207,19 +198,31 @@ namespace DPN.Soundness.Transformations
 				var refinedArcs = new List<Arc>();
 				foreach (var refinedTransition in refinedTransitions)
 				{
-					var parentTransitionId = baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
-					var preset = transitionsPreset[parentTransitionId];
-					var postset = transitionsPostset[parentTransitionId];
-
-					foreach (var arc in preset)
+					try
 					{
-						refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
-					}
+						var parentTransitionId = baseToRefinedTransitions.TryGetValue(refinedTransition.Id, out var parentTransition)
+							? parentTransition.First().Id
+							: baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
+						
+						var preset = transitionsPreset[parentTransitionId];
+						var postset = transitionsPostset[parentTransitionId];
 
-					foreach (var arc in postset)
-					{
-						refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
+						foreach (var arc in preset)
+						{
+							refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
+						}
+
+						foreach (var arc in postset)
+						{
+							refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
+						}
 					}
+					catch (Exception ex)
+					{
+						
+					} // TODO (nm.suvorov): хранить какой-то маппинг на уровне refinement?
+
+					
 				}
 
 				sourceDpn.Transitions = refinedTransitions;
@@ -255,5 +258,7 @@ namespace DPN.Soundness.Transformations
 				}
 			}
 		}
+
+		record TransitionWithBase(Transition Transition, string TransitionIdInLts);
 	}
 }
