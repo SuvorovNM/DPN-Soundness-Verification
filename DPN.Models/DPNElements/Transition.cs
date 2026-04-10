@@ -31,7 +31,7 @@ namespace DPN.Models.DPNElements
 
 			if (readExpression is { IsTrue: false, IsFalse: false } && Guard.Context.CanBeSatisfied(negatedExpression))
 			{
-				return new Transition($"τ({Label})", new Guard(Guard.Context, negatedExpression), nonTauTransitionId: Id);
+				return new Transition($"τ({Id})", new Guard(Guard.Context, negatedExpression), nonTauTransitionId: Id, label: $"τ({Label})");
 			}
 
 			return null;
