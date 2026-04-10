@@ -115,16 +115,11 @@ public class GraphmlParser_Test
 		using var fs = new FileStream("TestData\\Livelock.pnmlx", FileMode.Open);
 		var livelockDpn = pnmlxParser.Deserialize(fs);
 		
-		if (isTau)
-		{
-			livelockDpn = new TransformerToTau().Transform(livelockDpn);
-		}
-		
 		if (isRefined)
 		{
 			(livelockDpn,_) = new TransformerToRefined().Transform(livelockDpn, new Dictionary<string, string>());
 		}
-
+		
 		if (isTau)
 		{
 			livelockDpn = new TransformerToTau().Transform(livelockDpn);
