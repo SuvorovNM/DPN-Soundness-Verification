@@ -111,7 +111,7 @@ namespace DPN.VerificationApp
 
 				try
 				{
-					currentDisplayedNet = pnmlxParser.Deserialize(fs);
+					currentDisplayedNet = pnmlxParser.Deserialize(fs, new Context());
 				}
 				catch (SerializationException exception)
 				{
@@ -293,7 +293,7 @@ namespace DPN.VerificationApp
 			currentDisplayedNet = repairResult.Dpn;
 		}
 
-		private void SaveDpn_Click(object sender, RoutedEventArgs e)
+		private async void SaveDpn_Click(object sender, RoutedEventArgs e)
 		{
 			var ofd = new SaveFileDialog()
 			{
@@ -301,8 +301,8 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = pnmlxParser.Serialize(currentDisplayedNet);
-				xDocument.Save(ofd.FileName);
+				await using var fs = new FileStream(ofd.FileName, FileMode.Create);
+				await pnmlxParser.Serialize(currentDisplayedNet, fs);
 			}
 		}
 

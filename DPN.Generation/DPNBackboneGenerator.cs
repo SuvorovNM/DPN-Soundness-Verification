@@ -104,6 +104,9 @@ namespace DataPetriNetGeneration
             var placesRemained = placesCount;
 
             var dpn = new DataPetriNet(context);
+            var identifier = Guid.NewGuid().ToString();
+            dpn.Id = identifier;
+            dpn.Name = identifier;
 
             var initialPlace = new Place("i", PlaceType.Initial);
             dpn.Places.Add(initialPlace);
@@ -149,6 +152,9 @@ namespace DataPetriNetGeneration
             var placesRemained = placesCount;
 
             var dpn = new DataPetriNet(context);
+            var identifier = Guid.NewGuid().ToString();
+            dpn.Id = identifier;
+            dpn.Name = identifier;
 
             var initialPlace = new Place("i", PlaceType.Initial);
             dpn.Places.Add(initialPlace);

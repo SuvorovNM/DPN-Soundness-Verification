@@ -15,12 +15,13 @@ namespace DPN.Parsers
 		private const string xsdSchema = "XsdSchemas\\pnmlx.xsd";
 		private readonly XsdValidator validator = new(xsdSchema);
 
-		public XDocument Serialize(DataPetriNet dpn)
+		public async Task Serialize(DataPetriNet dpn, Stream stream)
 		{
 			ArgumentNullException.ThrowIfNull(dpn);
 
-
 			XElement dpnStructureElement = new XElement("page");
+			dpnStructureElement.SetAttributeValue("id", "n0");
+
 			XElement variablesElement = new XElement("variables");
 
 			foreach (var domainType in Enum.GetValues<DomainType>())
@@ -44,15 +45,15 @@ namespace DPN.Parsers
 
 				if (place.Tokens > 0)
 				{
-					var initialMarking = new XElement("initialMarking",
-						new XElement("text", place.Tokens));
+					var initialMarking = new XElement("initialMarking");
+					initialMarking.SetAttributeValue("tokens", place.Tokens);
 					placeElement.Add(initialMarking);
 				}
 
 				if (place.IsFinal)
 				{
-					var finalMarking = new XElement("finalMarking",
-						new XElement("text", 1));
+					var finalMarking = new XElement("finalMarking");
+					finalMarking.SetAttributeValue("tokens", 1);
 					placeElement.Add(finalMarking);
 				}
 
@@ -61,12 +62,16 @@ namespace DPN.Parsers
 
 			var expressionSerializer = new Z3ExpressionSerializer();
 
+			var transitionsCounter = 0;
+			var oldToNewTransitionIdDictionary = new Dictionary<string, string>();
 			foreach (var transition in dpn.Transitions)
 			{
 				var transitionElement = new XElement("transition",
 					new XElement("name",
 						new XElement("text", transition.Label)));
-				transitionElement.SetAttributeValue("id", transition.Id);
+				var newTransitionId = "t" + transitionsCounter++;
+				oldToNewTransitionIdDictionary[transition.Id] = newTransitionId;
+				transitionElement.SetAttributeValue("id", newTransitionId);
 
 				if (!transition.Guard.ActualConstraintExpression.IsTrue)
 				{
@@ -77,34 +82,36 @@ namespace DPN.Parsers
 				dpnStructureElement.Add(transitionElement);
 			}
 
-			int arcCounter = 0;
+			var arcCounter = 0;
 			foreach (var arc in dpn.Arcs)
 			{
 				var arcElement = new XElement("arc",
-					new XElement("weight",
+					new XElement("name",
 						new XElement("text", arc.Weight)));
 
-				arcElement.SetAttributeValue("id", arcCounter++);
-				arcElement.SetAttributeValue("source", arc.Source.Id);
-				arcElement.SetAttributeValue("target", arc.Destination.Id);
+				arcElement.SetAttributeValue("id", "arc" + arcCounter++);
+				arcElement.SetAttributeValue("source", arc.Source is Place ? arc.Source.Id : oldToNewTransitionIdDictionary[arc.Source.Id]);
+				arcElement.SetAttributeValue("target", arc.Destination is Place ? arc.Destination.Id : oldToNewTransitionIdDictionary[arc.Destination.Id]);
 
 				dpnStructureElement.Add(arcElement);
 			}
 
+			var netElement = new XElement("net",
+				new XElement("name",
+					new XElement("text", dpn.Name)),
+				dpnStructureElement,
+				variablesElement);
+			netElement.SetAttributeValue("id", dpn.Id);
+			netElement.SetAttributeValue("type", @"http://www.pnml.org/version-2009/grammar/pnmlcoremodel");
 
-			var srcTree = new XElement("pnml",
-				new XElement("net",
-					new XElement("name",
-						new XElement("text", dpn.Name)),
-					dpnStructureElement,
-					variablesElement));
+			var srcTree = new XElement("pnml", netElement);
 
 			var document = new XDocument(srcTree);
 
-			return document;
+			await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
 		}
 
-		public DataPetriNet Deserialize(Stream stream)
+		public DataPetriNet Deserialize(Stream stream, Context context)
 		{
 			var document = XDocument.Load(stream);
 
@@ -115,7 +122,6 @@ namespace DPN.Parsers
 				throw new SerializationException("Error occurred on deserializing:\n" + errorText);
 			}
 
-			var context = new Context();
 			var dpn = new DataPetriNet(context);
 			var varTypeDict = new Dictionary<string, DomainType>();
 
@@ -146,6 +152,8 @@ namespace DPN.Parsers
 								break;
 						}
 					}
+
+					dpn.Id = netElement.Attribute("id")!.Value;
 
 					dpn.Name = nameElement?.Element("text")?.Value ?? nameElement?.Value ?? string.Empty;
 					AddVariablesToDpn(dpn, varTypeDict, variablesElement);
@@ -256,7 +264,7 @@ namespace DPN.Parsers
 				transitionName = nameElement.Element("text")?.Value ?? nameElement.Value ?? string.Empty;
 			}
 
-			return new Transition(transitionId, new Guard(context, smtExpression)) { Label = transitionName };
+			return new Transition(transitionId, new Guard(context, smtExpression), label: transitionName);
 		}
 
 		private Arc GetArcFromXElement(XElement arcElement, IEnumerable<Node> dpnNodes)
@@ -280,7 +288,7 @@ namespace DPN.Parsers
 			}
 
 			var weight = 1;
-			var nameElement = arcElement.Element("name") ?? arcElement.Element("weight"); // for backward compatibility
+			var nameElement = arcElement.Element("name");
 			if (nameElement != null)
 			{
 				var weightValue = nameElement.Element("text")?.Value ?? nameElement.Value ?? "1";

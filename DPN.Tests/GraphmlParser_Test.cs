@@ -79,7 +79,8 @@ public class GraphmlParser_Test
 	{
 		var pnmlxParser = new PnmlxParser();
 		using var fs = new FileStream("TestData\\Unbounded.pnmlx", FileMode.Open);
-		var unboundedDpn = pnmlxParser.Deserialize(fs);
+		using var context = new Context();
+		var unboundedDpn = pnmlxParser.Deserialize(fs, context);
 
 		var stateSpace = stateSpaceType switch
 		{
@@ -90,7 +91,7 @@ public class GraphmlParser_Test
 		};
 		
 		var graphmlParser = new GraphmlParser();
-		var memoryStream = new MemoryStream();
+		using var memoryStream = new MemoryStream();
 		graphmlParser.Serialize(stateSpace, memoryStream);
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var savedStateSpace = graphmlParser.Deserialize(memoryStream, unboundedDpn.Context);
@@ -113,7 +114,8 @@ public class GraphmlParser_Test
 	{
 		var pnmlxParser = new PnmlxParser();
 		using var fs = new FileStream("TestData\\Livelock.pnmlx", FileMode.Open);
-		var livelockDpn = pnmlxParser.Deserialize(fs);
+		using var context = new Context();
+		var livelockDpn = pnmlxParser.Deserialize(fs, context);
 		
 		if (isRefined)
 		{
@@ -128,7 +130,7 @@ public class GraphmlParser_Test
 		var stateSpace = StateSpaceConstructor.ConstructReachabilityGraph(livelockDpn);
 		
 		var graphmlParser = new GraphmlParser();
-		var memoryStream = new MemoryStream();
+		using var memoryStream = new MemoryStream();
 		graphmlParser.Serialize(stateSpace, memoryStream);
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var savedStateSpace = graphmlParser.Deserialize(memoryStream, livelockDpn.Context);

@@ -226,7 +226,7 @@ namespace DataPetriNetVerificationApplication
 			using var fs = new FileStream(dpnFilePath, FileMode.Open);
 
 			var parser = new PnmlxParser();
-			var dpn = parser.Deserialize(fs);
+			var dpn = parser.Deserialize(fs, new Context());
 			return dpn;
 		}
 

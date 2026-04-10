@@ -245,6 +245,8 @@ namespace DPN.Models
 
             return new DataPetriNet(context)
             {
+	            Name = "VOV model",
+	            Id = "net_vov",
                 Places = placesList,
                 Transitions = transitionList,
                 Variables = variables,
@@ -568,6 +570,8 @@ namespace DPN.Models
 
             return new DataPetriNet(context)
             {
+	            Name = "VOC model",
+	            Id = "net_voc",
                 Places = placesList,
                 Transitions = transitionList,
                 Variables = variables,

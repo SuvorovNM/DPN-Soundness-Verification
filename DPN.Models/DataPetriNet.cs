@@ -10,6 +10,7 @@ namespace DPN.Models
         [System.Xml.Serialization.XmlIgnoreAttribute]
         public Context Context { get; set; }
 
+        public string Id { get; set; }
         public string Name { get; set; }
         public List<Place> Places { get; set; }
         public List<Transition> Transitions { get; set; }
@@ -28,6 +29,7 @@ namespace DPN.Models
             Arcs = new List<Arc>();
             Variables = new VariablesStore();
             Name = string.Empty;
+            Id = string.Empty;
         }
 
         public DataPetriNet()
@@ -44,6 +46,7 @@ namespace DPN.Models
         {
             var dpn = new DataPetriNet(Context);
             dpn.Name = Name;
+            dpn.Id = Id;
             dpn.Places = this.Places.Select(place => (Place)place.Clone()).ToList();
             dpn.Transitions = this.Transitions.Select(transition => (Transition)transition.Clone(resetBaseTransitionIds)).ToList();
 

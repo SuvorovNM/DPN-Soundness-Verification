@@ -116,11 +116,10 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 			var dpnPath = Path.Combine(verificationInput.OutputDirectory, dpn.Name + ".pnmlx");
 			Directory.CreateDirectory(verificationInput.OutputDirectory);
 
-			var fs = new FileStream(dpnPath, FileMode.Create);
+			await using var fs = new FileStream(dpnPath, FileMode.Create);
 			try
 			{
-				var xmlDocument = parser.Serialize(dpn);
-				await xmlDocument.SaveAsync(fs, SaveOptions.None, token);
+				await parser.Serialize(dpn, fs);
 			}
 			finally
 			{

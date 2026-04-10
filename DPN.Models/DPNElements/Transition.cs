@@ -17,7 +17,7 @@ namespace DPN.Models.DPNElements
 			Label = label ?? id;
 			Id = id;
 			IsSplit = isSplit;
-			IsTau = id.StartsWith("τ");
+			IsTau = label?.StartsWith("τ") ?? id.StartsWith("τ");
 			BaseTransitionId = baseTransitionId ?? id;
 
 
