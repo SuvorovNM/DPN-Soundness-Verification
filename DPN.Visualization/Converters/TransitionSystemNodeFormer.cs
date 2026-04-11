@@ -76,7 +76,7 @@ internal static class TransitionSystemNodeFormer
 
         if (state.StateType.HasFlag(StateType.StrictlyCovered))
         {
-            node.Attr.FillColor = Color.Red;
+            node.Attr.FillColor = Color.LightSteelBlue;
         }
 
         return node;

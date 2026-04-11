@@ -3,6 +3,7 @@ using DPN.Models.DPNElements;
 using DPN.Models.Enums;
 using DPN.Models.Extensions;
 using DPN.Soundness.TransitionSystems;
+using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
@@ -13,7 +14,7 @@ public static class ClassicalSoundnessAnalyzer
 {
 	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
 	{
-		var boundedness = stateSpaceGraph.IsFullGraph;
+		var boundedness = stateSpaceGraph.IsFullGraph && !stateSpaceGraph.Nodes.Any(s => s.Marking.Any(kvp => kvp.Value == int.MaxValue));
 		var stateTypes = boundedness
 			? GetStatesDividedByTypes(stateSpaceGraph)
 			: stateSpaceGraph.Nodes.ToDictionary(x => x.Id, y => StateType.Default);
@@ -59,8 +60,8 @@ public static class ClassicalSoundnessAnalyzer
 
 	internal static SoundnessProperties CheckSoundness(DataPetriNet dpn, LabeledTransitionSystem cg)
 	{
-		var boundedness = cg.IsFullGraph;
-		var stateTypes = boundedness
+		var boundedness = cg.IsFullGraph && !cg.ConstraintStates.Any(s => s.Marking.AsDictionary().Any(kvp => kvp.Value == int.MaxValue));
+		var stateTypes = cg.IsFullGraph
 			? GetStatesDividedByTypesNew(cg, dpn.FinalMarking.AsDictionary())
 			: cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => StateType.Default);
 
@@ -87,7 +88,7 @@ public static class ClassicalSoundnessAnalyzer
 		return new SoundnessProperties(
 			SoundnessType.Classical,
 			stateTypes.ToDictionary(x => x.Key.Id, x => x.Value),
-			cg.IsFullGraph,
+			boundedness,
 			deadTransitions,
 			hasDeadlocks,
 			isSound);
@@ -109,6 +110,7 @@ public static class ClassicalSoundnessAnalyzer
 
 		DefineFinals(stateDictionary, finalStates);
 		DefineUncleanFinals(finalMarking, stateDictionary);
+		DefineUnbounded(stateDictionary);
 
 		DefineDeadlocks(stateDictionary);
 		DefineStatesWithNoWayToFinals(stateDictionary, finalStates);
@@ -163,6 +165,18 @@ public static class ClassicalSoundnessAnalyzer
 				stateDictionary[uncleanFinal] |= StateType.UncleanFinal;
 			}
 		}
+		
+		static void DefineUnbounded(Dictionary<AbstractState, StateType> stateDictionary)
+		{
+			var strictlyCoveredStates = stateDictionary.Keys
+				.Where(x => x.Marking.AsDictionary().Any(kvp=>kvp.Value == int.MaxValue))
+				.ToArray();
+
+			foreach (var strictlyCovered in strictlyCoveredStates)
+			{
+				stateDictionary[strictlyCovered] |= StateType.StrictlyCovered;
+			}
+		}
 
 		void DefineFinals(Dictionary<AbstractState, StateType> stateDictionary,
 			LtsState[] finalStates)
@@ -214,6 +228,15 @@ public static class ClassicalSoundnessAnalyzer
 		foreach (var uncleanFinal in uncleanFinals)
 		{
 			stateDictionary[uncleanFinal.Id] |= StateType.UncleanFinal;
+		}
+		
+		var strictlyCoveredStates = stateSpaceGraph.Nodes
+			.Where(x => x.Marking.Any(kvp=>kvp.Value == int.MaxValue))
+			.ToArray();
+
+		foreach (var strictlyCovered in strictlyCoveredStates)
+		{
+			stateDictionary[strictlyCovered.Id] |= StateType.StrictlyCovered;
 		}
 
 		if (stateSpaceGraph.Arcs.Length == 0)

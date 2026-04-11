@@ -92,7 +92,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	private static VerificationResult VerifyImproved(DataPetriNet dpn, bool constructFullGraph)
 	{
 		var stopWatch = Stopwatch.StartNew();
-		LabeledTransitionSystem lts = constructFullGraph ? new CoverabilityGraph(dpn, false) : new ReachabilityGraph(dpn);
+		LabeledTransitionSystem lts = constructFullGraph ? new CoverabilityGraph(dpn, true) : new ReachabilityGraph(dpn);
 		lts.GenerateGraph();
 		var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, lts);
 
@@ -154,7 +154,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	private static LabeledTransitionSystem GetTauStateSpace(bool constructFullGraph, DataPetriNet dpn)
 	{
 		return constructFullGraph
-			? new CoverabilityGraph(dpn, false, false, false, true)
+			? new CoverabilityGraph(dpn, true, false, false, true)
 			: new ConstraintGraph(dpn);
 	}
 }

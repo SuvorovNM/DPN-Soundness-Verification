@@ -49,7 +49,7 @@ namespace DPN.Soundness.Transformations
 			LabeledTransitionSystem sourceLts;
 			if (baseStructure is null or RefinementSettingsConstants.CoverabilityGraph)
 			{
-				sourceLts = new CoverabilityGraph(transformedDpn, continueBranchIfUnboundedPlaceFound: false);
+				sourceLts = new CoverabilityGraph(transformedDpn, continueBranchIfUnboundedPlaceFound: true);
 			}
 			else if (baseStructure == RefinementSettingsConstants.FiniteReachabilityGraph)
 			{

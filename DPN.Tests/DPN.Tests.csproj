@@ -74,6 +74,34 @@
       <EmbeddedResource Include="TestData\Unbounded_covering_output.pnmlx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+      <None Remove="TestData\CreditBankRequest.pnmlx" />
+      <EmbeddedResource Include="TestData\CreditBankRequest.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\SepsisMined.pnmlx" />
+      <EmbeddedResource Include="TestData\SepsisMined.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\PackageHandling.pnmlx" />
+      <EmbeddedResource Include="TestData\PackageHandling.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\RoadFines.pnmlx" />
+      <EmbeddedResource Include="TestData\RoadFines.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\SimpleAuction.pnmlx" />
+      <EmbeddedResource Include="TestData\SimpleAuction.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\DigitalWhiteboard_Transfer.pnmlx" />
+      <EmbeddedResource Include="TestData\DigitalWhiteboard_Transfer.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Casino.pnmlx" />
+      <EmbeddedResource Include="TestData\Casino.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

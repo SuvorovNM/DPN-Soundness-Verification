@@ -172,7 +172,9 @@ namespace DPN.VerificationApp
 		private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Verifying Soundness");
-			var verificationResult = await Task.Run(() => classicalSoundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>()));
+			var verificationResult = await Task.Run(() => classicalSoundnessVerifier.Verify(
+				currentDisplayedNet,
+				new Dictionary<string, string> { { ClassicalVerificationSettingsConstants.ConstructFullGraph, "True" } }));
 			HideLoader();
 
 			VisualizeVerificationResult(verificationResult);
@@ -185,7 +187,8 @@ namespace DPN.VerificationApp
 				currentDisplayedNet,
 				verificationSettings: new Dictionary<string, string>
 				{
-					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.ImprovedVersion }
+					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.ImprovedVersion },
+					{ ClassicalVerificationSettingsConstants.ConstructFullGraph, "True" }
 				}));
 			HideLoader();
 
@@ -286,7 +289,7 @@ namespace DPN.VerificationApp
 				  $"Repair steps: {repairResult.RepairSteps}. \n" +
 				  $"States constructed: {repairResult.TotalStatesConsidered}. \n" +
 				  $"Transition refinements: {repairResult.TotalRefinementsDone}. \n" +
-				  $"Modified transitions: {string.Join(',',repairResult.RepairModifications.EnhancedTransitions.ToArray())}"
+				  $"Modified transitions: {string.Join(',', repairResult.RepairModifications.EnhancedTransitions.ToArray())}"
 				: $"Failed to repair the model. Try using different repair algorithm. Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms.";
 			ModernMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
