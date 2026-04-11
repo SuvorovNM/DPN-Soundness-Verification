@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<pnml>
+  <net id="90b44a2f-07ff-4c88-8cea-de32b79f87c0" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text>90b44a2f-07ff-4c88-8cea-de32b79f87c0</text>
+    </name>
+    <page id="n0">
+      <place id="i">
+        <name>
+          <text>i</text>
+        </name>
+        <initialMarking tokens="1" />
+      </place>
+      <place id="p1">
+        <name>
+          <text>p1</text>
+        </name>
+      </place>
+      <place id="p2">
+        <name>
+          <text>p2</text>
+        </name>
+      </place>
+      <place id="o">
+        <name>
+          <text>o</text>
+        </name>
+        <finalMarking tokens="1" />
+      </place>
+      <place id="rp1">
+        <name>
+          <text>rp1</text>
+        </name>
+      </place>
+      <transition id="t0">
+        <name>
+          <text>t0</text>
+        </name>
+      </transition>
+      <transition id="t1">
+        <name>
+          <text>t1</text>
+        </name>
+      </transition>
+      <transition id="t2" guard="((v0_w &lt;= -666542.0) &amp;&amp; (v1_r &lt; -715422.0)) || (v1_w &gt;= v0_r)">
+        <name>
+          <text>t2</text>
+        </name>
+      </transition>
+      <arc id="arc0" source="i" target="t0">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc1" source="t0" target="p1">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc2" source="p1" target="t1">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc3" source="t1" target="p2">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc4" source="p2" target="t2">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc5" source="t2" target="o">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc6" source="t0" target="rp1">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc7" source="t1" target="rp1">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc8" source="rp1" target="t2">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+      <arc id="arc9" source="t2" target="p1">
+        <name>
+          <text>1</text>
+        </name>
+      </arc>
+    </page>
+    <variables>
+      <variable type="Real">
+        <name>v0</name>
+      </variable>
+      <variable type="Real">
+        <name>v1</name>
+      </variable>
+    </variables>
+  </net>
+</pnml>

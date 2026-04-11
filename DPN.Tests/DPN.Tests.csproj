@@ -70,6 +70,10 @@
       <EmbeddedResource Include="TestData\LivelockWithMultipleTransitionsToRefine.pnmlx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+      <None Remove="TestData\Unbounded_covering_output.pnmlx" />
+      <EmbeddedResource Include="TestData\Unbounded_covering_output.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

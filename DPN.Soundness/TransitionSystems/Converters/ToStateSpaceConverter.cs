@@ -33,7 +33,7 @@ internal static class ToStateSpaceConverter
 			coverabilityTree.ConstraintArcs
 				.Select(a => new StateSpaceArc(a.Transition.IsSilent, a.Transition.NonRefinedTransitionId,
 					a.SourceState.Id, a.TargetState.Id, a.Transition.Label)).ToArray(),
-			true,
+			coverabilityTree.IsFullGraph,
 			TransitionSystemType.AbstractCoverabilityTree,
 			coverabilityTree.DataPetriNet.FinalMarking.AsDictionary(),
 			coverabilityTree.DataPetriNet.Transitions.ToArray(),

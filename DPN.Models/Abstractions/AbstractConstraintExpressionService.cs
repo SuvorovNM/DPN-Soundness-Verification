@@ -66,7 +66,7 @@ namespace DPN.Models.Abstractions
                 var currentArrayIndex = 0;
                 foreach (var keyValuePair in overwrittenVars)
                 {
-                    variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
+	                variablesToOverwrite[currentArrayIndex++] = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Read);
                 }
 
                 var existsExpression = Context.MkExists(variablesToOverwrite, andExpression);
@@ -91,6 +91,20 @@ namespace DPN.Models.Abstractions
             }
 
             return Context.SimplifyExpression(resultBlockExpression);
+        }
+
+        private bool CheckWhetherVariableIsAlwaysTrue(KeyValuePair<string, DomainType> keyValuePair, BoolExpr andExpression)
+        {
+	        var writtenVariable = Context.GenerateExpression(keyValuePair.Key, keyValuePair.Value, VariableType.Written);
+	        var freshVariable = Context.GenerateExpression(keyValuePair.Key+"fresh", keyValuePair.Value, VariableType.Written);
+                    
+	        Expr expr1 = andExpression.Substitute(writtenVariable, freshVariable);
+	        // Check if expr is equivalent regardless of the variable
+	        BoolExpr equiv = Context.MkEq(andExpression, expr1);
+	        var solver = Context.MkSolver();
+	        solver.Assert(Context.MkNot(equiv));
+
+	        return solver.Check() == Status.SATISFIABLE;
         }
     }
 }

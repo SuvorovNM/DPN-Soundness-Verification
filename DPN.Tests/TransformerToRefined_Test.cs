@@ -50,6 +50,7 @@ public class TransformerToRefined_Test
 			.BeEquivalentTo(livelockDpn.Arcs.Where(a => a.Destination.Id != baseTransition.Id && a.Source.Id != baseTransition.Id));
 
 		var refinedTransitions = transformedDpn.RefinedDpn.Transitions.Where(t => t.IsSplit).ToArray();
+		refinedTransitions.Should().HaveCount(2);
 		refinedTransitions.All(t => t.BaseTransitionId == baseTransition.Id).Should().BeTrue();
 		VerifyArcs(baseTransition, refinedTransitions.ToArray(), livelockDpn, transformedDpn);
 
