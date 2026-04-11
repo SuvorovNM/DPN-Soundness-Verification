@@ -68,7 +68,7 @@ internal static class ToStateSpaceConverter
 				.Select(a => new StateSpaceArc(a.Transition.IsSilent, a.Transition.NonRefinedTransitionId,
 					a.SourceState.Id, a.TargetState.Id, a.Transition.Label)).ToArray(),
 			labeledTransitionSystem.IsFullGraph,
-			TransitionSystemType.AbstractReachabilityGraph,
+			labeledTransitionSystem is ReachabilityGraph ? TransitionSystemType.AbstractReachabilityGraph : TransitionSystemType.AbstractCoverabilityGraph,
 			labeledTransitionSystem.DataPetriNet.FinalMarking.AsDictionary(),
 			labeledTransitionSystem.DataPetriNet.Transitions.Union(extraTransitions).ToArray(),
 			labeledTransitionSystem.DataPetriNet.GetVariablesDictionary());

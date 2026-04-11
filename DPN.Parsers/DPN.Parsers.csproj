@@ -27,6 +27,7 @@
     <EmbeddedResource Include="XsdSchemas\graphml.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <InternalsVisibleTo Include="DPN.Tests" />
   </ItemGroup>
 
 </Project>

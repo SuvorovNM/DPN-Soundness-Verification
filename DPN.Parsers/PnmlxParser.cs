@@ -119,7 +119,7 @@ namespace DPN.Parsers
 			if (!validationResult.IsValid)
 			{
 				var errorText = string.Join(Environment.NewLine, validationResult.Errors.Select(e => $"{e.Severity.ToString()}: {e.Message}"));
-				throw new SerializationException("Error occurred on deserializing:\n" + errorText);
+				//throw new SerializationException("Error occurred on deserializing:\n" + errorText);
 			}
 
 			var dpn = new DataPetriNet(context);

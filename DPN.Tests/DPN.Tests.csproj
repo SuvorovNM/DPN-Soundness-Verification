@@ -62,6 +62,14 @@
       <EmbeddedResource Include="TestData\Gambling.pnmlx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+      <None Remove="TestData\HospitalBilling.pnmlx" />
+      <EmbeddedResource Include="TestData\HospitalBilling.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\LivelockWithMultipleTransitionsToRefine.pnmlx" />
+      <EmbeddedResource Include="TestData\LivelockWithMultipleTransitionsToRefine.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>
