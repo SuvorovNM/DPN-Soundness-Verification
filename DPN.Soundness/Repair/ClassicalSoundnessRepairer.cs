@@ -83,7 +83,10 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				transitionsToTrySimplify = transitionsToTrySimplify.Except(transitionsUpdatedAtPreviousStep).ToHashSet();
 
 				// Rollback is actually performed with a delay of 1 step
-				TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+				if (rollbackRestrictions)
+				{
+					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+				}
 			}
 			else
 			{
@@ -128,7 +131,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			resultDpn,
 			repairmentSuccessfullyFinished,
 			repairSteps,
-			new RepairModifications(differentTransitions, totalModifiedTransitions),
+			repairmentSuccessfullyFinished ? new RepairModifications(differentTransitions, totalModifiedTransitions) : new RepairModifications([], []),
 			stopwatch.Elapsed,
 			statesConstructed,
 			refinementsCount);
@@ -171,7 +174,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 				var transitionToInspect = baseTransition.First();
 				//var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
-				var label = sourceTransition.Label;// transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
+				var label = sourceTransition.Label; // transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
 				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint, dpnToConsider.Variables);
 				var transitionToAdd = new Transition(baseTransition.Key, guard, label: label);
 				dpnToConsider.Transitions.RemoveAll(x => baseTransition.Contains(x));
@@ -372,7 +375,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		{
 			return;
 		}
-		
+
 		foreach (var arc in parents.Except(visitedArcs))
 		{
 			if (arc.Transition.IsSilent)
