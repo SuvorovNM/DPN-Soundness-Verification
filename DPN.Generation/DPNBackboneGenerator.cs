@@ -181,7 +181,7 @@ namespace DataPetriNetGeneration
                 var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count - 1)];
                 var chosenPlace2 = dpn.Places[random.Next(dpn.Places.Count)];
 
-                var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(context));
+                var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(context, null));
                 dpn.Transitions.Add(transition);
                 dpn.Arcs.Add(new Arc(chosenPlace1, transition));
                 dpn.Arcs.Add(new Arc(transition, chosenPlace2));
@@ -206,7 +206,7 @@ namespace DataPetriNetGeneration
             int transitionId,
             DataPetriNet dpn)
         {
-            var transition = new Transition($"t{transitionId}", new Guard(context));
+            var transition = new Transition($"t{transitionId}", new Guard(context, null));
             dpn.Transitions.Add(transition);
             dpn.Arcs.Add(new Arc(sourcePlace, transition));
         }

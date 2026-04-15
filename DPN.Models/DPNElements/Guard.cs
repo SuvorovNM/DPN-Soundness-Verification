@@ -38,29 +38,6 @@ namespace DPN.Models.DPNElements
         {
 
         }
-
-        public Guard(Context ctx, List<IConstraintExpression>? baseConstraints = null)
-        {
-            if (baseConstraints == null)
-            {
-                var trueExpression = ctx.MkTrue();
-                BaseConstraintExpressions = trueExpression;
-                ActualConstraintExpression = trueExpression;
-                ConstraintExpressionBeforeUpdate = trueExpression;
-                WriteVars = new Dictionary<string, DomainType>();
-            }
-            else
-            {
-                var smtExpression = ctx.GetSmtExpression(baseConstraints);
-                BaseConstraintExpressions = smtExpression;
-                ActualConstraintExpression = smtExpression;
-                ConstraintExpressionBeforeUpdate = smtExpression;
-                WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
-                ReadVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Read);
-            }
-
-            Context = ctx;            
-        }
         
         public Guard(Context ctx, BoolExpr? smtExpression)
         {

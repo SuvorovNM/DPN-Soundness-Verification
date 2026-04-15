@@ -56,7 +56,7 @@ namespace DPN.Models
 				new("Update request", new Guard(context,
 					context.MkLt(context.MkRealConst("reqd_w"), context.MkRealConst("reqd_r")))),
 
-				new("AND split", new Guard(context)),
+				new("AND split", new Guard(context, null)),
 
 				new("Inform acceptance VIP", new Guard(context,
 					context.MkGt(context.MkRealConst("granted_r"), context.MkReal(10000)))),
@@ -67,7 +67,7 @@ namespace DPN.Models
 				new("Open credit loan", new Guard(context,
 					context.MkEq(context.MkBoolConst("ok_r"), context.MkBool(true)))),
 
-				new("AND join", new Guard(context)),
+				new("AND join", new Guard(context, null)),
 			};
 
 			var arcsList = new List<Arc>
@@ -165,7 +165,7 @@ namespace DPN.Models
 						context.MkEq(context.MkBoolConst("ok_r"), context.MkBool(false))
 					))),
 
-				new("AND split", new Guard(context)),
+				new("AND split", new Guard(context, null)),
 
 				new("Inform acceptance customer normal", new Guard(context,
 					context.MkAnd(
@@ -188,7 +188,7 @@ namespace DPN.Models
 				new("Open credit loan", new Guard(context,
 					context.MkEq(context.MkBoolConst("ok_r"), context.MkBool(true)))),
 
-				new("AND join", new Guard(context)),
+				new("AND join", new Guard(context, null)),
 			};
 
 			var arcsList = new List<Arc>

@@ -2,266 +2,271 @@
 using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
 using DPN.Models.Enums;
+using DPN.Models.Extensions;
 using Microsoft.Z3;
 
 namespace DataPetriNetGeneration
 {
-    internal class DPNConditionsGenerator(Context context)
-    {
-        private const int VOV = 0;
-        private readonly Random random = new Random();
-        private Context Context { get; set; } = context;
+	internal class DPNConditionsGenerator(Context context)
+	{
+		private const int VOV = 0;
+		private readonly Random random = new();
 
-        public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount, bool soundnessPreference = false)
-        {
-            if ((varsCount < 0) || (conditionsCount < 0))
-            {
-                throw new ArgumentException("Number of variables and conditions must be non-negative");
-            }
+		public void GenerateConditions(DataPetriNet dpn, int varsCount, int conditionsCount, bool soundnessPreference = false)
+		{
+			if ((varsCount < 0) || (conditionsCount < 0))
+			{
+				throw new ArgumentException("Number of variables and conditions must be non-negative");
+			}
 
-            if ((varsCount < 1) && (conditionsCount > 0))
-            {
-                throw new ArgumentException("Model must have at least one variable");
-            }
+			if ((varsCount < 1) && (conditionsCount > 0))
+			{
+				throw new ArgumentException("Model must have at least one variable");
+			}
 
-            // Add variables to DPN
-            var varsPool = GetVarsPool(varsCount);
-            var variables = new VariablesStore();            
-            foreach (var variable in varsPool)
-            {
-                variables[DomainType.Real].Write(variable, new DefinableValue<double>(0));
-            }
-            dpn.Variables = variables;
+			var varsPool = GetVarsPool(varsCount);
+			var variables = new VariablesStore();
+			foreach (var variable in varsPool)
+			{
+				variables[DomainType.Real].Write(variable, new DefinableValue<double>(0));
+			}
 
-            if (conditionsCount == 0)
-            {
-                return;
-            }
+			dpn.Variables = variables;
 
-            var constantsPool = GetConstantsPool(GetConstantsCount(conditionsCount));
-            
-            var predicatesPool = GetPredicatesPool();
-            var connectivesPool = GetConnectivesPool();
-            var varTypesPool = GetVariableTypesPool();
-            var conditionsPerTransition = GetConditionsCountPerTransition(dpn.Transitions.Count, conditionsCount);
+			if (conditionsCount == 0)
+			{
+				return;
+			}
 
-            var transitionIndex = 0;            
-            while (transitionIndex < dpn.Transitions.Count)
-            {
-                var conditions = new List<IConstraintExpression>(conditionsPerTransition[transitionIndex]);
+			var constantsPool = GetConstantsPool(GetConstantsCount(conditionsCount));
 
-                for (int i = 0; i < conditionsPerTransition[transitionIndex]; i++)
-                {
-                    var firstVariableType = GetVarType(varTypesPool, soundnessPreference);
-                    var logicalConnectiveType = GetLogicalConnectiveType(connectivesPool, i);
-                    var variableName = GetVarName(varsPool);
-                    var predicate = GetPredicate(predicatesPool);
+			var predicatesPool = GetPredicatesPool();
+			var connectivesPool = GetConnectivesPool();
+			var varTypesPool = GetVariableTypesPool();
+			var conditionsPerTransition = GetConditionsCountPerTransition(dpn.Transitions.Count, conditionsCount);
 
-                    if (GetConditionType() == VOV)
-                    {
-	                    var vovExpression = GenerateVOVExpression(
-		                    varsPool,
-		                    firstVariableType,
-		                    logicalConnectiveType,
-		                    variableName,
-		                    predicate);
+			var transitionIndex = 0;
+			while (transitionIndex < dpn.Transitions.Count)
+			{
+				BoolExpr? expression = null;
 
-	                    conditions.Add(vovExpression);
-                    }
-                    else
-                    {
-	                    var vocExpression = GenerateVOCExpression(
-		                    constantsPool,
-		                    firstVariableType,
-		                    logicalConnectiveType,
-		                    variableName,
-		                    predicate);
+				for (int i = 0; i < conditionsPerTransition[transitionIndex]; i++)
+				{
+					var firstVariableType = GetVarType(varTypesPool, soundnessPreference);
+					var logicalConnectiveType = GetLogicalConnectiveType(connectivesPool, i);
+					var variableName = GetVarName(varsPool);
+					var predicate = GetPredicate(predicatesPool);
 
-	                    conditions.Add(vocExpression);
-                    }
-                }
+					if (GetConditionType() == VOV)
+					{
+						expression = GenerateVOVExpression(
+							context,
+							varsPool,
+							firstVariableType,
+							logicalConnectiveType,
+							variableName,
+							predicate,
+							expression);
+					}
+					else
+					{
+						expression = GenerateVOCExpression(
+							context,
+							constantsPool,
+							firstVariableType,
+							logicalConnectiveType,
+							variableName,
+							predicate,
+							expression);
+					}
+				}
 
-                if (CheckSatisfiability(conditions) == Status.SATISFIABLE)
-                {
-                    dpn.Transitions[transitionIndex].Guard = new Guard(dpn.Context, conditions);
-                    transitionIndex++;
-                }
-            }
-        }
+				if (context.CanBeSatisfied(expression ?? context.MkTrue()))
+				{
+					dpn.Transitions[transitionIndex].Guard = new Guard(dpn.Context, expression);
+					transitionIndex++;
+				}
+			}
+		}
 
-        private int GetConditionType()
-        {
-            return random.Next(0, 4);
-        }
+		private int GetConditionType()
+		{
+			return random.Next(0, 4);
+		}
 
-        private BinaryPredicate GetPredicate(List<BinaryPredicate> predicatesPool)
-        {
-            return predicatesPool[random.Next(0, predicatesPool.Count)];
-        }
+		private BinaryPredicate GetPredicate(List<BinaryPredicate> predicatesPool)
+		{
+			return predicatesPool[random.Next(0, predicatesPool.Count)];
+		}
 
-        private string GetVarName(List<string> varsPool)
-        {
-            return varsPool[random.Next(0, varsPool.Count)];
-        }
+		private string GetVarName(List<string> varsPool)
+		{
+			return varsPool[random.Next(0, varsPool.Count)];
+		}
 
-        private VariableType GetVarType(List<VariableType> varTypesPool, bool soundnessPreference)
-        {
-            if (soundnessPreference)
-            {
-                var chosenOption = random.Next(0, 4); // 75% chance of write condition
+		private VariableType GetVarType(List<VariableType> varTypesPool, bool soundnessPreference)
+		{
+			if (soundnessPreference)
+			{
+				var chosenOption = random.Next(0, 4); // 75% chance of write condition
 
-                return chosenOption == 0
-                    ? VariableType.Read
-                    : VariableType.Written;
-            }
-            return varTypesPool[random.Next(0, varTypesPool.Count)];
-        }
+				return chosenOption == 0
+					? VariableType.Read
+					: VariableType.Written;
+			}
 
-        private LogicalConnective GetLogicalConnectiveType(List<LogicalConnective> connectivesPool, int i)
-        {
-            return i == 0
-                                    ? LogicalConnective.Empty
-                                    : connectivesPool[random.Next(0, connectivesPool.Count)];
-        }
+			return varTypesPool[random.Next(0, varTypesPool.Count)];
+		}
 
-        private Status CheckSatisfiability(List<IConstraintExpression> conditions)
-        {
-            // Check satisfiability
-            if (conditions.Count == 0)
-            {
-                return Status.SATISFIABLE;
-            }
+		private LogicalConnective GetLogicalConnectiveType(List<LogicalConnective> connectivesPool, int i)
+		{
+			return i == 0
+				? LogicalConnective.Empty
+				: connectivesPool[random.Next(0, connectivesPool.Count)];
+		}
 
-            var conjunctedConditions = new List<BoolExpr>();
-            conjunctedConditions.Add(conditions[0].GetSmtExpression(Context));
-            var j = 0;
-            foreach (var condition in conditions.Skip(1))
-            {
-                var expr = condition.GetSmtExpression(Context);
-                if (condition.LogicalConnective == LogicalConnective.And)
-                {
-                    conjunctedConditions[j] = Context.MkAnd(conjunctedConditions[j], expr);
-                }
-                else
-                {
-                    conjunctedConditions.Add(expr);
-                    j++;
-                }
-            }
-            var guardExpression = Context.MkOr(conjunctedConditions);
-            var solver = Context.MkSimpleSolver();
-            var result = solver.Check(guardExpression); // Assert?
-            return result;
-        }
+		private BoolExpr GenerateVOVExpression(
+			Context context,
+			List<string> varsPool,
+			VariableType firstVariableType,
+			LogicalConnective logicalConnectiveType,
+			string variableName,
+			BinaryPredicate predicate,
+			BoolExpr? previousExpression = null)
+		{
+			var secondVariableName = varsPool[random.Next(0, varsPool.Count)];
 
-        private ConstraintVOVExpression GenerateVOVExpression(
-            List<string> varsPool, 
-            VariableType firstVariableType, 
-            LogicalConnective logicalConnectiveType, 
-            string variableName, 
-            BinaryPredicate predicate)
-        {
-            var secondVariableName = varsPool[random.Next(0, varsPool.Count)];
+			var firstVarPrefix = firstVariableType == VariableType.Read ? "_r" : "_w";
+			var secondVarPrefix = "_r";
 
-            var vovExpression = new ConstraintVOVExpression
-            {
-                Predicate = predicate,
-                ConstraintVariable = new ConstraintVariable
-                {
-                    Domain = DomainType.Real,
-                    Name = variableName,
-                    VariableType = firstVariableType
-                },
-                LogicalConnective = logicalConnectiveType,
-                VariableToCompare = new ConstraintVariable
-                {
-                    Domain = DomainType.Real,
-                    Name = secondVariableName,
-                    VariableType = VariableType.Read
-                }
-            };
-            return vovExpression;
-        }
+			var firstVarName = $"{variableName}{firstVarPrefix}";
+			var secondVarName = $"{secondVariableName}{secondVarPrefix}";
 
-        private ConstraintVOCExpression<double> GenerateVOCExpression(
-            List<int> constantsPool, 
-            VariableType firstVariableType, 
-            LogicalConnective logicalConnectiveType, 
-            string variableName, 
-            BinaryPredicate predicate)
-        {
-            var constant = constantsPool[random.Next(0, constantsPool.Count)];
+			var firstVar = context.MkRealConst(firstVarName);
+			var secondVar = context.MkRealConst(secondVarName);
 
-            var vocExpression = new ConstraintVOCExpression<double>
-            {
-                Constant = new DefinableValue<double>(constant),
-                Predicate = predicate,
-                ConstraintVariable = new ConstraintVariable
-                {
-                    Domain = DomainType.Real,
-                    Name = variableName,
-                    VariableType = firstVariableType
-                },
-                LogicalConnective = logicalConnectiveType
-            };
-            return vocExpression;
-        }
+			var currentExpr = predicate switch
+			{
+				BinaryPredicate.Equal => context.MkEq(firstVar, secondVar),
+				BinaryPredicate.Unequal => context.MkNot(context.MkEq(firstVar, secondVar)),
+				BinaryPredicate.GreaterThan => context.MkGt(firstVar, secondVar),
+				BinaryPredicate.GreaterThanOrEqual => context.MkGe(firstVar, secondVar),
+				BinaryPredicate.LessThan => context.MkLt(firstVar, secondVar),
+				BinaryPredicate.LessThanOrEqual => context.MkLe(firstVar, secondVar),
+				_ => throw new NotSupportedException($"Predicate {predicate} not supported")
+			};
 
-        private List<int> GetConditionsCountPerTransition(int transitionsCount, int conditionsCount)
-        {
-            var conditionsPerTransition = new int[transitionsCount];
-                //new List<int>(transitionsCount);
-            for (int i = 0; i < conditionsCount; i++)
-            {
-                conditionsPerTransition[random.Next(transitionsCount)]++;
-            }
+			if (previousExpression != null)
+			{
+				return logicalConnectiveType switch
+				{
+					LogicalConnective.And => context.MkAnd(previousExpression, currentExpr),
+					LogicalConnective.Or => context.MkOr(previousExpression, currentExpr),
+					LogicalConnective.Empty => currentExpr,
+					_ => throw new NotSupportedException($"Logical connective {logicalConnectiveType} not supported")
+				};
+			}
 
-            return conditionsPerTransition.ToList();
-        }
+			return currentExpr;
+		}
+
+		private BoolExpr GenerateVOCExpression(
+			Context context,
+			List<int> constantsPool,
+			VariableType firstVariableType,
+			LogicalConnective logicalConnectiveType,
+			string variableName,
+			BinaryPredicate predicate,
+			BoolExpr? previousExpression = null)
+		{
+			var constant = constantsPool[random.Next(0, constantsPool.Count)];
+
+			var varPrefix = firstVariableType == VariableType.Read ? "_r" : "_w";
+			var varName = $"{variableName}{varPrefix}";
+
+			var variable = context.MkRealConst(varName);
+			var constantExpr = context.MkReal(constant);
+
+			var currentExpr = predicate switch
+			{
+				BinaryPredicate.Equal => context.MkEq(variable, constantExpr),
+				BinaryPredicate.Unequal => context.MkNot(context.MkEq(variable, constantExpr)),
+				BinaryPredicate.GreaterThan => context.MkGt(variable, constantExpr),
+				BinaryPredicate.GreaterThanOrEqual => context.MkGe(variable, constantExpr),
+				BinaryPredicate.LessThan => context.MkLt(variable, constantExpr),
+				BinaryPredicate.LessThanOrEqual => context.MkLe(variable, constantExpr),
+				_ => throw new NotSupportedException($"Predicate {predicate} not supported")
+			};
+
+			if (previousExpression != null)
+			{
+				return logicalConnectiveType switch
+				{
+					LogicalConnective.And => context.MkAnd(previousExpression, currentExpr),
+					LogicalConnective.Or => context.MkOr(previousExpression, currentExpr),
+					LogicalConnective.Empty => currentExpr,
+					_ => throw new NotSupportedException($"Logical connective {logicalConnectiveType} not supported")
+				};
+			}
+
+			return currentExpr;
+		}
 
 
-        private int GetConstantsCount(int conditionsCount)
-        {
-            return Math.Max(conditionsCount / 4, 2); // 4 is taken empirically
-        }
+		private List<int> GetConditionsCountPerTransition(int transitionsCount, int conditionsCount)
+		{
+			var conditionsPerTransition = new int[transitionsCount];
+			for (int i = 0; i < conditionsCount; i++)
+			{
+				conditionsPerTransition[random.Next(transitionsCount)]++;
+			}
 
-        private List<VariableType> GetVariableTypesPool()
-        {
-            return Enum.GetValues<VariableType>().ToList();
-        }
+			return conditionsPerTransition.ToList();
+		}
 
-        private List<LogicalConnective> GetConnectivesPool()
-        {
-            return Enum.GetValues<LogicalConnective>().Except(new[] { LogicalConnective.Empty }).ToList();
-        }
 
-        private List<BinaryPredicate> GetPredicatesPool()
-        {
-            return Enum.GetValues<BinaryPredicate>().ToList();
-        }
+		private int GetConstantsCount(int conditionsCount)
+		{
+			return Math.Max(conditionsCount / 4, 2); // 4 is taken empirically
+		}
 
-        private List<int> GetConstantsPool(int constsCount)
-        {
-            var constantsPool = new List<int>(constsCount);
+		private List<VariableType> GetVariableTypesPool()
+		{
+			return Enum.GetValues<VariableType>().ToList();
+		}
 
-            for (int i = 0; i < constsCount; i++)
-            {
-                constantsPool.Add(random.Next(-1000000, 1000001));
-            }
+		private List<LogicalConnective> GetConnectivesPool()
+		{
+			return Enum.GetValues<LogicalConnective>().Except(new[] { LogicalConnective.Empty }).ToList();
+		}
 
-            return constantsPool;
-        }
+		private List<BinaryPredicate> GetPredicatesPool()
+		{
+			return Enum.GetValues<BinaryPredicate>().ToList();
+		}
 
-        private List<string> GetVarsPool(int varsCount)
-        {
-            var varsPool = new List<string>(varsCount);
+		private List<int> GetConstantsPool(int constsCount)
+		{
+			var constantsPool = new List<int>(constsCount);
 
-            for (int i = 0;i < varsCount; i++)
-            {
-                varsPool.Add($"v{i}");
-            }
+			for (int i = 0; i < constsCount; i++)
+			{
+				constantsPool.Add(random.Next(-1000000, 1000001));
+			}
 
-            return varsPool;
-        }
-    }
+			return constantsPool;
+		}
+
+		private List<string> GetVarsPool(int varsCount)
+		{
+			var varsPool = new List<string>(varsCount);
+
+			for (int i = 0; i < varsCount; i++)
+			{
+				varsPool.Add($"v{i}");
+			}
+
+			return varsPool;
+		}
+	}
 }

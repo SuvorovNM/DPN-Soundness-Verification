@@ -78,36 +78,6 @@ namespace DPN.Models.Extensions
 			}
 		}
 
-		public static BoolExpr GetSmtExpression(this Context context, IList<IConstraintExpression> constraints)
-		{
-			List<BoolExpr> expressions = new List<BoolExpr>();
-
-			var j = -1;
-
-			for (int i = 0; i < constraints.Count; i++)
-			{
-				if (constraints[i].LogicalConnective == LogicalConnective.Or ||
-				    constraints[i].LogicalConnective == LogicalConnective.Empty)
-				{
-					j++;
-					var smtExpr = constraints[i].GetSmtExpression(context);
-					expressions.Add(smtExpr);
-				}
-				else
-				{
-					expressions[j] = context.MkAnd(expressions[j], constraints[i].GetSmtExpression(context));
-				}
-			}
-
-			var resultExpression = expressions.Count > 1
-				? context.MkOr(expressions)
-				: expressions.Count == 1
-					? expressions[0]
-					: context.MkTrue();
-
-			return resultExpression;
-		}
-
 		public static Expr GenerateExpression(this Context context, string variableName, DomainType domain, VariableType varType)
 		{
 			var nameSuffix = varType == VariableType.Written
