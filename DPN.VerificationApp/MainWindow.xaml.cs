@@ -187,7 +187,7 @@ namespace DPN.VerificationApp
 				currentDisplayedNet,
 				verificationSettings: new Dictionary<string, string>
 				{
-					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.ImprovedVersion },
+					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.DeferringRefinementVersion },
 					{ ClassicalVerificationSettingsConstants.ConstructFullGraph, "True" }
 				}));
 			HideLoader();

@@ -234,7 +234,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var baseTauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
 		foreach (var transitionId in transitionsToTrySimplify)
 		{
-			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: исследовать возможность выпиливания данного свойства
+			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: this property should remain at the level of repairer only
 			var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
 			var readExpression = sourceDpn.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 

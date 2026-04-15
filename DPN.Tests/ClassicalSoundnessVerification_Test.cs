@@ -9,7 +9,7 @@ using static DPN.Soundness.Verification.ClassicalVerificationSettingsConstants;
 namespace DPN.Tests;
 
 [TestFixture(DirectVersion)]
-[TestFixture(ImprovedVersion)]
+[TestFixture(DeferringRefinementVersion)]
 public class ClassicalSoundnessVerification_Test
 {
 	private readonly string algorithmVersion;

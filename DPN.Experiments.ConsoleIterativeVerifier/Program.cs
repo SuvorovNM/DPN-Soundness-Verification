@@ -9,27 +9,22 @@ using DPN.Experiments.Common;
 using DPN.Soundness;
 using Newtonsoft.Json;
 
-const string dirPath = @"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\bounded-remained\";
-//@"C:\Users\Suvor\RiderProjects\DPN-Soundness-Verification\DPN.Experiments.IterativeVerificationApp\bin\Debug\net8.0-windows\Output\sound\"
-const string filePath = dirPath + "DirectVersion.csv";// concurrency-acyclic.csv
-const string outputDirPath = @"C:\Experiments\bounded-relaxed-lazy-verification\";
-const bool doRepair = false;
-const SoundnessType soundnessType = SoundnessType.RelaxedLazy;
-const int NumberOfAttempts = 3;
+const string inputDirectoryPath = @"InputDirectory";
+const string inputFilePath = inputDirectoryPath + "DirectVersion.csv";
+const string outputDirectoryPath = @"OutputDirectory";
+const bool doRepair = true;
+const SoundnessType soundnessType = SoundnessType.Classical;
+const int numberOfAttempts = 3;
 
-// TODO: использовать алгоритм для concurrency tests
-
-throw new Exception("ex");
-
-var ids = File.ReadAllLines(filePath)
+var ids = File.ReadAllLines(inputFilePath)
 	.Select(l => l.Split(',').First())
 	.ToHashSet();
 
-foreach (var id in ids) 
+foreach (var id in ids)
 {
 	try
 	{
-		File.Copy(dirPath + id + ".pnmlx", outputDirPath + id + ".pnmlx");
+		File.Copy(inputDirectoryPath + id + ".pnmlx", outputDirectoryPath + id + ".pnmlx");
 	}
 	catch (Exception ex)
 	{
@@ -37,7 +32,7 @@ foreach (var id in ids)
 	}
 
 	Console.WriteLine($"{DateTime.Now}: Starting working on {id}");
-	for (var r = 0; r < NumberOfAttempts; r++)
+	for (var r = 0; r < numberOfAttempts; r++)
 	{
 		await using var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable);
 		var processInfo = FormProcessInfo(pipeServer, id);
@@ -51,6 +46,7 @@ foreach (var id in ids)
 			{
 				break;
 			}
+
 			await listenTask;
 		}
 		catch (Exception)
@@ -65,12 +61,12 @@ Console.WriteLine("Finished execution!");
 
 ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dpnId)
 {
-	const string VerificationAlgorithmTypeParameterName = nameof(VerificationAlgorithmTypeEnum);
-	const string SoundnessTypeParameterName = nameof(SoundnessType);
-	const string WithRepairParameterName = "WithRepair";
-	const string PipeClientHandleParameterName = "PipeClientHandle";
-	const string DpnFileParameterName = "DpnFile";
-	const string OutputDirectoryParameterName = "OutputDirectory";
+	const string verificationAlgorithmTypeParameterName = nameof(VerificationAlgorithmTypeEnum);
+	const string soundnessTypeParameterName = nameof(SoundnessType);
+	const string withRepairParameterName = "WithRepair";
+	const string pipeClientHandleParameterName = "PipeClientHandle";
+	const string dpnFileParameterName = "DpnFile";
+	const string outputDirectoryParameterName = "OutputDirectory";
 
 	ProcessPath processPath;
 	using (var r = new StreamReader("Configuration.json"))
@@ -95,15 +91,14 @@ ProcessStartInfo FormProcessInfo(AnonymousPipeServerStream serverPipe, string dp
 	};
 
 	var pipeHandle = serverPipe.GetClientHandleAsString();
-	var outputDirectoryPath = outputDirPath;
 	var verificationAlgorithmType = nameof(VerificationAlgorithmTypeEnum.DirectVersion);
 
-	var argumentsString = DpnFileParameterName + " " + (dirPath + dpnId) + ".pnmlx" +
-	                      " " + PipeClientHandleParameterName + " " + pipeHandle +
-	                      " " + OutputDirectoryParameterName + " " + outputDirectoryPath +
-	                      " " + VerificationAlgorithmTypeParameterName + " " + verificationAlgorithmType +
-	                      " " + SoundnessTypeParameterName + " " + soundnessType +
-	                      " " + WithRepairParameterName + " " + doRepair;
+	var argumentsString = dpnFileParameterName + " " + (inputDirectoryPath + dpnId) + ".pnmlx" +
+	                      " " + pipeClientHandleParameterName + " " + pipeHandle +
+	                      " " + outputDirectoryParameterName + " " + outputDirectoryPath +
+	                      " " + verificationAlgorithmTypeParameterName + " " + verificationAlgorithmType +
+	                      " " + soundnessTypeParameterName + " " + soundnessType +
+	                      " " + withRepairParameterName + " " + doRepair;
 
 	processInfo.Arguments = argumentsString;
 
@@ -129,25 +124,22 @@ static async Task ListenToPipe(
 		}
 	}
 
-	var lastString = stringBuilder.ToString(); //Encoding.UTF8.GetString(buffer);
+	var lastString = stringBuilder.ToString();
 
-	MainVerificationInfo? verificationOutput = null;
+	MainVerificationInfo? verificationOutput;
 
 	if (lastString != string.Empty)
 	{
 		var serializer = new XmlSerializer(typeof(MainVerificationInfo));
-		using (TextReader reader = new StringReader(lastString))
+		using TextReader reader = new StringReader(lastString);
+		try
 		{
-			try
-			{
-				verificationOutput = (MainVerificationInfo?)serializer.Deserialize(reader);
-			}
-			catch (Exception ex)
-			{
-				await Console.Error.WriteLineAsync(ex.Message);
-			}
+			verificationOutput = (MainVerificationInfo)serializer.Deserialize(reader)!;
+			Console.WriteLine($"{DateTime.Now}: Executed the algorithm on the DPN with ID {verificationOutput.Id}. Verification time: {verificationOutput.VerificationTime}. Repair time: {verificationOutput.RepairTime}");
 		}
-
-		Console.WriteLine($"{DateTime.Now}: Executed the algorithm on the DPN with ID {verificationOutput.Id}. Verification time: {verificationOutput.VerificationTime}. Repair time: {verificationOutput.RepairTime}");
+		catch (Exception ex)
+		{
+			await Console.Error.WriteLineAsync(ex.Message);
+		}
 	}
 }

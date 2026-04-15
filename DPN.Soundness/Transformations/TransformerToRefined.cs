@@ -198,31 +198,22 @@ namespace DPN.Soundness.Transformations
 				var refinedArcs = new List<Arc>();
 				foreach (var refinedTransition in refinedTransitions)
 				{
-					try
+					var parentTransitionId = baseToRefinedTransitions.TryGetValue(refinedTransition.Id, out var parentTransition)
+						? parentTransition.First().Id
+						: baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
+
+					var preset = transitionsPreset[parentTransitionId];
+					var postset = transitionsPostset[parentTransitionId];
+
+					foreach (var arc in preset)
 					{
-						var parentTransitionId = baseToRefinedTransitions.TryGetValue(refinedTransition.Id, out var parentTransition)
-							? parentTransition.First().Id
-							: baseToRefinedTransitions[refinedTransition.BaseTransitionId].First().Id;
-						
-						var preset = transitionsPreset[parentTransitionId];
-						var postset = transitionsPostset[parentTransitionId];
-
-						foreach (var arc in preset)
-						{
-							refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
-						}
-
-						foreach (var arc in postset)
-						{
-							refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
-						}
+						refinedArcs.Add(new Arc(arc.place, refinedTransition, arc.weight));
 					}
-					catch (Exception ex)
-					{
-						
-					} // TODO (nm.suvorov): хранить какой-то маппинг на уровне refinement?
 
-					
+					foreach (var arc in postset)
+					{
+						refinedArcs.Add(new Arc(refinedTransition, arc.place, arc.weight));
+					}
 				}
 
 				sourceDpn.Transitions = refinedTransitions;
@@ -258,7 +249,5 @@ namespace DPN.Soundness.Transformations
 				}
 			}
 		}
-
-		record TransitionWithBase(Transition Transition, string TransitionIdInLts);
 	}
 }

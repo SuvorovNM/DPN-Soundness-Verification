@@ -13,7 +13,7 @@ public static class ClassicalVerificationSettingsConstants
 {
 	public const string AlgorithmVersion = nameof(AlgorithmVersion);
 	public const string DirectVersion = nameof(DirectVersion);
-	public const string ImprovedVersion = nameof(ImprovedVersion); // TODO: rename
+	public const string DeferringRefinementVersion = nameof(DeferringRefinementVersion);
 	public const string ConstructFullGraph = nameof(ConstructFullGraph);
 }
 
@@ -29,7 +29,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		
 		verificationSettings.TryGetValue(ClassicalVerificationSettingsConstants.AlgorithmVersion, out var algorithmVersion);
 
-		if (algorithmVersion is ClassicalVerificationSettingsConstants.ImprovedVersion)
+		if (algorithmVersion is ClassicalVerificationSettingsConstants.DeferringRefinementVersion)
 		{
 			return VerifyImproved(dpn, constructFullGraph);
 		}
