@@ -47,7 +47,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairLivelock_Should_ReturnSoundModel()
 	{
@@ -73,7 +73,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairCasino_Should_ReturnSoundModel()
 	{
@@ -98,7 +98,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairUnbounded_Should_ReturnSoundModel()
 	{
@@ -123,7 +123,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairGambling_Should_ReturnFailure()
 	{
@@ -145,7 +145,7 @@ public class ClassicalSoundnessRepair_Test
 		repairResult.RepairModifications.TransitionEnhancedButRolledBack.Should().BeEmpty();
 		repairResult.Dpn.Should().BeEquivalentTo(dpn);
 	}
-	
+
 	[Test]
 	public void RepairRoadFines_Should_ReturnSoundModel()
 	{
@@ -170,7 +170,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairDigitalWhiteboardTransfer_Should_ReturnSoundModel()
 	{
@@ -195,7 +195,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairPackageHandling_Should_ReturnSoundModel()
 	{
@@ -220,7 +220,7 @@ public class ClassicalSoundnessRepair_Test
 		var verificationResult = soundnessVerifier.Verify(repairResult.Dpn, new Dictionary<string, string>());
 		verificationResult.SoundnessProperties.Soundness.Should().BeTrue();
 	}
-	
+
 	[Test]
 	public void RepairSimpleAuction_Should_ReturnSoundModel()
 	{

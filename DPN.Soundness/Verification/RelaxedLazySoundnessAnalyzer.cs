@@ -10,6 +10,7 @@ using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 
 namespace DPN.Soundness.Verification;
 
+// TODO: унифицировать проверки, чтобы избежать дублирования
 public static class RelaxedLazySoundnessAnalyzer
 {
 	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
@@ -85,7 +86,7 @@ public static class RelaxedLazySoundnessAnalyzer
 
 		var hasDeadlocks = stateDictionary.Any(kvp=>kvp.Value.HasFlag(StateType.Deadlock));
 
-		var isSound = unfeasibleTransitions.Length == 0;
+		var isSound = unfeasibleTransitions.Length == 0 && uncleanFinals.Length == 0;
 
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
@@ -141,7 +142,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			(current, constraintState) =>
 				current | stateDictionary[constraintState].HasFlag(StateType.Deadlock));
 
-		var isSound = unfeasibleTransitions.Length == 0;
+		var isSound = unfeasibleTransitions.Length == 0 && !stateDictionary.Any(kvp=>kvp.Value.HasFlag(StateType.UncleanFinal));
 		
 		return new SoundnessProperties(
 			SoundnessType.RelaxedLazy,
@@ -187,7 +188,7 @@ public static class RelaxedLazySoundnessAnalyzer
 			(current, constraintState) =>
 				current | stateDictionary[constraintState].HasFlag(StateType.Deadlock));
 
-		var isSound = unfeasibleTransitions.Length == 0;
+		var isSound = unfeasibleTransitions.Length == 0 && !stateDictionary.Any(kvp=>kvp.Value.HasFlag(StateType.UncleanFinal));
 
 		var isBounded = ct.ConstraintStates.All(s => s.StateType != CtStateType.StrictlyCovered);
 
