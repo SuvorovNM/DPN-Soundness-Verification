@@ -131,12 +131,8 @@ public class ClassicalSoundnessVerification_Test
 		if (constructFullGraph)
 		{
 			verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.StrictlyCovered));
-			verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.Final));
 		}
-		else
-		{
-			verificationResult.SoundnessProperties.StateTypes.Should().AllSatisfy(s => s.Value.Should().Be(StateType.Default));
-		}
+		verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.Final));
 	}
 
 	[Theory]
@@ -166,15 +162,12 @@ public class ClassicalSoundnessVerification_Test
 				o => o.Excluding(sp => sp.StateTypes));
 		verificationResult.StateSpaceGraph.Nodes.Should().NotBeEmpty();
 		verificationResult.StateSpaceGraph.Arcs.Should().NotBeEmpty();
-
+		
+		verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.UncleanFinal));
+		verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.Final));
 		if (constructFullGraph)
 		{
 			verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.StrictlyCovered));
-			verificationResult.SoundnessProperties.StateTypes.Should().Contain(st => st.Value.HasFlag(StateType.Final));
-		}
-		else
-		{
-			verificationResult.SoundnessProperties.StateTypes.Should().AllSatisfy(s => s.Value.Should().Be(StateType.Default));
 		}
 	}
 

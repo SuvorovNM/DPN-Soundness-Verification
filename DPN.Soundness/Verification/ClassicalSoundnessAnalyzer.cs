@@ -15,9 +15,7 @@ public static class ClassicalSoundnessAnalyzer
 	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
 	{
 		var boundedness = stateSpaceGraph.IsFullGraph && !stateSpaceGraph.Nodes.Any(s => s.Marking.Any(kvp => kvp.Value == int.MaxValue));
-		var stateTypes = boundedness
-			? GetStatesDividedByTypes(stateSpaceGraph)
-			: stateSpaceGraph.Nodes.ToDictionary(x => x.Id, y => StateType.Default);
+		var stateTypes = GetStatesDividedByTypes(stateSpaceGraph);
 
 		var deadTransitions = GetDeadTransitions(stateSpaceGraph);
 
@@ -42,7 +40,7 @@ public static class ClassicalSoundnessAnalyzer
 		return new SoundnessProperties(
 			SoundnessType.Classical,
 			stateTypes,
-			stateSpaceGraph.IsFullGraph,
+			boundedness,
 			deadTransitions,
 			hasDeadlocks,
 			isSound);
@@ -50,7 +48,7 @@ public static class ClassicalSoundnessAnalyzer
 		static string[] GetDeadTransitions(StateSpaceGraph stateSpaceGraph)
 		{
 			var deadTransitions = stateSpaceGraph.DpnTransitions
-				.Where(t=>!t.IsTau)
+				.Where(t => !t.IsTau)
 				.Select(x => x.BaseTransitionId)
 				.Except(stateSpaceGraph.Arcs.Select(y => y.BaseTransitionId))
 				.ToArray();
@@ -62,7 +60,7 @@ public static class ClassicalSoundnessAnalyzer
 	{
 		var boundedness = cg.IsFullGraph && !cg.ConstraintStates.Any(s => s.Marking.AsDictionary().Any(kvp => kvp.Value == int.MaxValue));
 		var stateTypes = cg.IsFullGraph
-			? GetStatesDividedByTypesNew(cg, dpn.FinalMarking.AsDictionary())
+			? GetStatesDividedByTypes(cg, dpn.FinalMarking.AsDictionary())
 			: cg.ConstraintStates.ToDictionary(x => (AbstractState)x, y => StateType.Default);
 
 		var deadTransitions = GetDeadTransitions(dpn, cg);
@@ -94,7 +92,7 @@ public static class ClassicalSoundnessAnalyzer
 			isSound);
 	}
 
-	internal static Dictionary<AbstractState, StateType> GetStatesDividedByTypesNew
+	private static Dictionary<AbstractState, StateType> GetStatesDividedByTypes
 		(LabeledTransitionSystem graph, Dictionary<string, int> finalMarking)
 	{
 		var stateDictionary =
@@ -165,11 +163,11 @@ public static class ClassicalSoundnessAnalyzer
 				stateDictionary[uncleanFinal] |= StateType.UncleanFinal;
 			}
 		}
-		
+
 		static void DefineUnbounded(Dictionary<AbstractState, StateType> stateDictionary)
 		{
 			var strictlyCoveredStates = stateDictionary.Keys
-				.Where(x => x.Marking.AsDictionary().Any(kvp=>kvp.Value == int.MaxValue))
+				.Where(x => x.Marking.AsDictionary().Any(kvp => kvp.Value == int.MaxValue))
 				.ToArray();
 
 			foreach (var strictlyCovered in strictlyCoveredStates)
@@ -229,9 +227,9 @@ public static class ClassicalSoundnessAnalyzer
 		{
 			stateDictionary[uncleanFinal.Id] |= StateType.UncleanFinal;
 		}
-		
+
 		var strictlyCoveredStates = stateSpaceGraph.Nodes
-			.Where(x => x.Marking.Any(kvp=>kvp.Value == int.MaxValue))
+			.Where(x => x.Marking.Any(kvp => kvp.Value == int.MaxValue))
 			.ToArray();
 
 		foreach (var strictlyCovered in strictlyCoveredStates)
@@ -249,33 +247,39 @@ public static class ClassicalSoundnessAnalyzer
 			.GroupBy(a => a.SourceNodeId)
 			.ToDictionary(a => a.Key, a => a.ToArray());
 
-		stateSpaceGraph.Nodes
-			.Where(x => !stateDictionary[x.Id].HasFlag(StateType.Final) && !stateDictionary[x.Id].HasFlag(StateType.UncleanFinal))
-			.Where(x => !successors.ContainsKey(x.Id))
-			.ToList()
-			.ForEach(x => stateDictionary[x.Id] |= StateType.Deadlock);
-
-		var predecessors = stateSpaceGraph
-			.Arcs
-			.GroupBy(a => a.TargetNodeId)
-			.ToDictionary(g => g.Key, g => g.Select(a => a.SourceNodeId).ToArray());
-
-		var statesLeadingToFinals = new HashSet<int>(finalStates.Select(x => x.Id));
-		var intermediateStates = new HashSet<int>(statesLeadingToFinals);
-		do
+		if (stateSpaceGraph.IsFullGraph)
 		{
-			intermediateStates = intermediateStates
-				.Where(x => predecessors.ContainsKey(x))
-				.SelectMany(x => predecessors[x])
-				.Where(x => !statesLeadingToFinals.Contains(x))
-				.ToHashSet();
-			statesLeadingToFinals.AddRange(intermediateStates);
-		} while (intermediateStates.Count > 0);
+			stateSpaceGraph.Nodes
+				.Where(x => !stateDictionary[x.Id].HasFlag(StateType.Final)
+				            && !stateDictionary[x.Id].HasFlag(StateType.UncleanFinal)
+				            && !stateDictionary[x.Id].HasFlag(StateType.StrictlyCovered))
+				.Where(x => !successors.ContainsKey(x.Id))
+				.ToList()
+				.ForEach(x => stateDictionary[x.Id] |= StateType.Deadlock);
 
-		stateDictionary.Keys
-			.Except(statesLeadingToFinals)
-			.ToList()
-			.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
+			var predecessors = stateSpaceGraph
+				.Arcs
+				.GroupBy(a => a.TargetNodeId)
+				.ToDictionary(g => g.Key, g => g.Select(a => a.SourceNodeId).ToArray());
+
+			var statesLeadingToFinals = new HashSet<int>(finalStates.Select(x => x.Id));
+			var intermediateStates = new HashSet<int>(statesLeadingToFinals);
+			do
+			{
+				intermediateStates = intermediateStates
+					.Where(x => predecessors.ContainsKey(x))
+					.SelectMany(x => predecessors[x])
+					.Where(x => !statesLeadingToFinals.Contains(x))
+					.ToHashSet();
+				statesLeadingToFinals.AddRange(intermediateStates);
+			} while (intermediateStates.Count > 0);
+
+			stateDictionary.Keys
+				.Except(statesLeadingToFinals)
+				.ToList()
+				.ForEach(x => stateDictionary[x] |= StateType.NoWayToFinalMarking);
+		}
+
 
 		return stateDictionary;
 	}

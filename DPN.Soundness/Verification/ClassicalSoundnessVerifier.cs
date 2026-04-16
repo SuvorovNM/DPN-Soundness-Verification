@@ -69,10 +69,11 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 				tauRefinedStateSpace.GenerateGraph();
 			}
 
-			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, tauRefinedStateSpace);
+			stateSpace = ToStateSpaceConverter.Convert(tauRefinedStateSpace);
+			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 			stopWatch.Stop();
 			return new VerificationResult(
-				ToStateSpaceConverter.Convert(tauRefinedStateSpace),
+				stateSpace,
 				soundnessProperties,
 				canExtendLts ? tauRefinedStateSpace.ConstraintArcs.Count : stateSpace.Arcs.Length + tauRefinedStateSpace.ConstraintArcs.Count,
 				refinedDpn.Transitions.Count - dpn.Transitions.Count,
@@ -94,13 +95,14 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 		var stopWatch = Stopwatch.StartNew();
 		LabeledTransitionSystem lts = constructFullGraph ? new CoverabilityGraph(dpn, true) : new ReachabilityGraph(dpn);
 		lts.GenerateGraph();
-		var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, lts);
+		var stateSpace = ToStateSpaceConverter.Convert(lts);
+		var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 
 		if (!soundnessProperties.Soundness)
 		{
 			stopWatch.Stop();
 			return new VerificationResult(
-				ToStateSpaceConverter.Convert(lts),
+				stateSpace,
 				soundnessProperties,
 				lts.ConstraintArcs.Count,
 				0,
@@ -109,12 +111,13 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 
 		var tauStateSpace = GetTauStateSpace(constructFullGraph, dpn);
 		tauStateSpace.GenerateGraph(lts);
-		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, tauStateSpace);
+		stateSpace = ToStateSpaceConverter.Convert(tauStateSpace);
+		soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 
 		if (soundnessProperties.Soundness)
 		{
 			var dpnTransformation = new TransformerToRefined();
-			var (refinedDpn, stateSpace) = dpnTransformation.Transform(
+			(var refinedDpn, stateSpace) = dpnTransformation.Transform(
 				dpn,
 				lts);
 
@@ -122,7 +125,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			{
 				stopWatch.Stop();
 				return new VerificationResult(
-					ToStateSpaceConverter.Convert(tauStateSpace),
+					stateSpace,
 					soundnessProperties,
 					tauStateSpace.ConstraintArcs.Count,
 					0,
@@ -132,10 +135,11 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 			var tauRefinedStateSpace = GetTauStateSpace(constructFullGraph, refinedDpn);
 			tauRefinedStateSpace.GenerateGraph();
 
-			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(dpn, tauRefinedStateSpace);
+			stateSpace =  ToStateSpaceConverter.Convert(tauRefinedStateSpace);
+			soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 			stopWatch.Stop();
 			return new VerificationResult(
-				ToStateSpaceConverter.Convert(tauRefinedStateSpace),
+				stateSpace,
 				soundnessProperties,
 				tauStateSpace.ConstraintArcs.Count + tauRefinedStateSpace.ConstraintArcs.Count,
 				refinedDpn.Transitions.Count - dpn.Transitions.Count,
@@ -144,7 +148,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 
 		stopWatch.Stop();
 		return new VerificationResult(
-			ToStateSpaceConverter.Convert(tauStateSpace),
+			stateSpace,
 			soundnessProperties,
 			tauStateSpace.ConstraintArcs.Count,
 			0,

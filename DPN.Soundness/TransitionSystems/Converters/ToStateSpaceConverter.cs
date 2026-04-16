@@ -28,7 +28,7 @@ internal static class ToStateSpaceConverter
 	{
 		return new StateSpace.StateSpaceGraph(
 			coverabilityTree.ConstraintStates
-				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
+				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id, s.StateType != CtStateType.NonCovered))
 				.ToArray(),
 			coverabilityTree.ConstraintArcs
 				.Select(a => new StateSpaceArc(a.Transition.IsSilent, a.Transition.NonRefinedTransitionId,
