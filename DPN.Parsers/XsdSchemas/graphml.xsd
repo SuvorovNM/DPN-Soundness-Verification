@@ -8,7 +8,6 @@
     <xs:element name="graphml">
         <xs:complexType>
             <xs:sequence>
-                <!-- Keys for ASML attributes -->
                 <xs:element name="key" minOccurs="0" maxOccurs="unbounded">
                     <xs:complexType>
                         <xs:attribute name="id" type="xs:ID" use="required"/>

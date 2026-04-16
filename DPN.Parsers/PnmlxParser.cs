@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Runtime.Serialization;
+using System.Xml.Linq;
 using DPN.Models;
 using DPN.Models.Abstractions;
 using DPN.Models.DPNElements;
@@ -116,7 +117,7 @@ namespace DPN.Parsers
 			if (!validationResult.IsValid)
 			{
 				var errorText = string.Join(Environment.NewLine, validationResult.Errors.Select(e => $"{e.Severity.ToString()}: {e.Message}"));
-				//throw new SerializationException("Error occurred on deserializing:\n" + errorText);
+				throw new SerializationException("Error occurred on deserializing:\n" + errorText);
 			}
 
 			var dpn = new DataPetriNet(context);

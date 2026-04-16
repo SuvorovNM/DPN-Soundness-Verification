@@ -49,13 +49,13 @@ For resource-oriented models, it is more convenient to use **relaxed-lazy soundn
 
 The implemented relaxed-lazy soundness verification procedure consists of two steps:
 1. Constructing an ACG.
-2. Analyzing the ACG for the relaxed-lazy soundness properties.
+2. Analyzing the ACG for the relaxed-lazy soundness properties mentioned above.
 
 ## Interoperability
 
-DPN can be imported/exported in the PNMLX format. The XSD schema for this format is located at `DPN.Parsers/XsdSchemas/pnml.xsd`.
+DPN can be imported/exported in the PNMLX format. The XSD schema for this format is located at `DPN.Parsers/XsdSchemas/pnml.xsd`. Examples can be found at `DPN.Tests\TestData\`.
 
-Abstract state space structures (ARG/ACG/ACT) can be imported/exported in the ASML format. The XSD schema for this format is located at `DPN.Parsers/XsdSchemas/asml.xsd`.
+Abstract state space structures (ARG/ACG/ACT) can be imported/exported in the GraphML format. The XSD schema for this format is located at `DPN.Parsers/XsdSchemas/graphml.xsd`. Examples can be found at `DPN.Tests\TestData\`.
 
 Sample DPNs and abstract state space structures can be found at `Samples/`.
 
@@ -105,7 +105,7 @@ For instance, final nodes are colored in green, nodes with no path to finals are
 
 Allows verification of relaxed lazy soundness (`Verify` $\rightarrow$ `RelaxedLazy Soundness`) and classical soundness (`Verify`$\rightarrow$`Classical Soundness`). 
 
-If a model is classically unsound, it can be automatically repaired (`Repair` $\rightarrow$ `Classical Soundness`).
+If a model is classically unsound but has at least one path to the final state, it can be repaired with an implemented soundness repair algorithm (`Repair` $\rightarrow$ `Classical Soundness`).
 
 ### Model Tab
 
@@ -150,6 +150,4 @@ A relaxed-lazy sound DPN representing gambling:
 
 Result of its relaxed-lazy soundness verification:
 <kbd>![alt text](https://github.com/SuvorovNM/DPN-Soundness-Verification/blob/master/img/GamblingDPN-Verification.png?raw=true)</kbd>
-
-The model has a deadlock, but relaxed lazy soundness allows models to have deadlocks. The tool still highlights them, if they are detected, to illustrate potential errors.
 
