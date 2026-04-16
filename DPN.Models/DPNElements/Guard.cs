@@ -7,13 +7,12 @@ namespace DPN.Models.DPNElements
 {
     public class Guard : ICloneable
     {
-        private bool isRepaired = false;
-        private bool readNeedsToBeRecalculated = false;
-        private Dictionary<string, DomainType> readVars = new Dictionary<string, DomainType>();
+        private bool isRepaired;
+        private bool readNeedsToBeRecalculated;
+        private Dictionary<string, DomainType> readVars = new();
         public Context Context { get; set; }
 
         public BoolExpr BaseConstraintExpressions { get; init; }
-        public BoolExpr ConstraintExpressionBeforeUpdate { get; init; }
         public BoolExpr ActualConstraintExpression { get; private set; }
 
         public Dictionary<string, DomainType> WriteVars { get; init; }
@@ -47,14 +46,12 @@ namespace DPN.Models.DPNElements
                 
                 BaseConstraintExpressions = trueExpression;
                 ActualConstraintExpression = trueExpression;
-                ConstraintExpressionBeforeUpdate = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
             }
             else
             {
                 BaseConstraintExpressions = smtExpression;
                 ActualConstraintExpression = smtExpression;
-                ConstraintExpressionBeforeUpdate = smtExpression;
                 WriteVars = smtExpression.GetTypedVarsDict(VariableType.Written);
                 ReadVars = smtExpression.GetTypedVarsDict(VariableType.Read);
             }
@@ -69,7 +66,6 @@ namespace DPN.Models.DPNElements
                 Context = baseGuard.Context,
                 BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = updatedConstraintExpression,
-                ConstraintExpressionBeforeUpdate = baseGuard.ActualConstraintExpression,
 
                 WriteVars = updatedConstraintExpression.GetTypedVarsDict(VariableType.Written, variables),
                 ReadVars = updatedConstraintExpression.GetTypedVarsDict(VariableType.Read, variables),
@@ -84,9 +80,6 @@ namespace DPN.Models.DPNElements
                 Context = baseGuard.Context,
                 BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = updatedConstraintExpression,
-                ConstraintExpressionBeforeUpdate = baseGuard.isRepaired 
-                    ? baseGuard.ConstraintExpressionBeforeUpdate
-                    : baseGuard.ActualConstraintExpression,
 
                 WriteVars = updatedConstraintExpression.GetTypedVarsDict(VariableType.Written, variables),
                 ReadVars = updatedConstraintExpression.GetTypedVarsDict(VariableType.Read, variables),
@@ -102,9 +95,6 @@ namespace DPN.Models.DPNElements
                 Context = baseGuard.Context,
                 BaseConstraintExpressions = baseGuard.BaseConstraintExpressions,
                 ActualConstraintExpression = mergedConstraintExpression,
-                ConstraintExpressionBeforeUpdate = baseGuard.isRepaired
-                    ? baseGuard.ConstraintExpressionBeforeUpdate
-                    : baseGuard.ActualConstraintExpression,
 
                 WriteVars = mergedConstraintExpression.GetTypedVarsDict(VariableType.Written, variables),//baseGuard.ActualConstraintExpression
                 ReadVars = mergedConstraintExpression.GetTypedVarsDict(VariableType.Read, variables),
@@ -118,37 +108,12 @@ namespace DPN.Models.DPNElements
             Context = baseGuard.Context;
             BaseConstraintExpressions = baseGuard.BaseConstraintExpressions;
             ActualConstraintExpression = baseGuard.ActualConstraintExpression;
-            ConstraintExpressionBeforeUpdate = baseGuard.ActualConstraintExpression;
 
             WriteVars = baseGuard.WriteVars;
             ReadVars = baseGuard.ReadVars;
             readNeedsToBeRecalculated = false;
             isRepaired = baseGuard.isRepaired;
         }
-
-        public void UndoRepairment()
-        {
-            if (isRepaired)
-            {
-                ActualConstraintExpression = ConstraintExpressionBeforeUpdate;
-            }
-            else
-            {
-                throw new InvalidOperationException("The transition is not repaired!");
-            }
-        }
-
-        /*public Guard(Context ctx, List<IConstraintExpression> baseConstraints, BoolExpr actualConstraintExpression)
-        {
-            BaseConstraintExpressions = baseConstraints;
-            ActualConstraintExpression = actualConstraintExpression;
-            Context = ctx;
-
-            WriteVars = BaseConstraintExpressions.GetTypedVarsDict(VariableType.Written);
-            //ReadVars = ActualConstraintExpression.GetTypedVarsDict(VariableType.Read);
-
-            readNeedsToBeRecalculated = true;
-        }*/
 
         public object Clone()
         {

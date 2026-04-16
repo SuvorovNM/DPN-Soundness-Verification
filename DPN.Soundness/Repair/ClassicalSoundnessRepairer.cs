@@ -42,6 +42,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var statesConstructed = 0;
 
 		var transitionsDict = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y);
+		var transitionsToPreviousGuards = dpnToConsider.Transitions.ToDictionary(x => x.Id, y => y.Guard);
 		ushort repairSteps = 0;
 		var allGreenOnPreviousStep = false;
 
@@ -62,7 +63,11 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 					dpnToConsider = refinedDpn;
 					dpnToConsider.Transitions
-						.ForEach(t => transitionsDict[t.Id] = t);
+						.ForEach(t =>
+						{
+							transitionsDict[t.Id] = t;
+							transitionsToPreviousGuards[t.Id] = t.Guard;
+						});
 				}
 			}
 
@@ -76,7 +81,11 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			if (!allNodesGreen && !allNodesRed)
 			{
 				transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
-				(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(dpnToConsider, coloredCoverabilityGraph, transitionsDict);
+				(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(
+					dpnToConsider, 
+					coloredCoverabilityGraph, 
+					transitionsDict,
+					transitionsToPreviousGuards);
 				totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
 
 				repairSteps++;
@@ -85,14 +94,14 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				// Rollback is actually performed with a delay of 1 step
 				if (rollbackRestrictions)
 				{
-					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict, transitionsToPreviousGuards);
 				}
 			}
 			else
 			{
 				if (!allNodesRed && rollbackRestrictions)
 				{
-					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict);
+					TryRollbackTransitionGuards(dpnToConsider, coloredCoverabilityGraph, transitionsToTrySimplify, transitionsDict, transitionsToPreviousGuards);
 				}
 			}
 
@@ -223,7 +232,12 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	}
 
 	// Some transition restriction is redundant - we, thus, rollback what we can
-	private static void TryRollbackTransitionGuards(DataPetriNet sourceDpn, ColoredCoverabilityGraph cg, HashSet<string> transitionsToTrySimplify, Dictionary<string, Transition> transitionsDict)
+	private static void TryRollbackTransitionGuards(
+		DataPetriNet sourceDpn, 
+		ColoredCoverabilityGraph cg, 
+		HashSet<string> transitionsToTrySimplify, 
+		Dictionary<string, Transition> transitionsDict,
+		Dictionary<string, Guard> previousGuards)
 	{
 		var expressionService = new ConstraintExpressionService(sourceDpn.Context);
 
@@ -234,7 +248,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		var baseTauTransitionsGuards = new Dictionary<Transition, BoolExpr>();
 		foreach (var transitionId in transitionsToTrySimplify)
 		{
-			var smtExpression = transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: this property should remain at the level of repairer only
+			var smtExpression = previousGuards[transitionId].ActualConstraintExpression;
+				//transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: this property should remain at the level of repairer only
 			var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
 			var readExpression = sourceDpn.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 
@@ -247,7 +262,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			var transition = transitionsDict[arcGroup.Key];
 			var canBeReplacedWithSourceConstraint = true;
 
-			var baseTransitionConstraint = transition.Guard.ConstraintExpressionBeforeUpdate;
+			var baseTransitionConstraint = previousGuards[transition.Id].ActualConstraintExpression;
+				//transition.Guard.ConstraintExpressionBeforeUpdate;
 			var baseTauTransitionGuard = baseTauTransitionsGuards[transition];
 			var overwrittenVarNames = transition.Guard.WriteVars;
 
@@ -268,7 +284,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 			if (canBeReplacedWithSourceConstraint)
 			{
-				transition.Guard.UndoRepairment();
+				transition.Guard = previousGuards[transition.Id];
+					//.UndoRepairment();
 			}
 		}
 	}
@@ -276,7 +293,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 	private (DataPetriNet dpn, HashSet<string> updatedTransitions) MakeRepairStep(
 		DataPetriNet sourceDpn,
 		ColoredCoverabilityGraph cg,
-		Dictionary<string, Transition> transitionsDict)
+		Dictionary<string, Transition> transitionsDict,
+		Dictionary<string, Guard> previousGuardsDict)
 	{
 		var arcsDict = cg.ConstraintArcs
 			.GroupBy(x => (x.SourceState.Id, x.TargetState))
@@ -352,6 +370,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition.Id]));
 
+				previousGuardsDict[transition.Id] = transition.Guard;
 				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition, sourceDpn.Variables);
 
 				updatedTransitions.Add(transition.Id);

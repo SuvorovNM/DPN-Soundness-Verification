@@ -20,7 +20,6 @@ namespace DPN.Models.DPNElements
 			IsTau = label?.StartsWith("τ") ?? id.StartsWith("τ");
 			BaseTransitionId = baseTransitionId ?? id;
 
-
 			NonTauTransitionId = nonTauTransitionId;
 		}
 
