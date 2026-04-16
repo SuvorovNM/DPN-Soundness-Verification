@@ -1,20 +1,14 @@
 ﻿using CsvHelper;
 using DPN.Models;
-using DPN.Models.Enums;
 using DPN.Parsers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
-using System.Runtime.Serialization;
-using System.Xml;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 using DPN.Experiments.Common;
 using DPN.Experiments.Common.CsvClassMaps;
 using DPN.Soundness;
 using DPN.Soundness.Repair;
-using DPN.Soundness.Transformations;
-using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.Verification;
 using Microsoft.Z3;
 
@@ -31,13 +25,11 @@ namespace DataPetriNetVerificationApplication
 		const string PipeClientHandleParameterName = "PipeClientHandle";
 		const string DpnFileParameterName = "DpnFile";
 		const string OutputDirectoryParameterName = "OutputDirectory";
-		const string SaveConstraintGraph = "SaveCG";
 		const string VerificationParameters = "VerificationParameters";
 		const string RepairParameters = "RepairParameters";
-		private static readonly TransformerToRefined Transformation = new();
-
-		// For without IterativeVerificationApp pass the args in the format (splitting by " "):
-		//@"DpnFile \workingDirectory\Output\8fcd9437-a5ee-4277-87bc-6769d5aab87d.pnmlx OutputDirectory \Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False"
+		private const int TimeoutInMinutes = 60;
+		
+		// Arguments sample: @"DpnFile \workingDirectory\Output\8fcd9437-a5ee-4277-87bc-6769d5aab87d.pnmlx OutputDirectory \Output VerificationAlgorithmTypeEnum ImprovedVersion SoundnessType Classical WithRepair False"
 		static int Main(string[] args)
 		{
 			bool? soundness = null;
@@ -49,7 +41,6 @@ namespace DataPetriNetVerificationApplication
 			string? outputDirectory = null;
 			var soundnessType = SoundnessType.Classical;
 			var withRepair = false;
-			var saveCg = false;
 			var verificationParameters = new Dictionary<string, string>();
 			var repairParameters = new Dictionary<string, string>();
 
@@ -85,17 +76,14 @@ namespace DataPetriNetVerificationApplication
 					case OutputDirectoryParameterName:
 						outputDirectory = args[++index];
 						break;
-					case SaveConstraintGraph:
-						saveCg = bool.Parse(args[++index]);
-						break;
 					case VerificationParameters:
 						var keyValuesForVerification = args[++index].Trim().Replace("\"", "").Split(' ');
-						for (int i = 0; i < keyValuesForVerification.Length - 1; i += 2)
+						for (var i = 0; i < keyValuesForVerification.Length - 1; i += 2)
 							verificationParameters.Add(keyValuesForVerification[i], keyValuesForVerification[i + 1]);
 						break;
 					case RepairParameters:
 						var keyValuesForRepair = args[++index].Trim().Replace("\"", "").Split(' ');
-						for (int i = 0; i < keyValuesForRepair.Length - 1; i += 2)
+						for (var i = 0; i < keyValuesForRepair.Length - 1; i += 2)
 							repairParameters.Add(keyValuesForRepair[i], keyValuesForRepair[i + 1]);
 						break;
 					default:
@@ -107,8 +95,6 @@ namespace DataPetriNetVerificationApplication
 
 			ArgumentNullException.ThrowIfNull(dpnFilePath);
 			ArgumentNullException.ThrowIfNull(outputDirectory);
-			
-			Global.SetParameter("parallel.enable", "true");
 
 			var conditionsInfo = new ConditionsInfo
 			{
@@ -120,13 +106,13 @@ namespace DataPetriNetVerificationApplication
 			var dpnToVerify = GetDpnToVerify(dpnFilePath);
 
 			using var source = new CancellationTokenSource(TimeSpan.FromMinutes(30));
-			MainVerificationInfo outputRow = null;
+			MainVerificationInfo outputRow = null!;
 			var timer = new Stopwatch();
 
 			timer.Start();
 			var satisfiesConditions = false;
 
-			VerificationResult verificationResult;
+			VerificationResult? verificationResult = null;
 
 			var verificationTask = Task.Run(() =>
 			{
@@ -153,78 +139,54 @@ namespace DataPetriNetVerificationApplication
 				satisfiesConditions = VerifyConditions(
 					conditionsInfo,
 					dpnToVerify.Transitions.Count,
-					verificationResult.SoundnessProperties!);
+					verificationResult);
 				
 				RepairResult? repairResult = null;
-				if (withRepair)
+				if (withRepair && satisfiesConditions)
 				{
-					repairResult = ConductSoundnessRepairIfAnyPathToFinal(dpnToVerify, verificationResult.SoundnessProperties, repairParameters);
-					satisfiesConditions &= repairResult != null;
+					var dpnRepairer = new ClassicalSoundnessRepairer();
+					repairResult = dpnRepairer.Repair(dpnToVerify, repairParameters);
 				}
 
 				outputRow = new MainVerificationInfo(
 					dpnToVerify,
 					satisfiesConditions,
-					verificationResult.StateSpaceGraph, // TODO: вести подсчет всех построенных вершин и дуг?
-					verificationResult.SoundnessProperties,
-					verificationResult.VerificationTime!.Value.Milliseconds,
-					(long?)repairResult?.RepairTime.TotalMilliseconds ?? -1,
-					repairResult?.IsSuccess ?? false);
+					verificationResult,
+					repairResult);
 			}, source.Token);
 
-			if (!verificationTask.Wait(TimeSpan.FromMinutes(15)))
+			if (!verificationTask.Wait(TimeSpan.FromMinutes(TimeoutInMinutes)))
 			{
 				var conditionsCount = dpnToVerify
 					.Transitions
-					.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
+					.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.ActualConstraintExpression));
 				var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
 				File.AppendAllText(badCasesPath,
-					$"{dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}\n");
+					$"{dpnToVerify.Name}, {dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}, {verificationResult != null}\n");
 
-				throw new TimeoutException("Process requires more than 15 minutes to verify soundness");
+				throw new TimeoutException($"Process requires more than {TimeoutInMinutes} minutes to verify soundness");
 			}
 
 			if (pipeClientHandle != null)
 			{
-				SendResultToPipe(pipeClientHandle, outputRow!);
+				SendResultToPipe(pipeClientHandle, outputRow);
 			}
 
 			if (satisfiesConditions)
 			{
 				SaveResultInFile(verificationAlgorithmType, outputDirectory, outputRow);
-
-				if (saveCg)
-				{
-					throw new NotImplementedException("Currently, it is prohibited to save CG!");
-				}
-
 				return 1;
 			}
 
 			return -1;
 		}
 
-		private static RepairResult? ConductSoundnessRepairIfAnyPathToFinal(
-			DataPetriNet dpnToVerify, 
-			SoundnessProperties? soundnessProps,
-			Dictionary<string,string> repairParameters)
-		{
-			if (soundnessProps.StateTypes.Any(state => state.Value == StateType.Final))
-			{
-				var dpnRepairer = new ClassicalSoundnessRepairer();
-				return dpnRepairer.Repair(dpnToVerify, repairParameters);
-			}
-
-			return null;
-		}
-
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDocument = XDocument.Load(dpnFilePath);
+			using var fs = new FileStream(dpnFilePath, FileMode.Open);
 
 			var parser = new PnmlxParser();
-			var dpn = parser.Deserialize(xDocument);
-			//dpn.Context = context;
+			var dpn = parser.Deserialize(fs, new Context());
 			return dpn;
 		}
 
@@ -232,7 +194,7 @@ namespace DataPetriNetVerificationApplication
 		private static void SaveResultInFile(VerificationAlgorithmTypeEnum? verificationType, string? outputDirectory,
 			MainVerificationInfo outputRow)
 		{
-			using var writer = new StreamWriter(outputDirectory + "/" + verificationType.ToString() + ".csv", true);
+			using var writer = new StreamWriter(outputDirectory + "/" + verificationType + ".csv", true);
 			using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 			csv.Context.RegisterClassMap<VerificationOutputClassMap>();
 			csv.WriteRecord(outputRow);
@@ -244,13 +206,16 @@ namespace DataPetriNetVerificationApplication
 			using PipeStream pipeClient = new AnonymousPipeClientStream(PipeDirection.Out, pipeClientHandle);
 			using var sw = new StreamWriter(pipeClient);
 			sw.AutoFlush = true;
-			var serializer = new XmlSerializer(typeof(MainVerificationInfo)); //null
+			var serializer = new XmlSerializer(typeof(MainVerificationInfo));
 			serializer.Serialize(sw, outputRow);
 		}
 
-		private static bool VerifyConditions(ConditionsInfo conditionsInfo, int transitionsCount,
-			SoundnessProperties soundnessProperties)
+		private static bool VerifyConditions(
+			ConditionsInfo conditionsInfo, 
+			int transitionsCount,
+			VerificationResult verificationResult)
 		{
+			var soundnessProperties = verificationResult.SoundnessProperties;
 			var satisfiesConditions = true;
 			if (conditionsInfo.Boundedness.HasValue)
 			{
@@ -269,39 +234,6 @@ namespace DataPetriNetVerificationApplication
 			}
 
 			return satisfiesConditions;
-		}
-
-		private static DataPetriNet DeserializeDpn(string dpnFilePath)
-		{
-			DataPetriNet? deserializedDpn;
-
-			var fileInfo = new FileInfo(dpnFilePath);
-			if (fileInfo.Exists)
-			{
-				var fs = new FileStream(dpnFilePath, FileMode.Open);
-				try
-				{
-					var serializer = new XmlSerializer(typeof(DataPetriNet));
-					deserializedDpn = (DataPetriNet?)serializer.Deserialize(fs);
-				}
-				catch (SerializationException e)
-				{
-					Console.WriteLine("Failed to deserialize. Reason: " + e.Message);
-					throw;
-				}
-				finally
-				{
-					fs.Close();
-				}
-			}
-			else
-			{
-				throw new FileNotFoundException(dpnFilePath);
-			}
-
-			return deserializedDpn != null
-				? deserializedDpn
-				: throw new ArgumentNullException(nameof(deserializedDpn));
 		}
 	}
 }

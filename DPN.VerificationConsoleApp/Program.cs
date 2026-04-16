@@ -1,15 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
-using System.Xml;
-using System.Xml.Linq;
 using DPN.Models;
-using DPN.Models.Enums;
 using DPN.Parsers;
 using DPN.Soundness;
 using DPN.Soundness.Repair;
 using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.Verification;
+using Microsoft.Z3;
 
 namespace DPN.VerificationConsoleApp
 {
@@ -24,7 +22,7 @@ namespace DPN.VerificationConsoleApp
 		private const string SaveStateSpaceParameter = "SaveStateSpace";
 		private const string Verbose = "Verbose";
 
-		static int Main(string[] args)
+		static async Task<int> Main(string[] args)
 		{
 			if (args.Length == 0)
 			{
@@ -35,7 +33,7 @@ namespace DPN.VerificationConsoleApp
 			try
 			{
 				var parameters = ParseArguments(args);
-				return ExecuteOperation(parameters);
+				return await ExecuteOperation(parameters);
 			}
 			catch (Exception ex)
 			{
@@ -89,7 +87,7 @@ namespace DPN.VerificationConsoleApp
 			return parameters;
 		}
 
-		private static int ExecuteOperation(Dictionary<string, string> parameters)
+		private static async Task<int> ExecuteOperation(Dictionary<string, string> parameters)
 		{
 			if (!parameters.TryGetValue(OperationParameter, out var operation) ||
 			    !parameters.TryGetValue(DpnFileParameter, out var dpnFilePath))
@@ -135,7 +133,7 @@ namespace DPN.VerificationConsoleApp
 						throw new ArgumentException("Unsupported soundness type for repair.");
 					}
 					
-					var result = RepairDpn(dpnToProcess, repairParameters, outputDirectory);
+					var result = await RepairDpn(dpnToProcess, repairParameters, outputDirectory);
 					if (saveStateSpace && result == 1)
 					{
 						Console.WriteLine("To examine the state space of the repaired DPN, call verify on it");
@@ -231,7 +229,7 @@ namespace DPN.VerificationConsoleApp
 			return verificationResult.SoundnessProperties.Soundness ? 1 : -1;
 		}
 
-		private static int RepairDpn(
+		private static async Task<int> RepairDpn(
 			DataPetriNet dpn,
 			Dictionary<string, string> repairParameters,
 			string outputDirectory)
@@ -245,7 +243,7 @@ namespace DPN.VerificationConsoleApp
 
 			if (repairResult.IsSuccess)
 			{
-				SaveRepairedDpn(repairResult.Dpn, outputDirectory);
+				await SaveRepairedDpn(repairResult.Dpn, outputDirectory);
 			}
 
 			return repairResult.IsSuccess ? 1 : -1;
@@ -253,10 +251,9 @@ namespace DPN.VerificationConsoleApp
 
 		private static DataPetriNet GetDpnToVerify(string dpnFilePath)
 		{
-			var xDocument = XDocument.Load(dpnFilePath);
-
+			using var fs = new FileStream(dpnFilePath, FileMode.Open);
 			var parser = new PnmlxParser();
-			return parser.Deserialize(xDocument);
+			return parser.Deserialize(fs, new Context());
 		}
 
 		private static Dictionary<string, string> ParseKeyValueParameters(Dictionary<string, string> parameters, string parameterName)
@@ -265,7 +262,7 @@ namespace DPN.VerificationConsoleApp
 			if (parameters.TryGetValue(parameterName, out var keyValueString))
 			{
 				var keyValues = keyValueString.Trim().Replace("\"", "").Split(' ');
-				for (int i = 0; i < keyValues.Length - 1; i += 2)
+				for (var i = 0; i < keyValues.Length - 1; i += 2)
 				{
 					result.Add(keyValues[i], keyValues[i + 1]);
 				}
@@ -276,21 +273,23 @@ namespace DPN.VerificationConsoleApp
 
 		private static void SaveStateSpace(StateSpaceGraph stateSpaceGraph, string outputDirectory)
 		{
-			var stateSpacePath = Path.Combine(outputDirectory, "state_space.xml");
+			var stateSpacePath = Path.Combine(outputDirectory, "state_space.graphml");
+			using var fs = new FileStream(stateSpacePath, FileMode.Create);
 
-			var asmlParser = new AsmlParser();
-			asmlParser.Serialize(stateSpaceGraph).Save(stateSpacePath);
+			var graphmlParser = new GraphmlParser();
+			graphmlParser.Serialize(stateSpaceGraph, fs);
 			Console.WriteLine($"State space saved to {stateSpacePath}");
 		}
 
-		private static void SaveRepairedDpn(DataPetriNet dataPetriNet, string outputDirectory)
+		private static async Task SaveRepairedDpn(DataPetriNet dataPetriNet, string outputDirectory)
 		{
 			Directory.CreateDirectory(outputDirectory);
 			
 			var stateSpacePath = Path.Combine(outputDirectory, $"{dataPetriNet.Name}-repaired.pnmlx");
 
 			var pnmlParser = new PnmlxParser();
-			pnmlParser.Serialize(dataPetriNet).Save(stateSpacePath);
+			await using var fs = new FileStream(stateSpacePath, FileMode.Create);
+			await pnmlParser.Serialize(dataPetriNet, fs);
 			Console.WriteLine($"Repaired DPN saved to {stateSpacePath}");
 		}
 	}

@@ -8,13 +8,13 @@ namespace DataPetriNetGeneration
 {
     internal class DPNBackboneGenerator(Context context)
     {
-	    private Context Context { get; set; } = context;
+	    private readonly Random random = new();
         
-        private readonly Random random = new Random();
-        
-        public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int extraArcsCount)
+        public DataPetriNet GenerateBackbone(int placesCount, int transitionsCount, int extraArcsCount, int extraResourcePlacesCount)
         {
             var dpn = GenerateSoundBackbone(placesCount, transitionsCount);
+
+            AddResourcePlaces(transitionsCount, extraResourcePlacesCount, dpn);
 
             var arcsRemained = extraArcsCount;
 
@@ -22,8 +22,8 @@ namespace DataPetriNetGeneration
             while (arcsRemained > 0)
             {
                 var arcTypeChosen = (ArcType)random.Next(0, 1);
-                var placeChosen = dpn.Places[random.Next(0, dpn.Places.Count)];
-                var transitionChosen = dpn.Transitions[random.Next(0, dpn.Transitions.Count)];
+                var placeChosen = dpn.Places[random.Next(1, dpn.Places.Count-1)];
+                var transitionChosen = dpn.Transitions[random.Next(1, dpn.Transitions.Count)];
 
                 if (arcTypeChosen == ArcType.PlaceTransition)
                 {
@@ -40,6 +40,34 @@ namespace DataPetriNetGeneration
             return dpn;
         }
 
+        private void AddResourcePlaces(int transitionsCount, int extraResourcePlacesCount, DataPetriNet dpn)
+        {
+	        for (var i = 0; i < extraResourcePlacesCount; i++)
+	        {
+		        var resourcePlace = new Place($"rp{i + 1}", PlaceType.Intermediary);
+		        var arc1 = new Arc(dpn.Transitions.First(), resourcePlace);
+		        var arc2 = new Arc(dpn.Transitions[random.Next(transitionsCount)], resourcePlace);
+		        var arc3 = new Arc(resourcePlace, dpn.Transitions[random.Next(transitionsCount)]);
+		        dpn.Places.Add(resourcePlace);
+		        TryAddArc(dpn, arc1);
+		        TryAddArc(dpn, arc2);
+		        TryAddArc(dpn, arc3);
+	        }
+        }
+
+        private static void TryAddArc(DataPetriNet dpn, Arc arc1)
+        {
+	        var existentArc = dpn.Arcs.FirstOrDefault(x => x.Source == arc1.Source && x.Destination == arc1.Destination);
+	        if (existentArc != null)
+	        {
+		        existentArc.Weight++;
+	        }
+	        else
+	        {
+		        dpn.Arcs.Add(arc1);
+	        }
+        }
+
         private void AddArc(DataPetriNet dpn, Node source, Node target)
         {
             var existentArc = dpn.Arcs.FirstOrDefault(x => x.Source == source && x.Destination == target);
@@ -52,8 +80,8 @@ namespace DataPetriNetGeneration
                 dpn.Arcs.Add(new Arc(source, target));
             }
         }
-        
-        public DataPetriNet GenerateSoundBackbone(int placesCount, int transitionsCount)
+
+        private DataPetriNet GenerateSoundBackbone(int placesCount, int transitionsCount)
         {
             if (placesCount < 2)
             {
@@ -75,7 +103,10 @@ namespace DataPetriNetGeneration
             var transitionsRemained = transitionsCount;
             var placesRemained = placesCount;
 
-            var dpn = new DataPetriNet(Context);
+            var dpn = new DataPetriNet(context);
+            var identifier = Guid.NewGuid().ToString();
+            dpn.Id = identifier;
+            dpn.Name = identifier;
 
             var initialPlace = new Place("i", PlaceType.Initial);
             dpn.Places.Add(initialPlace);
@@ -120,7 +151,10 @@ namespace DataPetriNetGeneration
             var transitionsRemained = transitionsCount;
             var placesRemained = placesCount;
 
-            var dpn = new DataPetriNet(Context);
+            var dpn = new DataPetriNet(context);
+            var identifier = "net"+Guid.NewGuid();
+            dpn.Id = identifier;
+            dpn.Name = identifier;
 
             var initialPlace = new Place("i", PlaceType.Initial);
             dpn.Places.Add(initialPlace);
@@ -144,10 +178,10 @@ namespace DataPetriNetGeneration
 
             while (transitionsRemained > 0)
             {
-                var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count)];
+                var chosenPlace1 = dpn.Places[random.Next(dpn.Places.Count - 1)];
                 var chosenPlace2 = dpn.Places[random.Next(dpn.Places.Count)];
 
-                var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(Context));
+                var transition = new Transition($"t{transitionsCount - transitionsRemained}", new Guard(context, null));
                 dpn.Transitions.Add(transition);
                 dpn.Arcs.Add(new Arc(chosenPlace1, transition));
                 dpn.Arcs.Add(new Arc(transition, chosenPlace2));
@@ -160,8 +194,6 @@ namespace DataPetriNetGeneration
 
         private void GenerateIntermediaryPlace(int id, DataPetriNet dpn)
         {
-            //var availableTransitions = dpn.Transitions.Except(dpn.Arcs.Select(x => x.Source)).ToList();
-            //var transitionWithFollowingPlace = random.Next(0, availableTransitions.Count);
             var place = new Place($"p{id}", PlaceType.Intermediary);
             dpn.Places.Add(place);
             dpn.Arcs.Add(new Arc(dpn.Transitions.Last(), place));
@@ -172,7 +204,7 @@ namespace DataPetriNetGeneration
             int transitionId,
             DataPetriNet dpn)
         {
-            var transition = new Transition($"t{transitionId}", new Guard(Context));
+            var transition = new Transition($"t{transitionId}", new Guard(context, null));
             dpn.Transitions.Add(transition);
             dpn.Arcs.Add(new Arc(sourcePlace, transition));
         }

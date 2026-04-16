@@ -8,9 +8,9 @@ namespace DPN.Soundness.TransitionSystems.Converters;
 
 internal static class ToStateSpaceConverter
 {
-	internal static StateSpace.StateSpaceGraph Convert(CoverabilityGraph coverabilityGraph)
+	internal static StateSpaceGraph Convert(CoverabilityGraph coverabilityGraph)
 	{
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			coverabilityGraph.ConstraintStates
 				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
 				.ToArray(),
@@ -24,23 +24,23 @@ internal static class ToStateSpaceConverter
 			coverabilityGraph.DataPetriNet.GetVariablesDictionary());
 	}
 
-	internal static StateSpace.StateSpaceGraph Convert(CoverabilityTree coverabilityTree)
+	internal static StateSpaceGraph Convert(CoverabilityTree coverabilityTree)
 	{
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			coverabilityTree.ConstraintStates
-				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
+				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id, s.StateType != CtStateType.NonCovered))
 				.ToArray(),
 			coverabilityTree.ConstraintArcs
 				.Select(a => new StateSpaceArc(a.Transition.IsSilent, a.Transition.NonRefinedTransitionId,
 					a.SourceState.Id, a.TargetState.Id, a.Transition.Label)).ToArray(),
-			true,
+			coverabilityTree.IsFullGraph,
 			TransitionSystemType.AbstractCoverabilityTree,
 			coverabilityTree.DataPetriNet.FinalMarking.AsDictionary(),
 			coverabilityTree.DataPetriNet.Transitions.ToArray(),
 			coverabilityTree.DataPetriNet.GetVariablesDictionary());
 	}
 
-	internal static StateSpace.StateSpaceGraph Convert(LabeledTransitionSystem labeledTransitionSystem)
+	internal static StateSpaceGraph Convert(LabeledTransitionSystem labeledTransitionSystem)
 	{
 		var extraTransitions = new List<Transition>(labeledTransitionSystem.DataPetriNet.Transitions);
 		if (labeledTransitionSystem is ConstraintGraph)
@@ -52,7 +52,7 @@ internal static class ToStateSpaceConverter
 
 			foreach (var baseTransitionId in tauTransitions)
 			{
-				var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.Single(t => t.Id == baseTransitionId);
+				var baseTransition = labeledTransitionSystem.DataPetriNet.Transitions.First(t => t.Id == baseTransitionId);
 
 				var tauTransition = baseTransition.MakeTau()!;
 
@@ -60,7 +60,7 @@ internal static class ToStateSpaceConverter
 			}
 		}
 
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			labeledTransitionSystem.ConstraintStates
 				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
 				.ToArray(),
@@ -68,7 +68,7 @@ internal static class ToStateSpaceConverter
 				.Select(a => new StateSpaceArc(a.Transition.IsSilent, a.Transition.NonRefinedTransitionId,
 					a.SourceState.Id, a.TargetState.Id, a.Transition.Label)).ToArray(),
 			labeledTransitionSystem.IsFullGraph,
-			TransitionSystemType.AbstractReachabilityGraph,
+			labeledTransitionSystem is ReachabilityGraph ? TransitionSystemType.AbstractReachabilityGraph : TransitionSystemType.AbstractCoverabilityGraph,
 			labeledTransitionSystem.DataPetriNet.FinalMarking.AsDictionary(),
 			labeledTransitionSystem.DataPetriNet.Transitions.Union(extraTransitions).ToArray(),
 			labeledTransitionSystem.DataPetriNet.GetVariablesDictionary());

@@ -2,12 +2,9 @@
 
 namespace DPN.Soundness;
 
-public class VerificationResult(
-	StateSpaceGraph stateSpaceGraph,
-	SoundnessProperties soundnessProperties,
-	TimeSpan? verificationTime = null)
-{
-    public StateSpaceGraph StateSpaceGraph { get; } = stateSpaceGraph;
-    public SoundnessProperties SoundnessProperties { get; } = soundnessProperties;
-    public TimeSpan? VerificationTime { get; } = verificationTime;
-}
+public record VerificationResult(
+	StateSpaceGraph StateSpaceGraph,
+	SoundnessProperties SoundnessProperties,
+	int TotalStatesConsidered,
+	int TotalRefinementsDone = 0,
+	TimeSpan? VerificationTime = null);

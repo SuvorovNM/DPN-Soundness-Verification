@@ -4,72 +4,66 @@ using Microsoft.Z3;
 
 namespace DPN.Models
 {
-    [Serializable]
-    public class DataPetriNet : IDisposable, ICloneable
-    {
-        [System.Xml.Serialization.XmlIgnoreAttribute]
-        public Context Context { get; set; }
+	[Serializable]
+	public class DataPetriNet
+	{
+		[System.Xml.Serialization.XmlIgnoreAttribute]
+		public Context Context { get; set; }
 
-        public string Name { get; set; }
-        public List<Place> Places { get; set; }
-        public List<Transition> Transitions { get; set; }
-        public List<Arc> Arcs { get; set; }
-        [System.Xml.Serialization.XmlIgnoreAttribute]
-        public VariablesStore Variables { get; set; }
+		public string Id { get; set; }
+		public string Name { get; set; }
+		public List<Place> Places { get; set; }
+		public List<Transition> Transitions { get; set; }
+		public List<Arc> Arcs { get; set; }
 
-        public Marking FinalMarking => Marking.FinalMarkingFromDpnPlaces(Places);
+		[System.Xml.Serialization.XmlIgnoreAttribute]
+		public VariablesStore Variables { get; set; }
 
-        public DataPetriNet(Context context)
-        {
-            Context = context;
+		public Marking FinalMarking => Marking.FinalMarkingFromDpnPlaces(Places);
 
-            Places = new List<Place>();
-            Transitions = new List<Transition>();
-            Arcs = new List<Arc>();
-            Variables = new VariablesStore();
-            Name = string.Empty;
-        }
+		public DataPetriNet(Context context)
+		{
+			Context = context;
 
-        public DataPetriNet()
-        {
+			Places = new List<Place>();
+			Transitions = new List<Transition>();
+			Arcs = new List<Arc>();
+			Variables = new VariablesStore();
+			Name = string.Empty;
+			Id = string.Empty;
+		}
 
-        }
+		public object Clone(bool resetBaseTransitionIds = false)
+		{
+			var dpn = new DataPetriNet(Context);
+			dpn.Name = Name;
+			dpn.Id = Id;
+			dpn.Places = Places.Select(place => (Place)place.Clone()).ToList();
+			dpn.Transitions = Transitions.Select(transition => (Transition)transition.Clone(resetBaseTransitionIds)).ToList();
 
-        public void Dispose()
-        {
-            //Context.Dispose();
-        }
+			var placesDict = dpn.Places.ToDictionary(place => place.Id);
+			var transitionsDict = dpn.Transitions.ToDictionary(transition => transition.Id);
 
-        public object Clone()
-        {
-            var dpn = new DataPetriNet(Context);
-            dpn.Name = Name;
-            dpn.Places = this.Places.Select(place => (Place)place.Clone()).ToList();
-            dpn.Transitions = this.Transitions.Select(transition => (Transition)transition.Clone()).ToList();
+			foreach (var arc in Arcs)
+			{
+				dpn.Arcs.Add(arc.Type == ArcType.PlaceTransition
+					? new Arc(placesDict[arc.Source.Id], transitionsDict[arc.Destination.Id], arc.Weight)
+					: new Arc(transitionsDict[arc.Source.Id], placesDict[arc.Destination.Id], arc.Weight));
+			}
 
-            var placesDict = dpn.Places.ToDictionary(place => place.Id);
-            var transitionsDict = dpn.Transitions.ToDictionary(transition => transition.Id);
+			foreach (DomainType domainType in Enum.GetValues(typeof(DomainType)))
+			{
+				var varKeys = Variables[domainType].GetKeys();
 
-            foreach (var arc in Arcs)
-            {
-                dpn.Arcs.Add(arc.Type == ArcType.PlaceTransition
-                    ? new Arc(placesDict[arc.Source.Id], transitionsDict[arc.Destination.Id], arc.Weight)
-                    : new Arc(transitionsDict[arc.Source.Id], placesDict[arc.Destination.Id], arc.Weight));
-            }
+				foreach (var varKey in varKeys)
+				{
+					var variable = Variables[domainType].Read(varKey);
 
-            foreach (DomainType domainType in Enum.GetValues(typeof(DomainType)))
-            {
-                var varKeys = Variables[domainType].GetKeys();
+					dpn.Variables[domainType].Write(varKey, variable);
+				}
+			}
 
-                foreach (var varKey in varKeys)
-                {
-                    var variable = Variables[domainType].Read(varKey);
-
-                    dpn.Variables[domainType].Write(varKey, variable);
-                }
-            }
-
-            return dpn;
-        }
-    }
+			return dpn;
+		}
+	}
 }

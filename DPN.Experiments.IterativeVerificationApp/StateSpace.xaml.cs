@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Xml.Linq;
 using DataPetriNetIterativeVerificationApplication.Extensions;
 using DPN.Parsers;
 using DPN.Soundness;
@@ -13,8 +12,8 @@ namespace DataPetriNetIterativeVerificationApplication
 {
 	public partial class StateSpace : Window
 	{
-		private const int maxNodesToVisualize = 2000;
-		private const int maxArcsToVisualize = 5000;
+		private const int MaxNodesToVisualize = 2000;
+		private const int MaxArcsToVisualize = 5000;
 
 		private readonly VerificationResult verificationResult;
 
@@ -32,30 +31,26 @@ namespace DataPetriNetIterativeVerificationApplication
 				menu.Visibility = Visibility.Collapsed;
 
 			ShowGraph(showOnlyLog: IsOverlayVisible);
-			
 		}
 
 		private void SaveStateSpace_Click(object sender, RoutedEventArgs e)
 		{
 			var ofd = new SaveFileDialog()
 			{
-				Filter = "State space files (*.asml) | *.asml"
+				Filter = "State space files (*.graphml) | *.graphml"
 			};
+
 			if (ofd.ShowDialog() == true)
 			{
-				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
-				{
-					var asmlParser = new AsmlParser();
-					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceGraph);
-
-					xDocument.Save(fs, SaveOptions.None);
-				}
+				using var fs = new FileStream(ofd.FileName, FileMode.Create);
+				var graphmlParser = new GraphmlParser();
+				graphmlParser.Serialize(verificationResult.StateSpaceGraph, fs);
 			}
 		}
 
 		private void CheckGraphSizeAndSetVisibility(int nodeCount, int edgeCount)
 		{
-			if (nodeCount <= maxNodesToVisualize && edgeCount <= maxArcsToVisualize)
+			if (nodeCount <= MaxNodesToVisualize && edgeCount <= MaxArcsToVisualize)
 			{
 				GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
 				graphControl.Visibility = Visibility.Visible;
@@ -70,13 +65,13 @@ namespace DataPetriNetIterativeVerificationApplication
 			}
 		}
 
-		public void ShowGraph(bool showOnlyLog)
+		private void ShowGraph(bool showOnlyLog)
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
-				graphToVisualize, 
-				verificationResult.StateSpaceGraph.DpnTransitions, 
-				verificationResult.StateSpaceGraph.TypedVariables, 
+				graphToVisualize,
+				verificationResult.StateSpaceGraph.DpnTransitions,
+				verificationResult.StateSpaceGraph.TypedVariables,
 				verificationResult.VerificationTime);
 			if (showOnlyLog)
 			{
@@ -103,6 +98,6 @@ namespace DataPetriNetIterativeVerificationApplication
 			ShowGraph(false);
 		}
 
-		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
+		private bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
 	}
 }

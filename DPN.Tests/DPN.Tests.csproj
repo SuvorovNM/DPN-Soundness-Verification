@@ -1,0 +1,107 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+        <PackageReference Include="FluentAssertions" Version="8.9.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="NUnit" Version="3.14.0"/>
+        <PackageReference Include="NUnit.Analyzers" Version="3.9.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DPN.Generation\DPN.Generation.csproj" />
+      <ProjectReference Include="..\DPN.Models\DPN.Models.csproj" />
+      <ProjectReference Include="..\DPN.Parsers\DPN.Parsers.csproj" />
+      <ProjectReference Include="..\DPN.Soundness\DPN.Soundness.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="TestData\ACG.graphml" />
+      <EmbeddedResource Include="TestData\ACG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\ACT.graphml" />
+      <EmbeddedResource Include="TestData\ACT.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\ARG.graphml" />
+      <EmbeddedResource Include="TestData\ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Tau_ARG.graphml" />
+      <EmbeddedResource Include="TestData\Tau_ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Tau_refined_ARG.graphml" />
+      <EmbeddedResource Include="TestData\Tau_refined_ARG.graphml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Unbounded.pnmlx" />
+      <EmbeddedResource Include="TestData\Unbounded.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Livelock.pnmlx" />
+      <EmbeddedResource Include="TestData\Livelock.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Gambling.pnmlx" />
+      <EmbeddedResource Include="TestData\Gambling.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\HospitalBilling.pnmlx" />
+      <EmbeddedResource Include="TestData\HospitalBilling.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\LivelockWithMultipleTransitionsToRefine.pnmlx" />
+      <EmbeddedResource Include="TestData\LivelockWithMultipleTransitionsToRefine.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Unbounded_covering_output.pnmlx" />
+      <EmbeddedResource Include="TestData\Unbounded_covering_output.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\CreditBankRequest.pnmlx" />
+      <EmbeddedResource Include="TestData\CreditBankRequest.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\SepsisMined.pnmlx" />
+      <EmbeddedResource Include="TestData\SepsisMined.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\PackageHandling.pnmlx" />
+      <EmbeddedResource Include="TestData\PackageHandling.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\RoadFines.pnmlx" />
+      <EmbeddedResource Include="TestData\RoadFines.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\SimpleAuction.pnmlx" />
+      <EmbeddedResource Include="TestData\SimpleAuction.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\DigitalWhiteboard_Transfer.pnmlx" />
+      <EmbeddedResource Include="TestData\DigitalWhiteboard_Transfer.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="TestData\Casino.pnmlx" />
+      <EmbeddedResource Include="TestData\Casino.pnmlx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

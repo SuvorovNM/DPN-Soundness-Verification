@@ -7,9 +7,9 @@ namespace DPN.Soundness.TransitionSystems;
 
 public static class StateSpaceConstructor
 {
-	public static StateSpace.StateSpaceGraph ConstructCoverabilityGraph(DataPetriNet dpn, bool stopOnCoveringFinalPosition)
+	public static StateSpace.StateSpaceGraph ConstructCoverabilityGraph(DataPetriNet dpn, bool continueBranchIfUnboundedPlaceFound, bool stopOnCoveringFinalPosition)
 	{
-		var cg = new CoverabilityGraph(dpn, stopOnCoveringFinalPosition: stopOnCoveringFinalPosition);
+		var cg = new CoverabilityGraph(dpn, continueBranchIfUnboundedPlaceFound, stopOnCoveringFinalPosition);
 		cg.GenerateGraph();
 
 		return ToStateSpaceConverter.Convert(cg);

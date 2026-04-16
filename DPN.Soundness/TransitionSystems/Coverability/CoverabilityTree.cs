@@ -8,7 +8,6 @@ using Microsoft.Z3;
 namespace DPN.Soundness.TransitionSystems.Coverability
 {
     internal sealed class CoverabilityTree : AbstractStateSpaceStructure<CtState, CtTransition, CtArc>
-    // Покрасить все вершины, а затем обходить дерево в глубину до листьев или красных вершин
     {
 	    private Stack<CtState> StatesToConsider { get; }
 	    private List<CtState> LeafStates { get; }
@@ -97,6 +96,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
                 }
             }
 
+            IsFullGraph = true;
             AddColorsToNodes();
         }
 
@@ -135,7 +135,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
                     changeOnPreviousStep = false;
                     foreach (var cycleLeaf in LeafStates.Where(x => x.StateType == CtStateType.NonstrictlyCovered && x.StateColor != CtStateColor.Green))
                     {
-                        var isCoveredNodeGreen = cycleLeaf.CoveredNode.StateColor == CtStateColor.Green;
+                        var isCoveredNodeGreen = cycleLeaf.CoveredNode!.StateColor == CtStateColor.Green;
 
                         if (isCoveredNodeGreen)
                         {
@@ -173,7 +173,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
             if (coveredNode != null)
             {
                 var isStrictCoverage =
-                    stateInfo.Marking.CompareTo(coveredNode?.Marking) == MarkingComparisonResult.GreaterThan;
+                    stateInfo.Marking.CompareTo(coveredNode.Marking) == MarkingComparisonResult.GreaterThan;
 
                 var stateColor = isStrictCoverage ? CtStateType.StrictlyCovered : CtStateType.NonstrictlyCovered; // Not forget about final nodes
 

@@ -1,6 +1,7 @@
-﻿using System.Xml;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using System.Xml.Schema;
+
+namespace DPN.Parsers;
 
 public class XsdValidator
 {
@@ -32,11 +33,6 @@ public class XsdValidator
 			IsValid = errors.All(e => e.Severity != XmlSeverityType.Error),
 			Errors = errors
 		};
-	}
-
-	public bool IsValid(XDocument document)
-	{
-		return Validate(document).IsValid;
 	}
 }
 

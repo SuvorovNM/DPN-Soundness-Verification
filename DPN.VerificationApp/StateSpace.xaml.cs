@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Xml.Linq;
 using DPN.Parsers;
 using DPN.Soundness;
 using DPN.VerificationApp.Extensions;
@@ -13,8 +12,8 @@ namespace DPN.VerificationApp
 {
 	public partial class StateSpace : Window
 	{
-		private const int maxNodesToVisualize = 2000;
-		private const int maxArcsToVisualize = 5000;
+		private const int maxNodesToVisualize = 250;
+		private const int maxArcsToVisualize = 500;
 
 		private readonly VerificationResult verificationResult;
 
@@ -38,17 +37,14 @@ namespace DPN.VerificationApp
 		{
 			var ofd = new SaveFileDialog()
 			{
-				Filter = "State space files (*.asml) | *.asml"
+				Filter = "State space files (*.graphml) | *.graphml"
 			};
+
 			if (ofd.ShowDialog() == true)
 			{
-				using (var fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate))
-				{
-					var asmlParser = new AsmlParser();
-					var xDocument = asmlParser.Serialize(verificationResult.StateSpaceGraph);
-
-					xDocument.Save(fs, SaveOptions.None);
-				}
+				using var fs = new FileStream(ofd.FileName, FileMode.Create);
+				var graphmlParser = new GraphmlParser();
+				graphmlParser.Serialize(verificationResult.StateSpaceGraph, fs);
 			}
 		}
 
@@ -69,13 +65,13 @@ namespace DPN.VerificationApp
 			}
 		}
 
-		public void ShowGraph(bool showOnlyLog)
+		private void ShowGraph(bool showOnlyLog)
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
-				graphToVisualize, 
-				verificationResult.StateSpaceGraph.DpnTransitions, 
-				verificationResult.StateSpaceGraph.TypedVariables, 
+				graphToVisualize,
+				verificationResult.StateSpaceGraph.DpnTransitions,
+				verificationResult.StateSpaceGraph.TypedVariables,
 				verificationResult.VerificationTime);
 			if (showOnlyLog)
 			{
@@ -104,24 +100,17 @@ namespace DPN.VerificationApp
 
 		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.WindowState = WindowState.Minimized;
+			WindowState = WindowState.Minimized;
 		}
 
 		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (this.WindowState == WindowState.Maximized)
-			{
-				this.WindowState = WindowState.Normal;
-			}
-			else
-			{
-				this.WindowState = WindowState.Maximized;
-			}
+			WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 		}
 
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Close();
+			Close();
 		}
 
 		private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -134,11 +123,11 @@ namespace DPN.VerificationApp
 				}
 				else
 				{
-					this.DragMove();
+					DragMove();
 				}
 			}
 		}
 
-		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
+		private bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
 	}
 }

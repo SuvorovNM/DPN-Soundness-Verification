@@ -4,10 +4,11 @@ namespace DPN.Models.DPNElements
 {
     public sealed class Marking
     {
-        private Dictionary<string, int> placeIdToTokens;
+        private readonly Dictionary<string, int> placeIdToTokens;
+        
         private Marking(Dictionary<string, int> marking)
         {
-            this.placeIdToTokens = marking;
+            placeIdToTokens = marking;
         }
         public Marking(Marking marking)
         {
@@ -20,23 +21,17 @@ namespace DPN.Models.DPNElements
 
         public int this[Place place]
         {
-            get { return placeIdToTokens[place.Id]; }
-            set { placeIdToTokens[place.Id] = value; }
+            get => placeIdToTokens[place.Id];
+            set => placeIdToTokens[place.Id] = value;
         }
         
         public int this[string placeId]
         {
-	        get { return placeIdToTokens[placeId]; }
-	        set { placeIdToTokens[placeId] = value; }
+	        get => placeIdToTokens[placeId];
+	        set => placeIdToTokens[placeId] = value;
         }
 
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return placeIdToTokens.Keys;
-            }
-        }
+        public ICollection<string> Keys => placeIdToTokens.Keys;
 
         public Dictionary<string, int> AsDictionary()
         {
@@ -89,16 +84,13 @@ namespace DPN.Models.DPNElements
 
         public MarkingComparisonResult CompareTo(Marking? other)
         {
-            if (other == null)
-                return MarkingComparisonResult.Incomparable;
-
-            if (other.Keys.Count != this.Keys.Count || other.Keys.Intersect(this.Keys).Count() != this.Keys.Count)
+            if (other == null || other.Keys.Count != Keys.Count || other.Keys.Intersect(Keys).Count() != Keys.Count)
                 return MarkingComparisonResult.Incomparable;
 
             var strictlyGreaterExists = false;
             var strictlyLessExists = false;
 
-            foreach (var place in this.Keys)
+            foreach (var place in Keys)
             {
                 var comparisonResult = this[place].CompareTo(other[place]);
                 if ((strictlyLessExists |= comparisonResult == -1) && strictlyGreaterExists)

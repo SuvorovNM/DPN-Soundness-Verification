@@ -1,5 +1,4 @@
-﻿using DPN.Models.Enums;
-using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
+﻿using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
 namespace DPN.Soundness.TransitionSystems.Coverability
@@ -12,10 +11,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
         public CtState? ParentNode { get; set; }
 
         public CtState() { }
-        public CtState(Context context) : base(context)
-        {
 
-        }
         public CtState(BaseStateInfo stateInfo, CtState parent, CtStateType stateType = CtStateType.NonCovered, CtState? coveredNode = null) : base(stateInfo)
         {
             ParentNode = parent;

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml;
-using System.Xml.Linq;
 using DataPetriNetGeneration;
 using DPN.Models;
 using DPN.Parsers;
@@ -18,16 +15,12 @@ using DPN.Soundness.Transformations;
 using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 using DPN.Soundness.Verification;
-using DPN.VerificationApp.Services;
 using DPN.Visualization.Converters;
 using Microsoft.Win32;
 using Microsoft.Z3;
 
 namespace DPN.VerificationApp
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window
 	{
 		private DataPetriNet currentDisplayedNet;
@@ -40,7 +33,7 @@ namespace DPN.VerificationApp
 		private readonly ClassicalSoundnessVerifier classicalSoundnessVerifier;
 		private readonly ClassicalSoundnessRepairer classicalSoundnessRepairer;
 
-		private Context context;
+		private readonly Context context;
 
 		public MainWindow()
 		{
@@ -60,27 +53,27 @@ namespace DPN.VerificationApp
 			graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			graphControl.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
 		}
-		
+
 		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.WindowState = WindowState.Minimized;
+			WindowState = WindowState.Minimized;
 		}
 
 		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (this.WindowState == WindowState.Maximized)
+			if (WindowState == WindowState.Maximized)
 			{
-				this.WindowState = WindowState.Normal;
+				WindowState = WindowState.Normal;
 			}
 			else
 			{
-				this.WindowState = WindowState.Maximized;
+				WindowState = WindowState.Maximized;
 			}
 		}
 
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Close();
+			Close();
 		}
 
 		private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
@@ -93,7 +86,7 @@ namespace DPN.VerificationApp
 				}
 				else
 				{
-					this.DragMove();
+					DragMove();
 				}
 			}
 		}
@@ -107,31 +100,32 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = XDocument.Load(ofd.FileName);
+				using var fs = new FileStream(ofd.FileName, FileMode.Open);
 
 				try
 				{
-					currentDisplayedNet = pnmlxParser.Deserialize(xDocument);
+					currentDisplayedNet = pnmlxParser.Deserialize(fs, new Context());
 				}
 				catch (SerializationException exception)
 				{
 					MessageBox.Show(exception.Message);
 					return;
 				}
-				
+
 				graphControl.Graph = dpnConverter.ConvertToDpn(currentDisplayedNet);
 			}
 		}
 
 		private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
 		{
-			ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
+			var modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
 			if (modelGenerationPropertiesWindow.ShowDialog() == true)
 			{
 				var dpnGenerator = new DPNGenerator(context);
 				currentDisplayedNet = dpnGenerator.Generate(
 					modelGenerationPropertiesWindow.PlacesCount,
 					modelGenerationPropertiesWindow.TransitionCount,
+					modelGenerationPropertiesWindow.ResourcePlacesCount,
 					modelGenerationPropertiesWindow.ExtraArcsCount,
 					modelGenerationPropertiesWindow.VarsCount,
 					modelGenerationPropertiesWindow.ConditionsCount);
@@ -146,17 +140,17 @@ namespace DPN.VerificationApp
 			HideLoader();
 
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private async void ConstructCoverabilityGraph_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Constructing Coverability Graph");
-			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, false));
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructCoverabilityGraph(currentDisplayedNet, true, false));
 			HideLoader();
 
 			var soundnessProperties = RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private async void CheckLazySoundnessDirectItem_Click(object sender, RoutedEventArgs e)
@@ -171,7 +165,9 @@ namespace DPN.VerificationApp
 		private async void CheckSoundnessDirectItem_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Verifying Soundness");
-			var verificationResult = await Task.Run(() => classicalSoundnessVerifier.Verify(currentDisplayedNet, new Dictionary<string, string>()));
+			var verificationResult = await Task.Run(() => classicalSoundnessVerifier.Verify(
+				currentDisplayedNet,
+				new Dictionary<string, string> { { ClassicalVerificationSettingsConstants.ConstructFullGraph, "True" } }));
 			HideLoader();
 
 			VisualizeVerificationResult(verificationResult);
@@ -184,7 +180,8 @@ namespace DPN.VerificationApp
 				currentDisplayedNet,
 				verificationSettings: new Dictionary<string, string>
 				{
-					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.ImprovedVersion }
+					{ ClassicalVerificationSettingsConstants.AlgorithmVersion, ClassicalVerificationSettingsConstants.DeferringRefinementVersion },
+					{ ClassicalVerificationSettingsConstants.ConstructFullGraph, "True" }
 				}));
 			HideLoader();
 
@@ -194,10 +191,10 @@ namespace DPN.VerificationApp
 		private async void ConstructConstraintGraphMenuItem_Click(object sender, RoutedEventArgs e)
 		{
 			ShowLoader("Constructing Constraint Graph");
-			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructConstraintGraph(currentDisplayedNet));
+			var stateSpace = await Task.Run(() => StateSpaceConstructor.ConstructConstraintGraph((DataPetriNet)currentDisplayedNet.Clone()));
 			HideLoader();
 
-			VisualizeVerificationResult(new VerificationResult(stateSpace, ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace), stateSpace.Arcs.Length));
 		}
 
 		private void VisualizeVerificationResult(VerificationResult verificationResult)
@@ -237,25 +234,24 @@ namespace DPN.VerificationApp
 			var soundnessProperties = ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace);
 			HideLoader();
 
-			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties));
+			VisualizeVerificationResult(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length));
 		}
 
 		private void OpenStateSpace_Click(object sender, RoutedEventArgs e)
 		{
 			var ofd = new OpenFileDialog
 			{
-				Filter = "State space files (*.asml) | *.asml"
+				Filter = "State space files (*.graphml) | *.graphml"
 			};
 			if (ofd.ShowDialog() == true)
 			{
 				using var fs = new FileStream(ofd.FileName, FileMode.Open);
-				var asmlParser = new AsmlParser();
-				var xDocument = XDocument.Load(fs);
+				var graphmlParser = new GraphmlParser();
 
 				StateSpaceGraph stateSpace;
 				try
 				{
-					stateSpace = asmlParser.Deserialize(xDocument);
+					stateSpace = graphmlParser.Deserialize(fs, context);
 				}
 				catch (SerializationException exception)
 				{
@@ -267,7 +263,7 @@ namespace DPN.VerificationApp
 					? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
 					: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
 
-				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties), isOpenedFromFile: true)
+				var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length), isOpenedFromFile: true)
 				{
 					Owner = this
 				};
@@ -281,14 +277,18 @@ namespace DPN.VerificationApp
 			var repairResult = await Task.Run(() => classicalSoundnessRepairer.Repair(currentDisplayedNet, new Dictionary<string, string>()));
 			HideLoader();
 			var message = repairResult.IsSuccess
-				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. Repair steps: {repairResult.RepairSteps}."
-				: "Failed to repair the model. Try using different repair algorithm.";
-			ModernMessageBox.Show(this, message, "Repair result");
+				? $"Success! Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms. \n" +
+				  $"Repair steps: {repairResult.RepairSteps}. \n" +
+				  $"States constructed: {repairResult.TotalStatesConsidered}. \n" +
+				  $"Transition refinements: {repairResult.TotalRefinementsDone}. \n" +
+				  $"Modified transitions: {string.Join(',', repairResult.RepairModifications.EnhancedTransitions.ToArray())}"
+				: $"Failed to repair the model. Try using different repair algorithm. Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms.";
+			DPNVerifierMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
 			currentDisplayedNet = repairResult.Dpn;
 		}
 
-		private void SaveDpn_Click(object sender, RoutedEventArgs e)
+		private async void SaveDpn_Click(object sender, RoutedEventArgs e)
 		{
 			var ofd = new SaveFileDialog()
 			{
@@ -296,8 +296,8 @@ namespace DPN.VerificationApp
 			};
 			if (ofd.ShowDialog() == true)
 			{
-				var xDocument = pnmlxParser.Serialize(currentDisplayedNet);
-				xDocument.Save(ofd.FileName);
+				await using var fs = new FileStream(ofd.FileName, FileMode.Create);
+				await pnmlxParser.Serialize(currentDisplayedNet, fs);
 			}
 		}
 
@@ -315,25 +315,19 @@ namespace DPN.VerificationApp
 
 		private void ShowLoader(string message = "Processing...")
 		{
-			// Ensure we're on the UI thread
 			Dispatcher.Invoke(() =>
 			{
 				LoaderText.Text = message;
 				LoaderOverlay.Visibility = Visibility.Visible;
-
-				// Disable menu items while loading
 				SetMenuEnabledState(false);
 			});
 		}
 
 		private void HideLoader()
 		{
-			// Ensure we're on the UI thread
 			Dispatcher.Invoke(() =>
 			{
 				LoaderOverlay.Visibility = Visibility.Collapsed;
-
-				// Re-enable menu items
 				SetMenuEnabledState(true);
 			});
 		}
