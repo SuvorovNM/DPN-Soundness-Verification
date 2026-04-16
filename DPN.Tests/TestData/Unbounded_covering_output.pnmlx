@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <pnml>
-  <net id="90b44a2f-07ff-4c88-8cea-de32b79f87c0" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+  <net id="net-90b44a2f-07ff-4c88-8cea-de32b79f87c0" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
     <name>
       <text>90b44a2f-07ff-4c88-8cea-de32b79f87c0</text>
     </name>

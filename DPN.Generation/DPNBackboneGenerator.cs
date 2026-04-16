@@ -152,7 +152,7 @@ namespace DataPetriNetGeneration
             var placesRemained = placesCount;
 
             var dpn = new DataPetriNet(context);
-            var identifier = Guid.NewGuid().ToString();
+            var identifier = "net"+Guid.NewGuid();
             dpn.Id = identifier;
             dpn.Name = identifier;
 
