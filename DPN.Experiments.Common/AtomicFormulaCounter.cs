@@ -24,7 +24,7 @@ public static class AtomicFormulaCounter
         // For boolean expressions, recursively check children
         if (expr is BoolExpr boolExpr)
         {
-            int count = 0;
+            var count = 0;
             foreach (var child in boolExpr.Args)
             {
                 count += CountAtomicFormulasRecursive(child, visitedExpressions);

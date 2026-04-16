@@ -10,17 +10,17 @@ namespace DPN.Parsers
 {
 	public class PnmlxParser
 	{
-		private const string xsdSchema = "XsdSchemas\\pnmlx.xsd";
-		private readonly XsdValidator validator = new(xsdSchema);
+		private const string XsdSchema = "XsdSchemas\\pnmlx.xsd";
+		private readonly XsdValidator validator = new(XsdSchema);
 
 		public async Task Serialize(DataPetriNet dpn, Stream stream)
 		{
 			ArgumentNullException.ThrowIfNull(dpn);
 
-			XElement dpnStructureElement = new XElement("page");
+			var dpnStructureElement = new XElement("page");
 			dpnStructureElement.SetAttributeValue("id", "n0");
 
-			XElement variablesElement = new XElement("variables");
+			var variablesElement = new XElement("variables");
 
 			foreach (var domainType in Enum.GetValues<DomainType>())
 			{
@@ -146,8 +146,6 @@ namespace DPN.Parsers
 							case "variables":
 								variablesElement = element;
 								break;
-							default:
-								break;
 						}
 					}
 
@@ -168,7 +166,7 @@ namespace DPN.Parsers
 			return dpn;
 		}
 
-		private void AddPetriNetElementsToDpn(DataPetriNet dpn, XElement? pageElement, Context context, Z3ExpressionParser expressionParser)
+		private static void AddPetriNetElementsToDpn(DataPetriNet dpn, XElement? pageElement, Context context, Z3ExpressionParser expressionParser)
 		{
 			if (pageElement != null)
 			{
@@ -192,7 +190,7 @@ namespace DPN.Parsers
 			}
 		}
 
-		private void AddVariablesToDpn(DataPetriNet dpn, Dictionary<string, DomainType> varTypeDict, XElement? variablesElement)
+		private static void AddVariablesToDpn(DataPetriNet dpn, Dictionary<string, DomainType> varTypeDict, XElement? variablesElement)
 		{
 			if (variablesElement != null)
 			{
@@ -200,7 +198,7 @@ namespace DPN.Parsers
 				{
 					var typeAttribute = variableElement.Attribute("type");
 					var typeValue = GetDomainType(typeAttribute?.Value ?? "Integer");
-					var varName = variableElement.Element("name")?.Value ?? variableElement.Value ?? string.Empty;
+					var varName = variableElement.Element("name")?.Value ?? variableElement.Value;
 
 					varTypeDict.Add(varName, typeValue);
 					dpn.Variables[typeValue].Write(varName, GetDefaultValue(typeValue));
@@ -208,7 +206,7 @@ namespace DPN.Parsers
 			}
 		}
 
-		private Place GetPlaceFromXElement(XElement placeElement)
+		private static Place GetPlaceFromXElement(XElement placeElement)
 		{
 			if (placeElement == null)
 			{
@@ -224,21 +222,19 @@ namespace DPN.Parsers
 				switch (element.Name.LocalName)
 				{
 					case "name":
-						place.Label = element.Element("text")?.Value ?? element.Value ?? string.Empty;
+						place.Label = element.Element("text")?.Value ?? element.Value;
 						break;
 					case "graphics":
 						break; // Graphics are not supported currently
 					case "initialMarking":
 						var tokensAttribute = element.Attribute("tokens");
-						var tokensValue = tokensAttribute?.Value ?? element.Element("text")?.Value ?? element.Value ?? "0";
+						var tokensValue = tokensAttribute?.Value ?? element.Element("text")?.Value ?? element.Value;
 						place.Tokens = int.Parse(tokensValue);
 						break;
 					case "finalMarking":
 						var finalTokensAttribute = element.Attribute("tokens");
-						var finalTokensValue = finalTokensAttribute?.Value ?? element.Element("text")?.Value ?? element.Value ?? "0";
+						var finalTokensValue = finalTokensAttribute?.Value ?? element.Element("text")?.Value ?? element.Value;
 						place.IsFinal = int.Parse(finalTokensValue) > 0;
-						break;
-					default:
 						break;
 				}
 			}
@@ -246,7 +242,7 @@ namespace DPN.Parsers
 			return place;
 		}
 
-		private Transition GetTransitionFromXElement(XElement transitionElement, Context context, Z3ExpressionParser expressionParser)
+		private static Transition GetTransitionFromXElement(XElement transitionElement, Context context, Z3ExpressionParser expressionParser)
 		{
 			var idAttribute = transitionElement.Attribute("id");
 			var transitionId = idAttribute?.Value ?? throw new ArgumentException("Transition element must have an id attribute");
@@ -259,13 +255,13 @@ namespace DPN.Parsers
 			var nameElement = transitionElement.Element("name");
 			if (nameElement != null)
 			{
-				transitionName = nameElement.Element("text")?.Value ?? nameElement.Value ?? string.Empty;
+				transitionName = nameElement.Element("text")?.Value ?? nameElement.Value;
 			}
 
 			return new Transition(transitionId, new Guard(context, smtExpression), label: transitionName);
 		}
 
-		private Arc GetArcFromXElement(XElement arcElement, IEnumerable<Node> dpnNodes)
+		private static Arc GetArcFromXElement(XElement arcElement, IEnumerable<Node> dpnNodes)
 		{
 			if (arcElement == null)
 			{
@@ -278,8 +274,9 @@ namespace DPN.Parsers
 			var sourceId = sourceAttribute?.Value ?? throw new ArgumentException("Arc element must have a source attribute");
 			var targetId = targetAttribute?.Value ?? throw new ArgumentException("Arc element must have a target attribute");
 
-			var sourcePlace = dpnNodes.FirstOrDefault(x => x.Id == sourceId);
-			var targetPlace = dpnNodes.FirstOrDefault(x => x.Id == targetId);
+			var nodes = dpnNodes.ToArray();
+			var sourcePlace = nodes.FirstOrDefault(x => x.Id == sourceId);
+			var targetPlace = nodes.FirstOrDefault(x => x.Id == targetId);
 			if (sourcePlace == null || targetPlace == null)
 			{
 				throw new ArgumentException($"Arc cannot be built, at least one node is not found: {sourceId}, {targetId}");
@@ -289,14 +286,14 @@ namespace DPN.Parsers
 			var nameElement = arcElement.Element("name");
 			if (nameElement != null)
 			{
-				var weightValue = nameElement.Element("text")?.Value ?? nameElement.Value ?? "1";
+				var weightValue = nameElement.Element("text")?.Value ?? nameElement.Value;
 				weight = int.Parse(weightValue);
 			}
 
 			return new Arc(sourcePlace, targetPlace, weight);
 		}
 
-		private DomainType GetDomainType(string typeAsString)
+		private static DomainType GetDomainType(string typeAsString)
 		{
 			return typeAsString switch
 			{
@@ -307,7 +304,7 @@ namespace DPN.Parsers
 			};
 		}
 
-		private IDefinableValue GetDefaultValue(DomainType domain)
+		private static IDefinableValue GetDefaultValue(DomainType domain)
 		{
 			return domain switch
 			{

@@ -26,8 +26,4 @@
     <ProjectReference Include="..\DPN.Visualization\DPN.Visualization.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

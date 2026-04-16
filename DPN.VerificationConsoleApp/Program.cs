@@ -262,7 +262,7 @@ namespace DPN.VerificationConsoleApp
 			if (parameters.TryGetValue(parameterName, out var keyValueString))
 			{
 				var keyValues = keyValueString.Trim().Replace("\"", "").Split(' ');
-				for (int i = 0; i < keyValues.Length - 1; i += 2)
+				for (var i = 0; i < keyValues.Length - 1; i += 2)
 				{
 					result.Add(keyValues[i], keyValues[i + 1]);
 				}

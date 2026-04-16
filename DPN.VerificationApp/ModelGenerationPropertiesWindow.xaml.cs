@@ -3,9 +3,6 @@ using System.Windows;
 
 namespace DPN.VerificationApp
 {
-    /// <summary>
-    /// Логика взаимодействия для ModelGenerationPropertiesWindow.xaml
-    /// </summary>
     public partial class ModelGenerationPropertiesWindow : Window
     {
         private static string transitionsCount = "7";
@@ -49,7 +46,7 @@ namespace DPN.VerificationApp
         
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-	        this.Close();
+	        Close();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

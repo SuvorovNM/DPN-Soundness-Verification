@@ -25,10 +25,10 @@ namespace DPN.Models.DPNElements
         {
             return new Place
             {
-                Label = this.Label,
-                Id = this.Id,
-                Tokens = this.Tokens,
-                IsFinal = this.IsFinal,
+                Label = Label,
+                Id = Id,
+                Tokens = Tokens,
+                IsFinal = IsFinal,
             };
         }
     }

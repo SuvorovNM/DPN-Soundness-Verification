@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text;
 using System.Xml.Serialization;
@@ -115,7 +113,7 @@ static async Task ListenToPipe(
 	var endOfStream = false;
 	while (!endOfStream)
 	{
-		int bytesRead = await pipeStream.ReadAsync(buffer, token);
+		var bytesRead = await pipeStream.ReadAsync(buffer, token);
 		endOfStream = bytesRead == 0;
 
 		if (bytesRead > 0)

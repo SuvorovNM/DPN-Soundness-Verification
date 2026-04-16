@@ -65,7 +65,7 @@ namespace DPN.VerificationApp
 			}
 		}
 
-		public void ShowGraph(bool showOnlyLog)
+		private void ShowGraph(bool showOnlyLog)
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
@@ -100,24 +100,17 @@ namespace DPN.VerificationApp
 
 		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.WindowState = WindowState.Minimized;
+			WindowState = WindowState.Minimized;
 		}
 
 		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (this.WindowState == WindowState.Maximized)
-			{
-				this.WindowState = WindowState.Normal;
-			}
-			else
-			{
-				this.WindowState = WindowState.Maximized;
-			}
+			WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 		}
 
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Close();
+			Close();
 		}
 
 		private void TitleBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -130,11 +123,11 @@ namespace DPN.VerificationApp
 				}
 				else
 				{
-					this.DragMove();
+					DragMove();
 				}
 			}
 		}
 
-		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
+		private bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
 	}
 }

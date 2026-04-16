@@ -11,7 +11,7 @@ namespace DPN.Tests;
 [TestFixture(RelaxedLazyVerificationSettingsConstants.CoverabilityTree)]
 public class RelaxedLazySoundnessVerification_Test
 {
-	private string baseStructure;
+	private readonly string baseStructure;
 
 	public RelaxedLazySoundnessVerification_Test(string baseStructure)
 	{

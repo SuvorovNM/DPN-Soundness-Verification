@@ -22,7 +22,6 @@
     <EmbeddedResource Include="XsdSchemas\pnmlx.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <None Remove="XsdSchemas\asml.xsd" />
     <None Remove="XsdSchemas\graphml.xsd" />
     <EmbeddedResource Include="XsdSchemas\graphml.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

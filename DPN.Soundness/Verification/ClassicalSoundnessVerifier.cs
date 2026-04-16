@@ -157,7 +157,7 @@ public class ClassicalSoundnessVerifier : ISoundnessVerifier
 	private static LabeledTransitionSystem GetTauStateSpace(bool constructFullGraph, DataPetriNet dpn)
 	{
 		return constructFullGraph
-			? new CoverabilityGraph(dpn, true, false, false, true)
+			? new CoverabilityGraph(dpn, true, false, true)
 			: new ConstraintGraph(dpn);
 	}
 }

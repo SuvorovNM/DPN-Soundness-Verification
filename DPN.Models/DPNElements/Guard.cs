@@ -6,11 +6,11 @@ namespace DPN.Models.DPNElements
 {
     public class Guard : ICloneable
     {
-        public Context Context { get; private init; }
-        public BoolExpr ActualConstraintExpression { get; private init; }
+        public Context Context { get; }
+        public BoolExpr ActualConstraintExpression { get; }
 
-        public Dictionary<string, DomainType> WriteVars { get; private init; }
-        public Dictionary<string, DomainType> ReadVars { get; private init; }
+        public Dictionary<string, DomainType> WriteVars { get; }
+        public Dictionary<string, DomainType> ReadVars { get; }
         
         
         public Guard(Context ctx, BoolExpr? smtExpression, VariablesStore? variables = null)
@@ -21,6 +21,7 @@ namespace DPN.Models.DPNElements
                 
                 ActualConstraintExpression = trueExpression;
                 WriteVars = new Dictionary<string, DomainType>();
+                ReadVars = new  Dictionary<string, DomainType>();
             }
             else
             {

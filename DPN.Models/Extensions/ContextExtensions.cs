@@ -14,7 +14,7 @@ namespace DPN.Models.Extensions
 				throw new ArgumentNullException(nameof(expression));
 			}
 
-			Solver s = context.MkSimpleSolver();
+			var s = context.MkSimpleSolver();
 			s.Assert(expression);
 
 			var result = s.Check() == Status.SATISFIABLE;
@@ -39,7 +39,7 @@ namespace DPN.Models.Extensions
 			var exprWithTargetNegated = context.MkAnd(expr1, context.MkNot(expr2));
 			var expressionToCheck = context.MkOr(exprWithSourceNegated, exprWithTargetNegated);
 
-			Solver s = context.MkSimpleSolver();
+			var s = context.MkSimpleSolver();
 			s.Assert(expressionToCheck);
 
 			var result = s.Check() == Status.UNSATISFIABLE;
@@ -64,17 +64,15 @@ namespace DPN.Models.Extensions
 			{
 				var existsExpression = context.MkExists(variablesToOverwrite, smtExpression);
 
-				Goal g = context.MkGoal(true, false, false);
-				g.Assert((BoolExpr)existsExpression);
-				Tactic tac = context.MkTactic("qe_rec");
-				ApplyResult a = tac.Apply(g);
+				var g = context.MkGoal();
+				g.Assert(existsExpression);
+				var tac = context.MkTactic("qe_rec");
+				var a = tac.Apply(g);
 
 				return context.SimplifyExpression(a.Subgoals[0].AsBoolExpr());
 			}
-			else
-			{
-				return smtExpression;
-			}
+
+			return smtExpression;
 		}
 
 		public static Expr GenerateExpression(this Context context, string variableName, DomainType domain, VariableType varType)

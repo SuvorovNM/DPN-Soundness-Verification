@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pnml>
-   <net id="net_gambling" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+   <net id="net_g" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
       <name>
          <text>Gambling</text>
       </name>

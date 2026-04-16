@@ -42,7 +42,7 @@ namespace DataPetriNetGeneration
 
         private void AddResourcePlaces(int transitionsCount, int extraResourcePlacesCount, DataPetriNet dpn)
         {
-	        for (int i = 0; i < extraResourcePlacesCount; i++)
+	        for (var i = 0; i < extraResourcePlacesCount; i++)
 	        {
 		        var resourcePlace = new Place($"rp{i + 1}", PlaceType.Intermediary);
 		        var arc1 = new Arc(dpn.Transitions.First(), resourcePlace);
@@ -194,8 +194,6 @@ namespace DataPetriNetGeneration
 
         private void GenerateIntermediaryPlace(int id, DataPetriNet dpn)
         {
-            //var availableTransitions = dpn.Transitions.Except(dpn.Arcs.Select(x => x.Source)).ToList();
-            //var transitionWithFollowingPlace = random.Next(0, availableTransitions.Count);
             var place = new Place($"p{id}", PlaceType.Intermediary);
             dpn.Places.Add(place);
             dpn.Arcs.Add(new Arc(dpn.Transitions.Last(), place));

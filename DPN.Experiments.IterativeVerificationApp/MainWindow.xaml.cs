@@ -19,15 +19,12 @@ using Microsoft.Z3;
 
 namespace DataPetriNetIterativeVerificationApplication
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private Dictionary<int, string> paths = new Dictionary<int, string>();
-		private ObservableCollection<VerificationOutputWithNumber> verificationResults = new();
+		private readonly Dictionary<int, string> paths = new();
+		private readonly ObservableCollection<VerificationOutputWithNumber> verificationResults = new();
+		private readonly VerificationRunner verificationRunner;
 		private CancellationTokenSource source;
-		private VerificationRunner verificationRunner;
 
 		public MainWindow()
 		{
@@ -69,15 +66,15 @@ namespace DataPetriNetIterativeVerificationApplication
 			verificationRunner = new();
 
 			VerificationDG.ItemsSource = verificationResults;
-			verificationResults.CollectionChanged += listChanged;
+			verificationResults.CollectionChanged += ListChanged;
 		}
 
-		private void listChanged(object? sender, NotifyCollectionChangedEventArgs args)
+		private void ListChanged(object? sender, NotifyCollectionChangedEventArgs args)
 		{
-			var t = (VerificationOutputWithNumber)args.NewItems[0];
+			var t = (VerificationOutputWithNumber?)args.NewItems![0];
 			if (t != null)
 			{
-				paths.Add(t.Number, System.IO.Path.Combine(DirectoryTb.Text, t.Id));
+				paths.Add(t.Number, Path.Combine(DirectoryTb.Text, t.Id));
 			}
 
 			VerificationDG.Items.Refresh();
@@ -88,26 +85,7 @@ namespace DataPetriNetIterativeVerificationApplication
 		{
 			var row = (DataGridRow)sender;
 			var item = (VerificationOutputWithNumber)row.Item;
-			//LoadCG(item);
 			LoadDpn(item);
-		}
-
-		private void LoadCG(VerificationOutputWithNumber item)
-		{
-			using var fs = new FileStream(paths[item.Number] + ".asml", FileMode.Open);
-			var graphmlParser = new GraphmlParser();
-			using var context = new Context();
-			var stateSpace = graphmlParser.Deserialize(fs, new Context());
-			var soundnessProperties = stateSpace.StateSpaceType ==
-			                          TransitionSystemType.AbstractReachabilityGraph
-				? ClassicalSoundnessAnalyzer.CheckSoundness(stateSpace)
-				: RelaxedLazySoundnessAnalyzer.CheckSoundness(stateSpace);
-
-			var constraintGraphWindow = new StateSpace(new VerificationResult(stateSpace, soundnessProperties, stateSpace.Arcs.Length), true)
-			{
-				Owner = this
-			};
-			constraintGraphWindow.Show();
 		}
 
 		private async void StartBtn_Click(object sender, RoutedEventArgs e)
@@ -118,13 +96,13 @@ namespace DataPetriNetIterativeVerificationApplication
 
 			var conditionsInfo = new ConditionsInfo
 			{
-				Boundedness = BoundednessChb.IsChecked.Value
-					? bool.Parse(BoundnessCmb.Text) //BoundednessChb.IsChecked 
+				Boundedness = BoundednessChb.IsChecked!.Value
+					? bool.Parse(BoundnessCmb.Text)
 					: null,
-				Soundness = SoundnessChb.IsChecked.Value
+				Soundness = SoundnessChb.IsChecked!.Value
 					? bool.Parse(SoundnessCmb.Text)
 					: null,
-				DeadTransitions = MaxDtChb.IsChecked.Value ? byte.Parse(MaxDtTb.Text) : null,
+				DeadTransitions = MaxDtChb.IsChecked!.Value ? byte.Parse(MaxDtTb.Text) : null,
 			};
 
 			if (iterativeGenerationTab.IsSelected)
@@ -245,13 +223,6 @@ namespace DataPetriNetIterativeVerificationApplication
 			source.Cancel();
 		}
 
-		private void Label_MouseUp(object sender, MouseButtonEventArgs e)
-		{
-			//DpnWindow dpnWindow = new DpnWindow(currentNet);
-			//dpnWindow.Owner = this;
-			//dpnWindow.Show();
-		}
-
 		private void PositiveIntegerNumber_PreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
 			e.Handled = Regex.IsMatch(e.Text, "[^0-9]+");
@@ -270,22 +241,13 @@ namespace DataPetriNetIterativeVerificationApplication
 
 		private void LoadDpn(VerificationOutputWithNumber item)
 		{
-			if (item != null)
-			{
-				using var fs = new FileStream(paths[item.Number] + ".pnmlx", FileMode.Open);
-				var pnmlParser = new PnmlxParser();
-				var dataPetriNet = pnmlParser.Deserialize(fs, new Context());
+			using var fs = new FileStream(paths[item.Number] + ".pnmlx", FileMode.Open);
+			var pnmlParser = new PnmlxParser();
+			var dataPetriNet = pnmlParser.Deserialize(fs, new Context());
 
-				var dpnWindow = new DpnWindow(dataPetriNet);
-				dpnWindow.Owner = this;
-				dpnWindow.Show();
-			}
-		}
-
-		private void OpenCg_Click(object sender, RoutedEventArgs e)
-		{
-			var item = (VerificationOutputWithNumber)VerificationDG.SelectedItem;
-			LoadCG(item);
+			var dpnWindow = new DpnWindow(dataPetriNet);
+			dpnWindow.Owner = this;
+			dpnWindow.Show();
 		}
 	}
 }

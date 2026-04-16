@@ -9,7 +9,7 @@ public static class RelaxedLazySoundnessAnalyzer
 	public static SoundnessProperties CheckSoundness(StateSpaceGraph stateSpaceGraph)
 	{
 		var stateDictionary = stateSpaceGraph
-			.Nodes.ToDictionary(x => x.Id, x => StateType.Default);
+			.Nodes.ToDictionary(x => x.Id, _ => StateType.Default);
 
 		var initialNodeKey = stateDictionary.Keys.Min();
 		stateDictionary[initialNodeKey] |= StateType.Initial;

@@ -12,7 +12,6 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 {
 	private bool ContinueBranchIfUnboundedPlaceFound { get; }
 	private bool StopOnCoveringFinalPosition { get; }
-	private bool TryReachAllOmegas { get; }
 	private bool WithTauTransitions { get; }
 	private Place FinalPosition { get; }
 
@@ -20,13 +19,11 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 		DataPetriNet dataPetriNet,
 		bool continueBranchIfUnboundedPlaceFound,
 		bool stopOnCoveringFinalPosition = false,
-		bool tryReachAllOmegas = true,
 		bool withTauTransitions = false)
 		: base(dataPetriNet)
 	{
 		ContinueBranchIfUnboundedPlaceFound = continueBranchIfUnboundedPlaceFound;
 		StopOnCoveringFinalPosition = stopOnCoveringFinalPosition;
-		TryReachAllOmegas = tryReachAllOmegas;
 		WithTauTransitions = withTauTransitions;
 		FinalPosition = dataPetriNet.Places.Single(p => p.IsFinal);
 	}
@@ -144,8 +141,6 @@ internal class CoverabilityGraph : LabeledTransitionSystem
 		ConstraintArcs = baseLts.ConstraintArcs;
 		IsFullGraph = baseLts.IsFullGraph;
 
-		var readConditions = DataPetriNet.Transitions
-			.ToDictionary(t => t.Id, t => DataPetriNet.Context.GetExistsExpression(t.Guard.ActualConstraintExpression, t.Guard.WriteVars));
 		var existingStates = baseLts.ConstraintStates.Select(cs => cs.Id).ToHashSet();
 		var tauTransitionsGuards = GetTauTransitionsGuards();
 

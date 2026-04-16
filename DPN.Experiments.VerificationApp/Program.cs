@@ -78,12 +78,12 @@ namespace DataPetriNetVerificationApplication
 						break;
 					case VerificationParameters:
 						var keyValuesForVerification = args[++index].Trim().Replace("\"", "").Split(' ');
-						for (int i = 0; i < keyValuesForVerification.Length - 1; i += 2)
+						for (var i = 0; i < keyValuesForVerification.Length - 1; i += 2)
 							verificationParameters.Add(keyValuesForVerification[i], keyValuesForVerification[i + 1]);
 						break;
 					case RepairParameters:
 						var keyValuesForRepair = args[++index].Trim().Replace("\"", "").Split(' ');
-						for (int i = 0; i < keyValuesForRepair.Length - 1; i += 2)
+						for (var i = 0; i < keyValuesForRepair.Length - 1; i += 2)
 							repairParameters.Add(keyValuesForRepair[i], keyValuesForRepair[i + 1]);
 						break;
 					default:
@@ -122,7 +122,6 @@ namespace DataPetriNetVerificationApplication
 					case SoundnessType.RelaxedLazy:
 					{
 						var soundnessVerifier = new RelaxedLazySoundnessVerifier();
-						//verificationParameters[RelaxedLazyVerificationSettingsConstants.StopOnCoveringFinalPosition] = "false";
 						verificationResult = soundnessVerifier.Verify(dpnToVerify, verificationParameters);
 						break;
 					}
@@ -195,7 +194,7 @@ namespace DataPetriNetVerificationApplication
 		private static void SaveResultInFile(VerificationAlgorithmTypeEnum? verificationType, string? outputDirectory,
 			MainVerificationInfo outputRow)
 		{
-			using var writer = new StreamWriter(outputDirectory + "/" + verificationType.ToString() + ".csv", true);
+			using var writer = new StreamWriter(outputDirectory + "/" + verificationType + ".csv", true);
 			using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 			csv.Context.RegisterClassMap<VerificationOutputClassMap>();
 			csv.WriteRecord(outputRow);

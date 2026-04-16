@@ -21,9 +21,6 @@ using Microsoft.Z3;
 
 namespace DPN.VerificationApp
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window
 	{
 		private DataPetriNet currentDisplayedNet;
@@ -36,7 +33,7 @@ namespace DPN.VerificationApp
 		private readonly ClassicalSoundnessVerifier classicalSoundnessVerifier;
 		private readonly ClassicalSoundnessRepairer classicalSoundnessRepairer;
 
-		private Context context;
+		private readonly Context context;
 
 		public MainWindow()
 		{
@@ -59,24 +56,24 @@ namespace DPN.VerificationApp
 
 		private void MinimizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.WindowState = WindowState.Minimized;
+			WindowState = WindowState.Minimized;
 		}
 
 		private void MaximizeButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (this.WindowState == WindowState.Maximized)
+			if (WindowState == WindowState.Maximized)
 			{
-				this.WindowState = WindowState.Normal;
+				WindowState = WindowState.Normal;
 			}
 			else
 			{
-				this.WindowState = WindowState.Maximized;
+				WindowState = WindowState.Maximized;
 			}
 		}
 
 		private void CloseButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Close();
+			Close();
 		}
 
 		private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
@@ -89,7 +86,7 @@ namespace DPN.VerificationApp
 				}
 				else
 				{
-					this.DragMove();
+					DragMove();
 				}
 			}
 		}
@@ -121,7 +118,7 @@ namespace DPN.VerificationApp
 
 		private void GenerateModelItem_Click(object sender, RoutedEventArgs e)
 		{
-			ModelGenerationPropertiesWindow modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
+			var modelGenerationPropertiesWindow = new ModelGenerationPropertiesWindow();
 			if (modelGenerationPropertiesWindow.ShowDialog() == true)
 			{
 				var dpnGenerator = new DPNGenerator(context);
@@ -254,7 +251,6 @@ namespace DPN.VerificationApp
 				StateSpaceGraph stateSpace;
 				try
 				{
-					using var context = new Context();
 					stateSpace = graphmlParser.Deserialize(fs, context);
 				}
 				catch (SerializationException exception)
@@ -287,7 +283,7 @@ namespace DPN.VerificationApp
 				  $"Transition refinements: {repairResult.TotalRefinementsDone}. \n" +
 				  $"Modified transitions: {string.Join(',', repairResult.RepairModifications.EnhancedTransitions.ToArray())}"
 				: $"Failed to repair the model. Try using different repair algorithm. Time spent: {(long)repairResult.RepairTime.TotalMilliseconds} ms.";
-			ModernMessageBox.Show(this, message, "Repair result");
+			DPNVerifierMessageBox.Show(this, message, "Repair result");
 			graphControl.Graph = dpnConverter.ConvertToDpn(repairResult.Dpn);
 			currentDisplayedNet = repairResult.Dpn;
 		}
@@ -319,25 +315,19 @@ namespace DPN.VerificationApp
 
 		private void ShowLoader(string message = "Processing...")
 		{
-			// Ensure we're on the UI thread
 			Dispatcher.Invoke(() =>
 			{
 				LoaderText.Text = message;
 				LoaderOverlay.Visibility = Visibility.Visible;
-
-				// Disable menu items while loading
 				SetMenuEnabledState(false);
 			});
 		}
 
 		private void HideLoader()
 		{
-			// Ensure we're on the UI thread
 			Dispatcher.Invoke(() =>
 			{
 				LoaderOverlay.Visibility = Visibility.Collapsed;
-
-				// Re-enable menu items
 				SetMenuEnabledState(true);
 			});
 		}

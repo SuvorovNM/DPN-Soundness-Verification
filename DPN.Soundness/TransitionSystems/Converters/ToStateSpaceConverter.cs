@@ -8,9 +8,9 @@ namespace DPN.Soundness.TransitionSystems.Converters;
 
 internal static class ToStateSpaceConverter
 {
-	internal static StateSpace.StateSpaceGraph Convert(CoverabilityGraph coverabilityGraph)
+	internal static StateSpaceGraph Convert(CoverabilityGraph coverabilityGraph)
 	{
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			coverabilityGraph.ConstraintStates
 				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
 				.ToArray(),
@@ -24,9 +24,9 @@ internal static class ToStateSpaceConverter
 			coverabilityGraph.DataPetriNet.GetVariablesDictionary());
 	}
 
-	internal static StateSpace.StateSpaceGraph Convert(CoverabilityTree coverabilityTree)
+	internal static StateSpaceGraph Convert(CoverabilityTree coverabilityTree)
 	{
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			coverabilityTree.ConstraintStates
 				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id, s.StateType != CtStateType.NonCovered))
 				.ToArray(),
@@ -40,7 +40,7 @@ internal static class ToStateSpaceConverter
 			coverabilityTree.DataPetriNet.GetVariablesDictionary());
 	}
 
-	internal static StateSpace.StateSpaceGraph Convert(LabeledTransitionSystem labeledTransitionSystem)
+	internal static StateSpaceGraph Convert(LabeledTransitionSystem labeledTransitionSystem)
 	{
 		var extraTransitions = new List<Transition>(labeledTransitionSystem.DataPetriNet.Transitions);
 		if (labeledTransitionSystem is ConstraintGraph)
@@ -60,7 +60,7 @@ internal static class ToStateSpaceConverter
 			}
 		}
 
-		return new StateSpace.StateSpaceGraph(
+		return new StateSpaceGraph(
 			labeledTransitionSystem.ConstraintStates
 				.Select(s => new StateSpaceNode(s.Marking.AsDictionary(), s.Constraints, s.Id))
 				.ToArray(),

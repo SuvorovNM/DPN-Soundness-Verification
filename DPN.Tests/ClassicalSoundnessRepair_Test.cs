@@ -12,8 +12,8 @@ namespace DPN.Tests;
 [TestFixture(true, true)]
 public class ClassicalSoundnessRepair_Test
 {
-	private bool mergeTransitionsBack;
-	private bool tryRollbackTransitions;
+	private readonly bool mergeTransitionsBack;
+	private readonly bool tryRollbackTransitions;
 
 	public ClassicalSoundnessRepair_Test(bool mergeTransitionsBack, bool tryRollbackTransitions)
 	{

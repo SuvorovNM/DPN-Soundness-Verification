@@ -20,7 +20,7 @@ namespace DPN.Models.Extensions
 				? "_w"
 				: "_r";
 
-			Stack<Expr> expressionsToConsider = new Stack<Expr>();
+			var expressionsToConsider = new Stack<Expr>();
 			expressionsToConsider.Push(boolExpr);
 
 			var variablesSet = variables.GetAllVariables().Select(v => v.name).ToHashSet();
@@ -31,12 +31,12 @@ namespace DPN.Models.Extensions
 
 				if ((IsComparisonOperator(expressionToConsider) || IsArithmeticOperation(expressionToConsider)))
 				{
-					var searchedVariableIndex = boolExpr.ToString().IndexOf(sourceVarName + sourceVarTypePostfix);
+					var searchedVariableIndex = boolExpr.ToString().IndexOf(sourceVarName + sourceVarTypePostfix, StringComparison.Ordinal);
 					if (searchedVariableIndex >= 0)
 					{
 						foreach (var variable in variablesSet)
 						{
-							var comparedVarIndex = boolExpr.ToString().LastIndexOf(variable+targetVarTypePostfix);
+							var comparedVarIndex = boolExpr.ToString().LastIndexOf(variable+targetVarTypePostfix, StringComparison.Ordinal);
 
 							if (comparedVarIndex >= 0 && comparedVarIndex != searchedVariableIndex)
 							{
@@ -88,10 +88,10 @@ namespace DPN.Models.Extensions
 				: "_r";
 
 			// Not sure what would be faster - go through string(2) or through the leaves(1)
-			Stack<Expr> expressionsToConsider = new Stack<Expr>();
+			var expressionsToConsider = new Stack<Expr>();
 			expressionsToConsider.Push(expression);
 
-			HashSet<Expr> vars = new HashSet<Expr>();
+			var vars = new HashSet<Expr>();
 
 			while (expressionsToConsider.Count > 0)
 			{
@@ -138,56 +138,6 @@ namespace DPN.Models.Extensions
 			}
 
 			return result;
-		}
-
-		public static LogicalConnective GetLogicalConnective(this BoolExpr sourceExpression)
-		{
-			if (sourceExpression.IsAnd)
-			{
-				return LogicalConnective.And;
-			}
-
-			if (sourceExpression.IsOr)
-			{
-				return LogicalConnective.Or;
-			}
-
-			return LogicalConnective.Empty;
-		}
-
-		public static BinaryPredicate GetBinaryPredicate(this BoolExpr sourceExpression)
-		{
-			if (sourceExpression.IsNot && sourceExpression.Args[0].IsEq)
-			{
-				return BinaryPredicate.Unequal;
-			}
-
-			if (sourceExpression.IsEq)
-			{
-				return BinaryPredicate.Equal;
-			}
-
-			if (sourceExpression.IsLE)
-			{
-				return BinaryPredicate.LessThanOrEqual;
-			}
-
-			if (sourceExpression.IsGE)
-			{
-				return BinaryPredicate.GreaterThanOrEqual;
-			}
-
-			if (sourceExpression.IsLT)
-			{
-				return BinaryPredicate.LessThan;
-			}
-
-			if (sourceExpression.IsGT)
-			{
-				return BinaryPredicate.GreaterThan;
-			}
-
-			else throw new ArgumentException("No corresponding predicate is found");
 		}
 	}
 }

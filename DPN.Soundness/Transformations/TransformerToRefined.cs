@@ -72,7 +72,7 @@ namespace DPN.Soundness.Transformations
 		{
 			string GetArcBaseTransitionId(LtsArc arc)
 			{
-				return arc.Transition.Id; // arc.Transition.Id NonRefinedTransitionId
+				return arc.Transition.Id;
 			}
 
 			while (true)
@@ -114,17 +114,11 @@ namespace DPN.Soundness.Transformations
 
 					if (writeVarsComparedToOtherVars.Count > 0)
 					{
-						//var writeVarsNames = writeVarsComparedToOtherVars.Select(wv => wv.Key).ToHashSet();
-
 						var cyclesWithTransition = cycles.Where(x => x.CycleArcs.Any(y => GetArcBaseTransitionId(y) == sourceTransition.BaseTransitionId))
 							.ToArray();
-
-						// Если имеем, что из конечной позиции не может быть выхода, то можно сделать определять переходы к разделению как:
-						// SelectMany(c => c.OutputArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id])
-						//		.Union(c.CycleArcs.SelectMany(a => baseToRefinedTransitions[a.Transition.Id].Where(t => t.IsSplit))))
-						// Но в общем случае это неверно. Также можем упустить лайвлоки внутри маленьких циклов
+						
 						var transitionsToInvestigate = cyclesWithTransition.SelectMany(c => c.CycleArcsWithAdjacent
-								.Where(a => arcToStates[a.SourceState].Length > 1) // Очень дешевая эвристика, которая отработает в большой части случаев
+								.Where(a => arcToStates[a.SourceState].Length > 1) // Cheap heuristics
 								.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)])
 								.Union(c.CycleArcs
 									.SelectMany(a => baseToRefinedTransitions[GetArcBaseTransitionId(a)].Where(t => t.IsSplit))))

@@ -12,8 +12,8 @@ namespace DataPetriNetIterativeVerificationApplication
 {
 	public partial class StateSpace : Window
 	{
-		private const int maxNodesToVisualize = 2000;
-		private const int maxArcsToVisualize = 5000;
+		private const int MaxNodesToVisualize = 2000;
+		private const int MaxArcsToVisualize = 5000;
 
 		private readonly VerificationResult verificationResult;
 
@@ -50,7 +50,7 @@ namespace DataPetriNetIterativeVerificationApplication
 
 		private void CheckGraphSizeAndSetVisibility(int nodeCount, int edgeCount)
 		{
-			if (nodeCount <= maxNodesToVisualize && edgeCount <= maxArcsToVisualize)
+			if (nodeCount <= MaxNodesToVisualize && edgeCount <= MaxArcsToVisualize)
 			{
 				GraphTooLargeOverlay.Visibility = Visibility.Collapsed;
 				graphControl.Visibility = Visibility.Visible;
@@ -65,7 +65,7 @@ namespace DataPetriNetIterativeVerificationApplication
 			}
 		}
 
-		public void ShowGraph(bool showOnlyLog)
+		private void ShowGraph(bool showOnlyLog)
 		{
 			var graphToVisualize = ToGraphToVisualizeConverter.Convert(verificationResult);
 			logControl.FormOutput(
@@ -98,6 +98,6 @@ namespace DataPetriNetIterativeVerificationApplication
 			ShowGraph(false);
 		}
 
-		public bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
+		private bool IsOverlayVisible => GraphTooLargeOverlay.Visibility == Visibility.Visible;
 	}
 }

@@ -50,7 +50,7 @@ namespace DataPetriNetGeneration
 			{
 				BoolExpr? expression = null;
 
-				for (int i = 0; i < conditionsPerTransition[transitionIndex]; i++)
+				for (var i = 0; i < conditionsPerTransition[transitionIndex]; i++)
 				{
 					var firstVariableType = GetVarType(varTypesPool, soundnessPreference);
 					var logicalConnectiveType = GetLogicalConnectiveType(connectivesPool, i);
@@ -60,7 +60,6 @@ namespace DataPetriNetGeneration
 					if (GetConditionType() == VOV)
 					{
 						expression = GenerateVOVExpression(
-							context,
 							varsPool,
 							firstVariableType,
 							logicalConnectiveType,
@@ -71,7 +70,6 @@ namespace DataPetriNetGeneration
 					else
 					{
 						expression = GenerateVOCExpression(
-							context,
 							constantsPool,
 							firstVariableType,
 							logicalConnectiveType,
@@ -126,7 +124,6 @@ namespace DataPetriNetGeneration
 		}
 
 		private BoolExpr GenerateVOVExpression(
-			Context context,
 			List<string> varsPool,
 			VariableType firstVariableType,
 			LogicalConnective logicalConnectiveType,
@@ -171,7 +168,6 @@ namespace DataPetriNetGeneration
 		}
 
 		private BoolExpr GenerateVOCExpression(
-			Context context,
 			List<int> constantsPool,
 			VariableType firstVariableType,
 			LogicalConnective logicalConnectiveType,
@@ -216,7 +212,7 @@ namespace DataPetriNetGeneration
 		private List<int> GetConditionsCountPerTransition(int transitionsCount, int conditionsCount)
 		{
 			var conditionsPerTransition = new int[transitionsCount];
-			for (int i = 0; i < conditionsCount; i++)
+			for (var i = 0; i < conditionsCount; i++)
 			{
 				conditionsPerTransition[random.Next(transitionsCount)]++;
 			}
@@ -249,7 +245,7 @@ namespace DataPetriNetGeneration
 		{
 			var constantsPool = new List<int>(constsCount);
 
-			for (int i = 0; i < constsCount; i++)
+			for (var i = 0; i < constsCount; i++)
 			{
 				constantsPool.Add(random.Next(-1000000, 1000001));
 			}
@@ -261,7 +257,7 @@ namespace DataPetriNetGeneration
 		{
 			var varsPool = new List<string>(varsCount);
 
-			for (int i = 0; i < varsCount; i++)
+			for (var i = 0; i < varsCount; i++)
 			{
 				varsPool.Add($"v{i}");
 			}

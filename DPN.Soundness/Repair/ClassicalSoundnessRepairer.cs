@@ -71,7 +71,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				}
 			}
 
-			coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true, tryReachAllOmegas: false);
+			coloredCoverabilityGraph = new ColoredCoverabilityGraph(dpnToConsider, withTau: true);
 			coloredCoverabilityGraph.GenerateGraph();
 			statesConstructed += coloredCoverabilityGraph.ConstraintArcs.Count;
 
@@ -82,8 +82,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			{
 				transitionsToTrySimplify = transitionsToTrySimplify.Union(transitionsUpdatedAtPreviousStep).ToHashSet();
 				(dpnToConsider, transitionsUpdatedAtPreviousStep) = MakeRepairStep(
-					dpnToConsider, 
-					coloredCoverabilityGraph, 
+					dpnToConsider,
+					coloredCoverabilityGraph,
 					transitionsDict,
 					transitionsToPreviousGuards);
 				totalModifiedTransitions.AddRange(transitionsUpdatedAtPreviousStep.Select(t => transitionsDict[t].BaseTransitionId));
@@ -232,9 +232,9 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 	// Some transition restriction is redundant - we, thus, rollback what we can
 	private static void TryRollbackTransitionGuards(
-		DataPetriNet sourceDpn, 
-		ColoredCoverabilityGraph cg, 
-		HashSet<string> transitionsToTrySimplify, 
+		DataPetriNet sourceDpn,
+		ColoredCoverabilityGraph cg,
+		HashSet<string> transitionsToTrySimplify,
 		Dictionary<string, Transition> transitionsDict,
 		Dictionary<string, Guard> previousGuards)
 	{
@@ -376,7 +376,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		return (sourceDpn, updatedTransitions);
 	}
 
-	// Maybe move dictionaries to static
 	private void UpdateUpperTransitionsRecursively(
 		LtsState currentNode,
 		BoolExpr badNodeConstraint,

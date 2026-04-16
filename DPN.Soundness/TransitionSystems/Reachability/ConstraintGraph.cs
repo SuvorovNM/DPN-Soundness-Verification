@@ -13,7 +13,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 		{
 			IsFullGraph = false;
 
-			var readConditions = dataPetriNet.Transitions
+			var readConditions = DataPetriNet.Transitions
 				.ToDictionary(t => t.Id, t => DataPetriNet.Context.GetExistsExpression(t.Guard.ActualConstraintExpression, t.Guard.WriteVars));
 
 			while (StatesToConsider.Count > 0)
@@ -60,7 +60,7 @@ namespace DPN.Soundness.TransitionSystems.Reachability
 			ConstraintArcs = baseLts.ConstraintArcs;
 			IsFullGraph = baseLts.IsFullGraph;
 
-			var readConditions = dataPetriNet.Transitions
+			var readConditions = DataPetriNet.Transitions
 				.ToDictionary(t => t.Id, t => DataPetriNet.Context.GetExistsExpression(t.Guard.ActualConstraintExpression, t.Guard.WriteVars));
 			
 			var existingStates = baseLts.ConstraintStates.Select(cs=>cs.Id).ToHashSet();

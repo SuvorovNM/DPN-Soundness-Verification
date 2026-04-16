@@ -4,8 +4,8 @@ using DPN.Soundness.TransitionSystems.Reachability;
 
 namespace DPN.Soundness.TransitionSystems.Coverability;
 
-internal class ColoredCoverabilityGraph(DataPetriNet dataPetriNet, bool tryReachAllOmegas, bool withTau) 
-	: CoverabilityGraph(dataPetriNet, tryReachAllOmegas: tryReachAllOmegas, withTauTransitions: withTau, continueBranchIfUnboundedPlaceFound: false)
+internal class ColoredCoverabilityGraph(DataPetriNet dataPetriNet, bool withTau) 
+	: CoverabilityGraph(dataPetriNet, withTauTransitions: withTau, continueBranchIfUnboundedPlaceFound: false)
 {
 	public Dictionary<LtsState, CtStateColor> StateColorDictionary { get; } = new();
 

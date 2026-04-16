@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
@@ -73,7 +72,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 							conditionsCount,
 							soundnessPreference);
 						dpn.Name = Guid.NewGuid().ToString();
-						var dpnPath = await SaveDpnToXml(verificationInput, dpn, token);
+						var dpnPath = await SaveDpnToXml(verificationInput, dpn);
 
 						Process proc;
 						await using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
@@ -109,7 +108,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 			}
 		}
 
-		private async Task<string> SaveDpnToXml(VerificationInputBasis verificationInput, DataPetriNet dpn, CancellationToken token)
+		private async Task<string> SaveDpnToXml(VerificationInputBasis verificationInput, DataPetriNet dpn)
 		{
 			var dpnPath = Path.Combine(verificationInput.OutputDirectory, dpn.Name + ".pnmlx");
 			Directory.CreateDirectory(verificationInput.OutputDirectory);
@@ -139,11 +138,6 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 				for (var i = 0; i < verificationInput.IterationsInfo.DpnsPerConfiguration; i++)
 				{
 					bool successfulCase;
-					var verificationTypes = new List<VerificationAlgorithmTypeEnum>
-					{
-						//VerificationAlgorithmTypeEnum.ImprovedVersion,
-						VerificationAlgorithmTypeEnum.DirectVersion                        
-					};
 
 					do
 					{
@@ -164,7 +158,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 							soundnessPreference);
 						dpn.Name = Guid.NewGuid().ToString();
 
-						var dpnPath = await SaveDpnToXml(verificationInput, dpn, token);
+						var dpnPath = await SaveDpnToXml(verificationInput, dpn);
 
 						Process? proc;
 						await using (var pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
@@ -230,7 +224,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 			var endOfStream = false;
 			while (!endOfStream)
 			{
-				int bytesRead = await pipeStream.ReadAsync(buffer, token);
+				var bytesRead = await pipeStream.ReadAsync(buffer, token);
 				endOfStream = bytesRead == 0;
     
 				if (bytesRead > 0)
@@ -239,7 +233,7 @@ namespace DataPetriNetIterativeVerificationApplication.Services
 				}
 			}
 
-			var lastString = stringBuilder.ToString();//Encoding.UTF8.GetString(buffer);
+			var lastString = stringBuilder.ToString();
 
 			MainVerificationInfo? verificationOutput = null;
 
