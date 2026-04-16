@@ -1,5 +1,4 @@
-﻿using DPN.Models.Enums;
-using DPN.Soundness;
+﻿using DPN.Soundness;
 using DPN.Soundness.TransitionSystems;
 using DPN.Visualization.Models;
 using Microsoft.Msagl.Drawing;

@@ -1,7 +1,5 @@
 ﻿using DPN.Parsers;
-using DPN.Soundness;
 using DPN.Soundness.Repair;
-using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.Verification;
 using FluentAssertions;
 using Microsoft.Z3;

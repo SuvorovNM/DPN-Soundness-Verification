@@ -11,8 +11,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml;
-using System.Xml.Linq;
 using DPN.Experiments.Common;
 using DPN.Soundness;
 using DPN.Soundness.TransitionSystems;

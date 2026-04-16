@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using DPN.Models;
 using DPN.Soundness.Transformations;
-using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.Converters;
 using DPN.Soundness.TransitionSystems.Coverability;
 using DPN.Soundness.TransitionSystems.Reachability;

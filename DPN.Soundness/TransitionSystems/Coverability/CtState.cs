@@ -1,5 +1,4 @@
-﻿using DPN.Models.Enums;
-using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
+﻿using DPN.Soundness.TransitionSystems.StateSpaceAbstraction;
 using Microsoft.Z3;
 
 namespace DPN.Soundness.TransitionSystems.Coverability

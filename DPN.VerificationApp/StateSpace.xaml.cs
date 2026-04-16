@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Xml.Linq;
 using DPN.Parsers;
 using DPN.Soundness;
 using DPN.VerificationApp.Extensions;

@@ -1,5 +1,4 @@
-﻿using DPN.Models.Enums;
-using DPN.Soundness.TransitionSystems;
+﻿using DPN.Soundness.TransitionSystems;
 using DPN.Soundness.TransitionSystems.StateSpace;
 
 namespace DPN.Visualization.Models;

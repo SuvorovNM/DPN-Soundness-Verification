@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using System.Text.Json;
 using System.Xml.Linq;
 using DPN.Models.Enums;
 using DPN.Soundness.TransitionSystems;
