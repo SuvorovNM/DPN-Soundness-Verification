@@ -167,13 +167,13 @@ namespace DPN.Soundness.Transformations
 
 								var positiveTransition = new Transition(
 									transitionToRefine.Id + "+[" + cycleTransition.Id + "]",
-									Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(positiveCondition), sourceDpn.Variables),
+									new Guard(transitionToRefine.Guard.Context, context.SimplifyExpression(positiveCondition), sourceDpn.Variables),
 									transitionToRefine.BaseTransitionId,
 									isSplit: true);
 
 								var negativeTransition = new Transition(
 									transitionToRefine.Id + "-[" + cycleTransition.Id + "]",
-									Guard.MakeRefined(transitionToRefine.Guard, context.SimplifyExpression(negativeCondition), sourceDpn.Variables),
+									new Guard(transitionToRefine.Guard.Context, context.SimplifyExpression(negativeCondition), sourceDpn.Variables),
 									transitionToRefine.BaseTransitionId,
 									isSplit: true);
 

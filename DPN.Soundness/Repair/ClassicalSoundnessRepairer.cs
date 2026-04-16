@@ -182,9 +182,8 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 
 
 				var transitionToInspect = baseTransition.First();
-				//var splitIndex = transitionToInspect.Label.IndexOfAny(['-', '+']);
-				var label = sourceTransition.Label; // transitionToInspect.Label[.. (splitIndex == -1 ? transitionToInspect.Label.Length : splitIndex)];
-				var guard = Guard.MakeMerged(transitionToInspect.Guard, resultantConstraint, dpnToConsider.Variables);
+				var label = sourceTransition.Label;
+				var guard = new Guard(transitionToInspect.Guard.Context, resultantConstraint, dpnToConsider.Variables);
 				var transitionToAdd = new Transition(baseTransition.Key, guard, label: label);
 				dpnToConsider.Transitions.RemoveAll(x => baseTransition.Contains(x));
 				dpnToConsider.Transitions.Add(transitionToAdd);
@@ -249,7 +248,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 		foreach (var transitionId in transitionsToTrySimplify)
 		{
 			var smtExpression = previousGuards[transitionId].ActualConstraintExpression;
-				//transitionsDict[transitionId].Guard.ConstraintExpressionBeforeUpdate; // TODO: this property should remain at the level of repairer only
 			var overwrittenVarNames = transitionsDict[transitionId].Guard.WriteVars;
 			var readExpression = sourceDpn.Context.GetExistsExpression(smtExpression, overwrittenVarNames);
 
@@ -263,7 +261,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			var canBeReplacedWithSourceConstraint = true;
 
 			var baseTransitionConstraint = previousGuards[transition.Id].ActualConstraintExpression;
-				//transition.Guard.ConstraintExpressionBeforeUpdate;
 			var baseTauTransitionGuard = baseTauTransitionsGuards[transition];
 			var overwrittenVarNames = transition.Guard.WriteVars;
 
@@ -285,7 +282,6 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 			if (canBeReplacedWithSourceConstraint)
 			{
 				transition.Guard = previousGuards[transition.Id];
-					//.UndoRepairment();
 			}
 		}
 	}
@@ -371,7 +367,7 @@ public class ClassicalSoundnessRepairer : ISoundnessRepairer
 				var newCondition = sourceDpn.Context.SimplifyExpression(sourceDpn.Context.MkAnd(expressionsForTransitions[transition.Id]));
 
 				previousGuardsDict[transition.Id] = transition.Guard;
-				transition.Guard = Guard.MakeRepaired(transition.Guard, newCondition, sourceDpn.Variables);
+				transition.Guard = new Guard(transition.Guard.Context, newCondition, sourceDpn.Variables);
 
 				updatedTransitions.Add(transition.Id);
 			}

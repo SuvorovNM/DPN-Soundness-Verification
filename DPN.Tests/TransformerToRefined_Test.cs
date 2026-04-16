@@ -25,7 +25,7 @@ public class TransformerToRefined_Test
 
 		transformedDpn.RefinedDpn.Should().BeEquivalentTo(unboundedDpn);
 
-		var baseDpnStateSpace = StateSpaceConstructor.ConstructCoverabilityGraph(unboundedDpn, false, false);
+		var baseDpnStateSpace = StateSpaceConstructor.ConstructCoverabilityGraph(unboundedDpn, true, false);
 		transformedDpn.StateSpaceStructure.Should().BeEquivalentTo(baseDpnStateSpace, o => o.Excluding(ss => ss.Nodes).Excluding(ss => ss.Arcs));
 		transformedDpn.StateSpaceStructure.Nodes.Should().BeEquivalentTo(baseDpnStateSpace.Nodes, o => o.Excluding(ss => ss.Id));
 		transformedDpn.StateSpaceStructure.Arcs.Should().BeEquivalentTo(baseDpnStateSpace.Arcs, o => o.Excluding(ss => ss.SourceNodeId).Excluding(ss => ss.TargetNodeId));

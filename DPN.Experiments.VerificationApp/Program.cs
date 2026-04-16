@@ -160,7 +160,7 @@ namespace DataPetriNetVerificationApplication
 			{
 				var conditionsCount = dpnToVerify
 					.Transitions
-					.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.BaseConstraintExpressions));
+					.Sum(x => AtomicFormulaCounter.CountAtomicFormulas(x.Guard.ActualConstraintExpression));
 				var badCasesPath = Path.Combine(outputDirectory, "bad_cases.txt");
 				File.AppendAllText(badCasesPath,
 					$"{dpnToVerify.Name}, {dpnToVerify.Places.Count}, {dpnToVerify.Transitions.Count}, {dpnToVerify.Arcs.Count}, {dpnToVerify.Variables.GetAllVariables().Length}, {conditionsCount}, {verificationResult != null}\n");

@@ -97,6 +97,7 @@ namespace DPN.Soundness.TransitionSystems.Coverability
                 }
             }
 
+            IsFullGraph = true;
             AddColorsToNodes();
         }
 
